@@ -1,7 +1,8 @@
-import Vue from 'vue'
+
 import { ActionTree } from 'vuex'
 import { ServerHistoryState, ServerHistoryStateJob } from '@/store/server/history/types'
 import { RootState } from '@/store/types'
+import { getSocketClient } from '@/plugins/webSocketClient'
 
 export const actions: ActionTree<ServerHistoryState, RootState> = {
     reset({ commit }) {
@@ -9,12 +10,12 @@ export const actions: ActionTree<ServerHistoryState, RootState> = {
     },
 
     init() {
-        Vue.$socket.emit(
+        getSocketClient().emit(
             'server.history.list',
             { start: 0, limit: 50, max: 100 },
             { action: 'server/history/getHistory' }
         )
-        Vue.$socket.emit('server.history.totals', {}, { action: 'server/history/getTotals' })
+        getSocketClient().emit('server.history.totals', {}, { action: 'server/history/getTotals' })
     },
 
     getTotals({ commit }, payload) {
@@ -38,7 +39,7 @@ export const actions: ActionTree<ServerHistoryState, RootState> = {
         const max = payload.requestParams?.max ?? null
 
         if (limit > 0 && (max === null || max > start + limit) && payload.jobs?.length === limit) {
-            Vue.$socket.emit(
+            getSocketClient().emit(
                 'server.history.list',
                 {
                     start: start + limit,
@@ -62,7 +63,7 @@ export const actions: ActionTree<ServerHistoryState, RootState> = {
 
     loadHistoryNotes({ dispatch, rootState }) {
         if (rootState.server?.dbNamespaces.includes('history_notes'))
-            Vue.$socket.emit(
+            getSocketClient().emit(
                 'server.database.get_item',
                 { namespace: 'history_notes' },
                 { action: 'server/history/initHistoryNotes' }
@@ -88,7 +89,7 @@ export const actions: ActionTree<ServerHistoryState, RootState> = {
         if (payload.action === 'added') commit('addJob', payload.job)
         else if (payload.action === 'finished') commit('updateJob', payload.job)
 
-        Vue.$socket.emit('server.history.totals', {}, { action: 'server/history/getTotals' })
+        getSocketClient().emit('server.history.totals', {}, { action: 'server/history/getTotals' })
     },
 
     getDeletedJobs({ commit }, payload) {
@@ -100,7 +101,7 @@ export const actions: ActionTree<ServerHistoryState, RootState> = {
     },
 
     saveHistoryNote({ commit }, payload: { job_id: string; note: string }) {
-        Vue.$socket.emit('server.database.post_item', {
+        getSocketClient().emit('server.database.post_item', {
             namespace: 'history_notes',
             key: payload.job_id,
             value: { text: payload.note },

@@ -149,7 +149,7 @@ import { Component, Mixins } from 'vue-property-decorator'
 import BaseMixin from '@/components/mixins/base'
 import SettingsRow from '@/components/settings/SettingsRow.vue'
 import { Debounce } from 'vue-debounce-decorator'
-import Vue from 'vue'
+
 import { clearColorObject, ColorPickerValue } from '@/plugins/helpers'
 
 @Component({
@@ -201,7 +201,7 @@ export default class SettingsGCodeViewerTab extends Mixins(BaseMixin) {
 
     @Debounce(500)
     updateColorValue(colorElement: string, newVal: ColorPickerValue): void {
-        Vue.set(this, colorElement, clearColorObject(newVal))
+        this[colorElement] = clearColorObject(newVal)
     }
 
     get minFeed(): number {

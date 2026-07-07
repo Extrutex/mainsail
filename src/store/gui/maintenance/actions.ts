@@ -1,10 +1,11 @@
-import Vue from 'vue'
+
 import { ActionTree } from 'vuex'
 import { GuiMaintenanceState, MaintenanceJson } from '@/store/gui/maintenance/types'
 import { RootState } from '@/store/types'
 import { v4 as uuidv4 } from 'uuid'
 import { themeDir } from '@/store/variables'
 import { ServerHistoryState } from '@/store/server/history/types'
+import { getSocketClient } from '@/plugins/webSocketClient'
 
 export const actions: ActionTree<GuiMaintenanceState, RootState> = {
     reset({ commit }) {
@@ -12,7 +13,7 @@ export const actions: ActionTree<GuiMaintenanceState, RootState> = {
     },
 
     init() {
-        Vue.$socket.emit(
+        getSocketClient().emit(
             'server.database.get_item',
             { namespace: 'maintenance' },
             { action: 'gui/maintenance/initStore' }
@@ -37,7 +38,7 @@ export const actions: ActionTree<GuiMaintenanceState, RootState> = {
         // stop, when no entries are available/found
         const entries = defaults.entries ?? []
         if (entries?.length === 0) {
-            Vue.$socket.emit('server.database.post_item', {
+            getSocketClient().emit('server.database.post_item', {
                 namespace: 'maintenance',
                 key: uuidv4(),
                 value: {
@@ -117,7 +118,7 @@ export const actions: ActionTree<GuiMaintenanceState, RootState> = {
     },
 
     upload(_, payload) {
-        Vue.$socket.emit('server.database.post_item', {
+        getSocketClient().emit('server.database.post_item', {
             namespace: 'maintenance',
             key: payload.id,
             value: payload.value,
@@ -150,7 +151,7 @@ export const actions: ActionTree<GuiMaintenanceState, RootState> = {
 
     delete({ commit }, payload) {
         commit('delete', payload)
-        Vue.$socket.emit('server.database.delete_item', { namespace: 'maintenance', key: payload })
+        getSocketClient().emit('server.database.delete_item', { namespace: 'maintenance', key: payload })
     },
 
     perform({ dispatch, state, rootState }, payload: { id: string; note: string }) {

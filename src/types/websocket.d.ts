@@ -1,11 +1,9 @@
 import { WebSocketClient } from '@/plugins/webSocketClient'
 
-declare module 'vue/types/vue' {
-    interface VueConstructor {
-        $socket: WebSocketClient
-    }
-
-    interface Vue {
+declare module '@vue/runtime-core' {
+    interface ComponentCustomProperties {
         $socket: WebSocketClient
     }
 }
+
+export {}

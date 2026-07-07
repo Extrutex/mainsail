@@ -1,5 +1,4 @@
-import Vue from 'vue'
-import Vuex from 'vuex'
+import { createStore } from 'vuex'
 import { actions } from '@/store/actions'
 import { mutations } from '@/store/mutations'
 import { getters } from '@/store/getters'
@@ -15,8 +14,6 @@ import { farm } from '@/store/farm'
 import { editor } from '@/store/editor'
 import { gcodeviewer } from '@/store/gcodeviewer'
 
-Vue.use(Vuex)
-
 export const getDefaultState = (): RootState => {
     return {
         packageVersion: (import.meta.env.PACKAGE_VERSION as string) || '0.0.0',
@@ -29,7 +26,7 @@ export const getDefaultState = (): RootState => {
 
 const state = getDefaultState()
 
-export default new Vuex.Store({
+export default createStore<RootState>({
     state,
     modules: {
         socket,

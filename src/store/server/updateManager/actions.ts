@@ -1,7 +1,8 @@
-import Vue from 'vue'
+
 import { ActionTree } from 'vuex'
 import { ServerUpdateManagerState } from '@/store/server/updateManager/types'
 import { RootState } from '@/store/types'
+import { getSocketClient } from '@/plugins/webSocketClient'
 
 export const actions: ActionTree<ServerUpdateManagerState, RootState> = {
     reset({ commit }) {
@@ -9,7 +10,7 @@ export const actions: ActionTree<ServerUpdateManagerState, RootState> = {
     },
 
     init() {
-        Vue.$socket.emit('machine.update.status', {}, { action: 'server/updateManager/onUpdateStatus' })
+        getSocketClient().emit('machine.update.status', {}, { action: 'server/updateManager/onUpdateStatus' })
     },
 
     async onUpdateStatus({ commit, dispatch }, payload) {

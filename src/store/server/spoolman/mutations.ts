@@ -1,7 +1,6 @@
 import { getDefaultState } from './index'
 import { MutationTree } from 'vuex'
 import { ServerSpoolmanState } from './types'
-import Vue from 'vue'
 
 export const mutations: MutationTree<ServerSpoolmanState> = {
     reset(state) {
@@ -9,26 +8,26 @@ export const mutations: MutationTree<ServerSpoolmanState> = {
     },
 
     setActiveSpoolId(state, payload) {
-        Vue.set(state, 'active_spool_id', payload)
+        state['active_spool_id'] = payload
     },
 
     setActiveSpool(state, payload) {
-        Vue.set(state, 'active_spool', payload)
+        state['active_spool'] = payload
     },
 
     setHealth(state, payload) {
-        Vue.set(state, 'health', payload)
+        state['health'] = payload
     },
 
     setInfo(state, payload) {
-        Vue.set(state, 'info', payload)
+        state['info'] = payload
     },
 
     setVendors(state, payload) {
-        Vue.set(state, 'vendors', payload)
+        state['vendors'] = payload
     },
 
     setSpools(state, payload) {
-        Vue.set(state, 'spools', payload)
+        state['spools'] = payload
     },
 }

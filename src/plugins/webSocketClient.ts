@@ -1,5 +1,5 @@
 import { Store } from 'vuex'
-import _Vue from 'vue'
+import type { App } from 'vue'
 import { RootState } from '@/store/types'
 import { initableServerComponents } from '@/store/variables'
 import type { RPCMethods, RPCParams, RPCResult } from '@/types/moonraker'
@@ -251,10 +251,19 @@ export class WebSocketClient {
     }
 }
 
-export function WebSocketPlugin(Vue: typeof _Vue, options: WebSocketPluginOptions): void {
-    const socket = new WebSocketClient(options)
-    Vue.prototype.$socket = socket
-    Vue.$socket = socket
+let socketClient: WebSocketClient | null = null
+
+export function getSocketClient(): WebSocketClient {
+    if (socketClient === null) throw new Error('WebSocketClient is not initialized yet')
+
+    return socketClient
+}
+
+export const WebSocketPlugin = {
+    install(app: App, options: WebSocketPluginOptions): void {
+        socketClient = new WebSocketClient(options)
+        app.config.globalProperties.$socket = socketClient
+    },
 }
 
 export interface WebSocketPluginOptions {

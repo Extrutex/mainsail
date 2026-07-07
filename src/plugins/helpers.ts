@@ -12,7 +12,7 @@ import {
     mdiScale,
     mdiThermometer,
 } from '@mdi/js'
-import Vue from 'vue'
+
 import { VColorPickerColor } from '@/types/vuetify'
 
 export const isRecord = (value: unknown): value is Record<string, unknown> => {
@@ -55,7 +55,7 @@ export const setDataDeep = (currentState: unknown, payload: unknown): void => {
             return
         }
 
-        Vue.set(currentState, key, value)
+        currentState[key] = value
     })
 }
 
@@ -593,4 +593,22 @@ export function generateTimestamp(date: Date = new Date()): string {
     const timeString = `${pad(date.getHours())}${pad(date.getMinutes())}${pad(date.getSeconds())}`
 
     return `${dateString}-${timeString}`
+}
+
+/**
+ * Simple debounce helper (replacement for the vue-debounce-decorator package).
+ * The returned function delays invoking `fn` until `wait` ms have elapsed
+ * since the last call.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export function debounce<T extends (...args: any[]) => void>(fn: T, wait = 500): (...args: Parameters<T>) => void {
+    let timeout: number | null = null
+
+    return function (this: unknown, ...args: Parameters<T>) {
+        if (timeout !== null) clearTimeout(timeout)
+        timeout = window.setTimeout(() => {
+            timeout = null
+            fn.apply(this, args)
+        }, wait)
+    }
 }

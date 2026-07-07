@@ -1,7 +1,8 @@
-import Vue from 'vue'
+
 import { ActionTree } from 'vuex'
 import { ServerPowerState } from '@/store/server/power/types'
 import { RootState } from '@/store/types'
+import { getSocketClient } from '@/plugins/webSocketClient'
 
 export const actions: ActionTree<ServerPowerState, RootState> = {
     reset({ commit }) {
@@ -9,7 +10,7 @@ export const actions: ActionTree<ServerPowerState, RootState> = {
     },
 
     init() {
-        Vue.$socket.emit('machine.device_power.devices', {}, { action: 'server/power/getDevices' })
+        getSocketClient().emit('machine.device_power.devices', {}, { action: 'server/power/getDevices' })
     },
 
     async getDevices({ commit, dispatch }, payload) {

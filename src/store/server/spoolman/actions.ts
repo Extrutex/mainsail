@@ -1,11 +1,12 @@
-import Vue from 'vue'
 import { ActionTree } from 'vuex'
 import { RootState } from '@/store/types'
 import { ServerSpoolmanState } from '@/store/server/spoolman/types'
+import { getSocketClient } from '@/plugins/webSocketClient'
+import { useToast } from 'vue-toast-notification'
 
 function convertV2response(payload: { error?: { message: string } | null; response?: unknown }) {
     if ((payload.error?.message ?? null) !== null) {
-        Vue.$toast.error(payload.error?.message ?? 'unknown spoolman error')
+        useToast().error(payload.error?.message ?? 'unknown spoolman error')
         return null
     }
 
@@ -21,8 +22,8 @@ export const actions: ActionTree<ServerSpoolmanState, RootState> = {
     },
 
     init({ dispatch }) {
-        Vue.$socket.emit('server.spoolman.get_spool_id', {}, { action: 'server/spoolman/getActiveSpoolId' })
-        Vue.$socket.emit(
+        getSocketClient().emit('server.spoolman.get_spool_id', {}, { action: 'server/spoolman/getActiveSpoolId' })
+        getSocketClient().emit(
             'server.spoolman.proxy',
             {
                 request_method: 'GET',
@@ -31,7 +32,7 @@ export const actions: ActionTree<ServerSpoolmanState, RootState> = {
             },
             { action: 'server/spoolman/getInfo' }
         )
-        Vue.$socket.emit(
+        getSocketClient().emit(
             'server.spoolman.proxy',
             {
                 request_method: 'GET',
@@ -40,7 +41,7 @@ export const actions: ActionTree<ServerSpoolmanState, RootState> = {
             },
             { action: 'server/spoolman/getHealth' }
         )
-        Vue.$socket.emit(
+        getSocketClient().emit(
             'server.spoolman.proxy',
             {
                 request_method: 'GET',
@@ -72,7 +73,7 @@ export const actions: ActionTree<ServerSpoolmanState, RootState> = {
             return
         }
 
-        Vue.$socket.emit(
+        getSocketClient().emit(
             'server.spoolman.proxy',
             {
                 request_method: 'GET',
@@ -123,7 +124,7 @@ export const actions: ActionTree<ServerSpoolmanState, RootState> = {
     },
 
     refreshSpools({ dispatch }) {
-        Vue.$socket.emit(
+        getSocketClient().emit(
             'server.spoolman.proxy',
             {
                 request_method: 'GET',
@@ -149,13 +150,13 @@ export const actions: ActionTree<ServerSpoolmanState, RootState> = {
         const params: { spool_id?: number } = {}
         if (id !== null) params['spool_id'] = id
 
-        Vue.$socket.emit('server.spoolman.post_spool_id', params)
+        getSocketClient().emit('server.spoolman.post_spool_id', params)
     },
 
     refreshActiveSpool({ state }) {
         if (state.active_spool_id === null) return
 
-        Vue.$socket.emit(
+        getSocketClient().emit(
             'server.spoolman.proxy',
             {
                 request_method: 'GET',

@@ -1,8 +1,9 @@
 import { ActionTree } from 'vuex'
 import { RootState } from '@/store/types'
 import { v4 as uuidv4 } from 'uuid'
-import Vue from 'vue'
+
 import { GuiConsoleState } from '@/store/gui/console/types'
+import { getSocketClient } from '@/plugins/webSocketClient'
 
 export const actions: ActionTree<GuiConsoleState, RootState> = {
     reset({ commit }) {
@@ -11,7 +12,7 @@ export const actions: ActionTree<GuiConsoleState, RootState> = {
 
     clear({ commit }) {
         const cleared_since = new Date().valueOf()
-        Vue.$socket.emit('server.database.post_item', {
+        getSocketClient().emit('server.database.post_item', {
             namespace: 'mainsail',
             key: 'console.cleared_since',
             value: cleared_since,
@@ -37,7 +38,7 @@ export const actions: ActionTree<GuiConsoleState, RootState> = {
     },
 
     filterUpload(_, payload) {
-        Vue.$socket.emit('server.database.post_item', {
+        getSocketClient().emit('server.database.post_item', {
             namespace: 'mainsail',
             key: 'console.consolefilters.' + payload.id,
             value: payload.value,
@@ -64,7 +65,7 @@ export const actions: ActionTree<GuiConsoleState, RootState> = {
 
     filterDelete({ commit }, payload) {
         commit('filterDelete', payload)
-        Vue.$socket.emit('server.database.delete_item', {
+        getSocketClient().emit('server.database.delete_item', {
             namespace: 'mainsail',
             key: 'console.consolefilters.' + payload,
         })

@@ -1,7 +1,8 @@
-import Vue from 'vue'
+
 import { ActionTree } from 'vuex'
 import { ServerSensorState } from '@/store/server/sensor/types'
 import { RootState } from '@/store/types'
+import { getSocketClient } from '@/plugins/webSocketClient'
 
 export const actions: ActionTree<ServerSensorState, RootState> = {
     reset({ commit }) {
@@ -9,7 +10,7 @@ export const actions: ActionTree<ServerSensorState, RootState> = {
     },
 
     init() {
-        Vue.$socket.emit('server.sensors.list', {}, { action: 'server/sensor/getSensors' })
+        getSocketClient().emit('server.sensors.list', {}, { action: 'server/sensor/getSensors' })
     },
 
     getSensors({ commit, dispatch }, payload) {

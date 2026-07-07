@@ -1,7 +1,8 @@
 import { ActionTree } from 'vuex'
 import { GuiNotificationState, GuiNotificationStateDismissEntry } from './types'
 import { RootState } from '../../types'
-import Vue from 'vue'
+
+import { getSocketClient } from '@/plugins/webSocketClient'
 
 export const actions: ActionTree<GuiNotificationState, RootState> = {
     reset({ commit }) {
@@ -9,7 +10,7 @@ export const actions: ActionTree<GuiNotificationState, RootState> = {
     },
 
     upload({ state }) {
-        Vue.$socket.emit('server.database.post_item', {
+        getSocketClient().emit('server.database.post_item', {
             namespace: 'mainsail',
             key: 'notifications.dismiss',
             value: state.dismiss,

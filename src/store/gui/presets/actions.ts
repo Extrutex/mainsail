@@ -1,8 +1,9 @@
 import { ActionTree } from 'vuex'
 import { RootState } from '@/store/types'
 import { v4 as uuidv4 } from 'uuid'
-import Vue from 'vue'
+
 import { GuiPresetsState } from '@/store/gui/presets/types'
+import { getSocketClient } from '@/plugins/webSocketClient'
 
 export const actions: ActionTree<GuiPresetsState, RootState> = {
     reset({ commit }) {
@@ -21,7 +22,7 @@ export const actions: ActionTree<GuiPresetsState, RootState> = {
     },
 
     upload(_, payload) {
-        Vue.$socket.emit('server.database.post_item', {
+        getSocketClient().emit('server.database.post_item', {
             namespace: 'mainsail',
             key: 'presets.presets.' + payload.id,
             value: payload.value,
@@ -48,6 +49,6 @@ export const actions: ActionTree<GuiPresetsState, RootState> = {
 
     delete({ commit }, payload) {
         commit('delete', payload)
-        Vue.$socket.emit('server.database.delete_item', { namespace: 'mainsail', key: 'presets.presets.' + payload })
+        getSocketClient().emit('server.database.delete_item', { namespace: 'mainsail', key: 'presets.presets.' + payload })
     },
 }

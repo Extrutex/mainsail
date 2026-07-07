@@ -1,8 +1,9 @@
 import { ActionTree } from 'vuex'
 import { RootState } from '@/store/types'
 import { v4 as uuidv4 } from 'uuid'
-import Vue from 'vue'
+
 import {
+import { getSocketClient } from '@/plugins/webSocketClient'
     GuiMiscellaneousState,
     GuiMiscellaneousStateEntryLightgroup,
     GuiMiscellaneousStateEntryPreset,
@@ -14,7 +15,7 @@ export const actions: ActionTree<GuiMiscellaneousState, RootState> = {
     },
 
     upload({ state }, id) {
-        Vue.$socket.emit('server.database.post_item', {
+        getSocketClient().emit('server.database.post_item', {
             namespace: 'mainsail',
             key: 'miscellaneous.entries.' + id,
             value: state.entries[id],

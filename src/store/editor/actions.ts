@@ -3,9 +3,10 @@ import { EditorState } from '@/store/editor/types'
 import { RootState } from '@/store/types'
 import axios, { AxiosProgressEvent } from 'axios'
 import { sha256 } from 'js-sha256'
-import Vue from 'vue'
 import i18n from '@/plugins/i18n'
 import { escapePath, formatFilesize, windowBeforeUnloadFunction } from '@/plugins/helpers'
+import { getSocketClient } from '@/plugins/webSocketClient'
+import { useToast } from 'vue-toast-notification'
 
 export const actions: ActionTree<EditorState, RootState> = {
     reset({ commit }) {
@@ -106,14 +107,14 @@ export const actions: ActionTree<EditorState, RootState> = {
             })
             .then((data) => {
                 dispatch('clearLoader')
-                Vue.$toast.success(i18n.t('Editor.SuccessfullySaved', { filename: data.item.path }).toString())
+                useToast().success(i18n.global.t('Editor.SuccessfullySaved', { filename: data.item.path }).toString())
                 if (payload.restartServiceName === 'klipper') {
                     const klipperRestartMethod = getters['getKlipperRestartMethod']
-                    Vue.$socket.emit('printer.gcode.script', { script: klipperRestartMethod })
+                    getSocketClient().emit('printer.gcode.script', { script: klipperRestartMethod })
                 } else if (payload.restartServiceName === 'moonraker') {
-                    Vue.$socket.emit('server.restart', {})
+                    getSocketClient().emit('server.restart', {})
                 } else if (payload.restartServiceName !== null) {
-                    Vue.$socket.emit('machine.services.restart', { service: payload.restartServiceName })
+                    getSocketClient().emit('machine.services.restart', { service: payload.restartServiceName })
                 }
 
                 commit('updateLoadedHash', payload.content)
@@ -123,7 +124,7 @@ export const actions: ActionTree<EditorState, RootState> = {
             .catch((error) => {
                 window.console.log(error.response?.data.error)
                 dispatch('clearLoader')
-                Vue.$toast.error(i18n.t('Editor.FailedSave', { filename: state.filename }).toString())
+                useToast().error(i18n.global.t('Editor.FailedSave', { filename: state.filename }).toString())
             })
     },
 

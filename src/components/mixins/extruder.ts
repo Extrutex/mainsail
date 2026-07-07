@@ -1,47 +1,47 @@
-import Vue from 'vue'
-import { Component } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import { parseNumber } from '@/plugins/helpers'
 import { ExtruderConfigSettings, PrinterStateExtruder } from '@/store/printer/types'
 
-@Component
-export default class ExtruderMixin extends Vue {
-    get extruders(): PrinterStateExtruder[] {
-        return this.$store.getters['printer/getExtruders']
-    }
+export default defineComponent({
+    computed: {
+        extruders(): PrinterStateExtruder[] {
+            return this.$store.getters['printer/getExtruders']
+        },
 
-    get activeExtruder(): string {
-        return this.$store.state.printer.toolhead?.extruder
-    }
+        activeExtruder(): string {
+            return this.$store.state.printer.toolhead?.extruder
+        },
 
-    get activeExtruderSettings(): ExtruderConfigSettings | undefined {
-        return this.$store.state.printer.configfile?.settings?.[this.activeExtruder]
-    }
+        activeExtruderSettings(): ExtruderConfigSettings | undefined {
+            return this.$store.state.printer.configfile?.settings?.[this.activeExtruder]
+        },
 
-    get filamentDiameter(): number {
-        return parseNumber(this.activeExtruderSettings?.filament_diameter, 1.75)
-    }
+        filamentDiameter(): number {
+            return parseNumber(this.activeExtruderSettings?.filament_diameter, 1.75)
+        },
 
-    get nozzleDiameter(): number {
-        return parseNumber(this.activeExtruderSettings?.nozzle_diameter, 0.4)
-    }
+        nozzleDiameter(): number {
+            return parseNumber(this.activeExtruderSettings?.nozzle_diameter, 0.4)
+        },
 
-    get feedamount(): number {
-        return parseFloat(this.$store.state.gui.control.extruder.feedamount)
-    }
+        feedamount(): number {
+            return parseFloat(this.$store.state.gui.control.extruder.feedamount)
+        },
 
-    get feedrate(): number {
-        return parseFloat(this.$store.state.gui.control.extruder.feedrate)
-    }
+        feedrate(): number {
+            return parseFloat(this.$store.state.gui.control.extruder.feedrate)
+        },
 
-    get extrudeFactor() {
-        return this.$store.state.printer?.gcode_move?.extrude_factor ?? 1
-    }
+        extrudeFactor(): number {
+            return this.$store.state.printer?.gcode_move?.extrude_factor ?? 1
+        },
 
-    get extrudePossible(): boolean {
-        return this.$store.getters['printer/getExtrudePossible']
-    }
+        extrudePossible(): boolean {
+            return this.$store.getters['printer/getExtrudePossible']
+        },
 
-    get minExtrudeTemp(): number {
-        return parseNumber(this.activeExtruderSettings?.min_extrude_temp, 170)
-    }
-}
+        minExtrudeTemp(): number {
+            return parseNumber(this.activeExtruderSettings?.min_extrude_temp, 170)
+        },
+    },
+})

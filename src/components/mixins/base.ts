@@ -1,274 +1,276 @@
-import Vue from 'vue'
-import Component from 'vue-class-component'
-import { DateTimeFormatOptions } from 'vue-i18n'
+import { defineComponent } from 'vue'
 import { ServerPowerStateDevice } from '@/store/server/power/types'
 
-@Component
-export default class BaseMixin extends Vue {
-    get apiUrl(): boolean {
-        return this.$store.getters['socket/getUrl']
-    }
+type DateTimeFormatOptions = Intl.DateTimeFormatOptions
 
-    get hostUrl(): boolean {
-        return this.$store.getters['socket/getHostUrl']
-    }
+export default defineComponent({
+    computed: {
+        apiUrl(): boolean {
+            return this.$store.getters['socket/getUrl']
+        },
 
-    get hostPort(): number {
-        return parseInt(this.$store.state.socket.port ?? 80)
-    }
+        hostUrl(): boolean {
+            return this.$store.getters['socket/getHostUrl']
+        },
 
-    get instancesDB() {
-        return this.$store.state.instancesDB ?? 'moonraker'
-    }
+        hostPort(): number {
+            return parseInt(this.$store.state.socket.port ?? 80)
+        },
 
-    get socketIsConnected(): boolean {
-        return this.$store.state.socket.isConnected ?? false
-    }
+        instancesDB() {
+            return this.$store.state.instancesDB ?? 'moonraker'
+        },
 
-    get guiIsReady() {
-        return this.$store.state.socket.initializationList.length === 0
-    }
+        socketIsConnected(): boolean {
+            return this.$store.state.socket.isConnected ?? false
+        },
 
-    get klippyIsConnected(): boolean {
-        return this.$store.state.server.klippy_connected ?? false
-    }
+        guiIsReady(): boolean {
+            return this.$store.state.socket.initializationList.length === 0
+        },
 
-    get klipperState(): string {
-        if (!this.klippyIsConnected) return 'disconnected'
+        klippyIsConnected(): boolean {
+            return this.$store.state.server.klippy_connected ?? false
+        },
 
-        return this.$store.state.server.klippy_state ?? ''
-    }
+        klipperState(): string {
+            if (!this.klippyIsConnected) return 'disconnected'
 
-    get klipperReadyForGui(): boolean {
-        return this.socketIsConnected && this.klipperState === 'ready'
-    }
+            return this.$store.state.server.klippy_state ?? ''
+        },
 
-    get klipperAppName() {
-        return this.$store.state.printer.app_name ?? 'Klipper'
-    }
+        klipperReadyForGui(): boolean {
+            return this.socketIsConnected && this.klipperState === 'ready'
+        },
 
-    get printerIsPrinting() {
-        return this.klipperReadyForGui && ['printing', 'paused'].includes(this.printer_state)
-    }
+        klipperAppName(): string {
+            return this.$store.state.printer.app_name ?? 'Klipper'
+        },
 
-    get printerIsPrintingOnly() {
-        return this.klipperReadyForGui && this.printer_state === 'printing'
-    }
+        printerIsPrinting(): boolean {
+            return this.klipperReadyForGui && ['printing', 'paused'].includes(this.printer_state)
+        },
 
-    get printerPowerDevice(): string {
-        const deviceName = this.$store.state.gui.uiSettings.powerDeviceName ?? null
-        if (deviceName !== null) return deviceName
+        printerIsPrintingOnly(): boolean {
+            return this.klipperReadyForGui && this.printer_state === 'printing'
+        },
 
-        const devices = this.$store.getters['server/power/getDevices'] ?? []
-        return (
-            devices.find((device: ServerPowerStateDevice) => device.device.toLowerCase() === 'printer')?.device ??
-            'printer'
-        )
-    }
+        printerPowerDevice(): string {
+            const deviceName = this.$store.state.gui.uiSettings.powerDeviceName ?? null
+            if (deviceName !== null) return deviceName
 
-    get isPrinterPowerOff() {
-        const devices = this.$store.getters['server/power/getDevices'] ?? []
-        if (devices.length === 0) return false
+            const devices = this.$store.getters['server/power/getDevices'] ?? []
+            return (
+                devices.find((device: ServerPowerStateDevice) => device.device.toLowerCase() === 'printer')?.device ??
+                'printer'
+            )
+        },
 
-        const deviceIndex = devices.findIndex(
-            (device: ServerPowerStateDevice) => device.device === this.printerPowerDevice
-        )
-        // stop if device is not found
-        if (deviceIndex === -1) return false
+        isPrinterPowerOff(): boolean {
+            const devices = this.$store.getters['server/power/getDevices'] ?? []
+            if (devices.length === 0) return false
 
-        const device = devices[deviceIndex]
-        // Printer is on, if device status is "on" or "error"
-        if (device.status !== 'off') return false
+            const deviceIndex = devices.findIndex(
+                (device: ServerPowerStateDevice) => device.device === this.printerPowerDevice
+            )
+            // stop if device is not found
+            if (deviceIndex === -1) return false
 
-        // if klippy is not connected (service shutdown) and device.status === off
-        return !this.klippyIsConnected
-    }
+            const device = devices[deviceIndex]
+            // Printer is on, if device status is "on" or "error"
+            if (device.status !== 'off') return false
 
-    get loadings(): string[] {
-        return this.$store.state.socket.loadings ?? []
-    }
+            // if klippy is not connected (service shutdown) and device.status === off
+            return !this.klippyIsConnected
+        },
 
-    get printer_state(): string {
-        const printer_state =
-            this.$store.state.printer.print_stats?.state ?? this.$store.state.printer.idle_timeout?.state ?? ''
-        const timelapse_pause = this.$store.state.printer['gcode_macro TIMELAPSE_TAKE_FRAME']?.is_paused ?? false
-        return printer_state === 'paused' && timelapse_pause ? 'printing' : printer_state
-    }
+        loadings(): string[] {
+            return this.$store.state.socket.loadings ?? []
+        },
 
-    get isMobile() {
-        return this.$vuetify.breakpoint.mobile
-    }
+        printer_state(): string {
+            const printer_state =
+                this.$store.state.printer.print_stats?.state ?? this.$store.state.printer.idle_timeout?.state ?? ''
+            const timelapse_pause = this.$store.state.printer['gcode_macro TIMELAPSE_TAKE_FRAME']?.is_paused ?? false
+            return printer_state === 'paused' && timelapse_pause ? 'printing' : printer_state
+        },
 
-    get isTablet() {
-        return this.$vuetify.breakpoint.smAndUp && !this.isDesktop && !this.isWidescreen
-    }
+        isMobile(): boolean {
+            return this.$vuetify.display.mobile
+        },
 
-    get isDesktop() {
-        return this.$vuetify.breakpoint.lgAndUp && !this.isWidescreen
-    }
+        isTablet(): boolean {
+            return this.$vuetify.display.smAndUp && !this.isDesktop && !this.isWidescreen
+        },
 
-    get isWidescreen() {
-        return this.$vuetify.breakpoint.xl
-    }
+        isDesktop(): boolean {
+            return this.$vuetify.display.lgAndUp && !this.isWidescreen
+        },
 
-    get viewport() {
-        if (this.isMobile) return 'mobile'
-        else if (this.isTablet) return 'tablet'
-        else if (this.isDesktop) return 'desktop'
-        else return 'widescreen'
-    }
+        isWidescreen(): boolean {
+            return this.$vuetify.display.xl || this.$vuetify.display.xxl
+        },
 
-    get isTouchDevice() {
-        // ignore if browser reports maxTouchPoints === 256, can happen on Windows 10
-        return 'ontouchstart' in window || (navigator.maxTouchPoints > 0 && navigator.maxTouchPoints !== 256)
-    }
+        viewport(): string {
+            if (this.isMobile) return 'mobile'
+            else if (this.isTablet) return 'tablet'
+            else if (this.isDesktop) return 'desktop'
+            else return 'widescreen'
+        },
 
-    get isIOS() {
-        return !!(
-            navigator.userAgent.match(/(iPad|iPhone|iPod)/) ||
-            (navigator.platform === 'MacIntel' && 'standalone' in navigator)
-        )
-    }
+        isTouchDevice(): boolean {
+            // ignore if browser reports maxTouchPoints === 256, can happen on Windows 10
+            return 'ontouchstart' in window || (navigator.maxTouchPoints > 0 && navigator.maxTouchPoints !== 256)
+        },
 
-    get moonrakerComponents() {
-        return this.$store.state.server?.components ?? []
-    }
+        isIOS(): boolean {
+            return !!(
+                navigator.userAgent.match(/(iPad|iPhone|iPod)/) ||
+                (navigator.platform === 'MacIntel' && 'standalone' in navigator)
+            )
+        },
 
-    get existGcodesRootDirectory() {
-        const roots = this.$store.state.server.registered_directories
+        moonrakerComponents(): string[] {
+            return this.$store.state.server?.components ?? []
+        },
 
-        return roots.findIndex((root: string) => root === 'gcodes') >= 0
-    }
+        existGcodesRootDirectory(): boolean {
+            const roots = this.$store.state.server.registered_directories
 
-    get spoolManagerUrl() {
-        const baseurl = this.$store.state.server.config.config?.spoolman?.server ?? undefined
-        if (!baseurl) return undefined
+            return roots.findIndex((root: string) => root === 'gcodes') >= 0
+        },
 
-        try {
-            const url = new URL(baseurl)
-            if (['localhost', '127.0.0.1', '::1'].includes(url.hostname)) {
-                url.hostname = this.$store.state.socket.hostname
+        spoolManagerUrl(): string | undefined {
+            const baseurl = this.$store.state.server.config.config?.spoolman?.server ?? undefined
+            if (!baseurl) return undefined
+
+            try {
+                const url = new URL(baseurl)
+                if (['localhost', '127.0.0.1', '::1'].includes(url.hostname)) {
+                    url.hostname = this.$store.state.socket.hostname
+                }
+
+                return url.toString()
+            } catch {
+                window.console.warn('[Spoolman]: SpoolManager URL is invalid:', baseurl)
+
+                return undefined
             }
+        },
 
-            return url.toString()
-        } catch {
-            window.console.warn('[Spoolman]: SpoolManager URL is invalid:', baseurl)
+        formatTimeOptions(): DateTimeFormatOptions {
+            const format = this.$store.state.gui.general.timeFormat
 
-            return undefined
-        }
-    }
+            switch (format) {
+                case '24hours':
+                    return { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }
 
-    get formatTimeOptions(): DateTimeFormatOptions {
-        const format = this.$store.state.gui.general.timeFormat
+                case '12hours':
+                    return { hour: '2-digit', minute: '2-digit', hourCycle: 'h12' }
 
-        switch (format) {
-            case '24hours':
-                return { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }
-
-            case '12hours':
-                return { hour: '2-digit', minute: '2-digit', hourCycle: 'h12' }
-
-            default:
-                return { timeStyle: 'short' }
-        }
-    }
-
-    get formatTimeWithSecondsOptions(): DateTimeFormatOptions {
-        const format = this.$store.state.gui.general.timeFormat
-
-        switch (format) {
-            case '24hours':
-                return { hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }
-
-            case '12hours':
-                return { hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h12' }
-
-            default:
-                return { timeStyle: 'short' }
-        }
-    }
-
-    get browserLocale() {
-        return navigator.language
-    }
-
-    get hours12Format() {
-        return this.$store.getters['gui/getHours12Format']
-    }
-
-    formatDate(value: number | Date, format: string | null = null): string {
-        if (format === null) format = this.$store.state.gui.general.dateFormat
-        let tmp: Date | null = null
-
-        try {
-            tmp = value instanceof Date ? value : new Date(value)
-        } catch {
-            return 'UNKNOWN'
-        }
-
-        if (format === null) return tmp.toLocaleDateString(this.browserLocale, { dateStyle: 'medium' })
-        if (format === 'iso') return tmp.toISOString().split('T')[0]
-        if (format === 'short') return tmp.toLocaleDateString(this.browserLocale, { dateStyle: 'short' })
-
-        let delimiter = '/'
-        if (format.includes('-')) delimiter = '-'
-        if (format.includes('.')) delimiter = '.'
-        if (format.includes('. ')) delimiter = '. '
-
-        const splits = format.split(delimiter)
-        const output: string[] = []
-
-        splits.forEach((part) => {
-            // replace all dots is needed for kr-KO, because it ends only with a dot and not with '. '
-            part = part.trim().toLowerCase().replaceAll('.', '')
-
-            switch (part) {
-                case 'dd':
-                    output.push(tmp?.getDate().toString().padStart(2, '0') ?? '00')
-                    break
-                case 'd':
-                    output.push(`${tmp?.getDate()}`)
-                    break
-                case 'mm':
-                    output.push(((tmp?.getMonth() ?? 0) + 1).toString().padStart(2, '0'))
-                    break
-                case 'm':
-                    output.push(`${(tmp?.getMonth() ?? 0) + 1}`)
-                    break
-                case 'yyyy':
-                    output.push(`${tmp?.getFullYear()}`)
-                    break
-                case 'yy':
-                    output.push(`${tmp?.getFullYear().toString().slice(-2)}`)
-                    break
                 default:
-                    output.push(part)
+                    return { timeStyle: 'short' }
             }
-        })
+        },
 
-        if (format.endsWith('.')) return output.join(delimiter) + '.'
+        formatTimeWithSecondsOptions(): DateTimeFormatOptions {
+            const format = this.$store.state.gui.general.timeFormat
 
-        return output.join(delimiter)
-    }
+            switch (format) {
+                case '24hours':
+                    return { hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h23' }
 
-    formatTime(value: number | Date, boolSeconds = false): string {
-        let tmp
+                case '12hours':
+                    return { hour: '2-digit', minute: '2-digit', second: '2-digit', hourCycle: 'h12' }
 
-        try {
-            tmp = value instanceof Date ? value : new Date(value)
-        } catch {
-            return 'UNKNOWN'
-        }
+                default:
+                    return { timeStyle: 'short' }
+            }
+        },
 
-        if (boolSeconds) return tmp.toLocaleTimeString(this.browserLocale, this.formatTimeWithSecondsOptions)
+        browserLocale(): string {
+            return navigator.language
+        },
 
-        return tmp.toLocaleTimeString(this.browserLocale, this.formatTimeOptions)
-    }
+        hours12Format(): boolean {
+            return this.$store.getters['gui/getHours12Format']
+        },
+    },
+    methods: {
+        formatDate(value: number | Date, format: string | null = null): string {
+            if (format === null) format = this.$store.state.gui.general.dateFormat
+            let tmp: Date | null = null
 
-    formatDateTime(value: number, boolSeconds = false): string {
-        const date = this.formatDate(value)
-        const time = this.formatTime(value, boolSeconds)
+            try {
+                tmp = value instanceof Date ? value : new Date(value)
+            } catch {
+                return 'UNKNOWN'
+            }
 
-        return `${date} ${time}`
-    }
-}
+            if (format === null) return tmp.toLocaleDateString(this.browserLocale, { dateStyle: 'medium' })
+            if (format === 'iso') return tmp.toISOString().split('T')[0]
+            if (format === 'short') return tmp.toLocaleDateString(this.browserLocale, { dateStyle: 'short' })
+
+            let delimiter = '/'
+            if (format.includes('-')) delimiter = '-'
+            if (format.includes('.')) delimiter = '.'
+            if (format.includes('. ')) delimiter = '. '
+
+            const splits = format.split(delimiter)
+            const output: string[] = []
+
+            splits.forEach((part) => {
+                // replace all dots is needed for kr-KO, because it ends only with a dot and not with '. '
+                part = part.trim().toLowerCase().replaceAll('.', '')
+
+                switch (part) {
+                    case 'dd':
+                        output.push(tmp?.getDate().toString().padStart(2, '0') ?? '00')
+                        break
+                    case 'd':
+                        output.push(`${tmp?.getDate()}`)
+                        break
+                    case 'mm':
+                        output.push(((tmp?.getMonth() ?? 0) + 1).toString().padStart(2, '0'))
+                        break
+                    case 'm':
+                        output.push(`${(tmp?.getMonth() ?? 0) + 1}`)
+                        break
+                    case 'yyyy':
+                        output.push(`${tmp?.getFullYear()}`)
+                        break
+                    case 'yy':
+                        output.push(`${tmp?.getFullYear().toString().slice(-2)}`)
+                        break
+                    default:
+                        output.push(part)
+                }
+            })
+
+            if (format.endsWith('.')) return output.join(delimiter) + '.'
+
+            return output.join(delimiter)
+        },
+
+        formatTime(value: number | Date, boolSeconds = false): string {
+            let tmp
+
+            try {
+                tmp = value instanceof Date ? value : new Date(value)
+            } catch {
+                return 'UNKNOWN'
+            }
+
+            if (boolSeconds) return tmp.toLocaleTimeString(this.browserLocale, this.formatTimeWithSecondsOptions)
+
+            return tmp.toLocaleTimeString(this.browserLocale, this.formatTimeOptions)
+        },
+
+        formatDateTime(value: number, boolSeconds = false): string {
+            const date = this.formatDate(value)
+            const time = this.formatTime(value, boolSeconds)
+
+            return `${date} ${time}`
+        },
+    },
+})

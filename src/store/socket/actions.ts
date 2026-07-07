@@ -1,7 +1,7 @@
-import Vue from 'vue'
 import { ActionTree } from 'vuex'
 import { SocketState } from '@/store/socket/types'
 import { RootState } from '@/store/types'
+import { getSocketClient } from '@/plugins/webSocketClient'
 
 export const actions: ActionTree<SocketState, RootState> = {
     reset({ commit }) {
@@ -17,15 +17,15 @@ export const actions: ActionTree<SocketState, RootState> = {
     async setSocket({ commit, state }, payload) {
         commit('setData', payload)
 
-        if ('$socket' in Vue.prototype) {
+        {
             const normPath = payload.path.replaceAll(/(^\/*)|(\/*$)/g, '')
             const path = normPath.length > 0 ? `/${normPath}` : ''
 
-            await Vue.prototype.$socket.close()
-            await Vue.prototype.$socket.setUrl(
+            await getSocketClient().close()
+            await getSocketClient().setUrl(
                 state.protocol + '://' + payload.hostname + ':' + payload.port + path + '/websocket'
             )
-            await Vue.prototype.$socket.connect()
+            await getSocketClient().connect()
         }
     },
 

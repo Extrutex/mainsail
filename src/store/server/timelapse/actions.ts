@@ -1,7 +1,8 @@
-import Vue from 'vue'
 import { ActionTree } from 'vuex'
 import { ServerTimelapseState } from '@/store/server/timelapse/types'
 import { RootState } from '@/store/types'
+import { getSocketClient } from '@/plugins/webSocketClient'
+import { useToast } from 'vue-toast-notification'
 
 export const actions: ActionTree<ServerTimelapseState, RootState> = {
     reset({ commit }) {
@@ -9,8 +10,8 @@ export const actions: ActionTree<ServerTimelapseState, RootState> = {
     },
 
     init() {
-        Vue.$socket.emit('machine.timelapse.get_settings', {}, { action: 'server/timelapse/initSettings' })
-        Vue.$socket.emit('machine.timelapse.lastframeinfo', {}, { action: 'server/timelapse/initLastFrameinfo' })
+        getSocketClient().emit('machine.timelapse.get_settings', {}, { action: 'server/timelapse/initSettings' })
+        getSocketClient().emit('machine.timelapse.lastframeinfo', {}, { action: 'server/timelapse/initLastFrameinfo' })
     },
 
     async initSettings({ commit, dispatch }, payload) {
@@ -38,7 +39,7 @@ export const actions: ActionTree<ServerTimelapseState, RootState> = {
 
             case 'render':
                 if (payload.status === 'error') {
-                    Vue.$toast.error(payload.msg)
+                    useToast().error(payload.msg)
                     commit('resetSnackbar')
                 } else commit('setRenderStatus', payload)
                 break
@@ -49,7 +50,7 @@ export const actions: ActionTree<ServerTimelapseState, RootState> = {
     },
 
     saveSetting(_, payload) {
-        Vue.$socket.emit('machine.timelapse.post_settings', payload, { action: 'server/timelapse/initSettings' })
+        getSocketClient().emit('machine.timelapse.post_settings', payload, { action: 'server/timelapse/initSettings' })
     },
 
     updateCamSettings({ dispatch, state }, payload) {

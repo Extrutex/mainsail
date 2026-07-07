@@ -1,9 +1,7 @@
-import vue from '@vitejs/plugin-vue2'
+import vue from '@vitejs/plugin-vue'
 import version from 'vite-plugin-package-version'
 import { defineConfig } from 'vite'
 
-import Components from 'unplugin-vue-components/vite'
-import { VuetifyResolver } from 'unplugin-vue-components/resolvers'
 import { checker } from 'vite-plugin-checker'
 
 import path from 'path'
@@ -87,10 +85,6 @@ export default defineConfig({
                 buildMode: false,
             },
         }),
-        Components({
-            dts: true, // enabled by default if `typescript` is installed
-            resolvers: [VuetifyResolver()],
-        }),
     ],
 
     css: {
@@ -110,7 +104,7 @@ export default defineConfig({
     },
 
     build: {
-        target: 'safari12',
+        target: 'es2020',
         rollupOptions: {
             output: {
                 manualChunks: (id: string) => {

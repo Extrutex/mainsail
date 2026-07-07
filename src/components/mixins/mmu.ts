@@ -1,6 +1,5 @@
-import Component from 'vue-class-component'
+import { defineComponent } from 'vue'
 import { W3C_COLORS } from '@/plugins/w3c'
-import { Mixins } from 'vue-property-decorator'
 import BaseMixin from '@/components/mixins/base'
 
 export type MmuEspoolerState = 'rewind' | 'assist' | 'off'
@@ -217,169 +216,175 @@ export const ACTION_SELECTING = 'Selecting'
 export const ACTION_CUTTING_FILAMENT = 'Cutting Filament'
 export const ACTION_PURGING = 'Purging'
 
-@Component({})
-export default class MmuMixin extends Mixins(BaseMixin) {
-    get mmu(): Mmu | undefined {
-        return this.$store.state.printer.mmu ?? undefined
-    }
+export default defineComponent({
+    mixins: [BaseMixin],
+    computed: {
+        mmu(): Mmu | undefined {
+            return this.$store.state.printer.mmu ?? undefined
+        },
 
-    get hasMmuEncoder() {
-        return 'encoder' in (this.mmu ?? {})
-    }
+        hasMmuEncoder(): boolean {
+            return 'encoder' in (this.mmu ?? {})
+        },
 
-    get hasFilamentProportionalSensor() {
-        return this.hasMmuSensor('filament_proportional')
-    }
+        hasFilamentProportionalSensor(): boolean {
+            return this.hasMmuSensor('filament_proportional')
+        },
 
-    get hasFilamentCompressionSensor() {
-        return this.hasMmuSensor('filament_compression')
-    }
+        hasFilamentCompressionSensor(): boolean {
+            return this.hasMmuSensor('filament_compression')
+        },
 
-    get hasFilamentTensionSensor() {
-        return this.hasMmuSensor('filament_tension')
-    }
+        hasFilamentTensionSensor(): boolean {
+            return this.hasMmuSensor('filament_tension')
+        },
 
-    get hasSyncFeedback(): boolean {
-        return this.hasFilamentCompressionSensor || this.hasFilamentTensionSensor || this.hasFilamentProportionalSensor
-    }
+        hasSyncFeedback(): boolean {
+            return (
+                this.hasFilamentCompressionSensor || this.hasFilamentTensionSensor || this.hasFilamentProportionalSensor
+            )
+        },
 
-    get mmuMachine(): MmuMachine | undefined {
-        return this.$store.state.printer.mmu_machine ?? undefined
-    }
+        mmuMachine(): MmuMachine | undefined {
+            return this.$store.state.printer.mmu_machine ?? undefined
+        },
 
-    get mmuSettings() {
-        return this.$store.state.printer.configfile?.settings?.mmu ?? {}
-    }
+        mmuSettings(): any {
+            return this.$store.state.printer.configfile?.settings?.mmu ?? {}
+        },
 
-    get mmuSoftwareVars() {
-        return this.$store.state.printer['gcode_macro _MMU_SOFTWARE_VARS']
-    }
+        mmuSoftwareVars(): any {
+            return this.$store.state.printer['gcode_macro _MMU_SOFTWARE_VARS']
+        },
 
-    get mmuNumGates() {
-        return this.mmu?.num_gates ?? 0
-    }
+        mmuNumGates(): number {
+            return this.mmu?.num_gates ?? 0
+        },
 
-    get spoolWidth() {
-        if (this.mmuNumGates <= 8) return 56
-        if (this.mmuNumGates <= 16) return 48
+        spoolWidth(): number {
+            if (this.mmuNumGates <= 8) return 56
+            if (this.mmuNumGates <= 16) return 48
 
-        return 40
-    }
+            return 40
+        },
 
-    get ttgMap() {
-        return this.mmu?.ttg_map ?? []
-    }
+        ttgMap(): number[] {
+            return this.mmu?.ttg_map ?? []
+        },
 
-    get endlessSpoolGroups() {
-        return this.mmu?.endless_spool_groups ?? []
-    }
+        endlessSpoolGroups(): number[] {
+            return this.mmu?.endless_spool_groups ?? []
+        },
 
-    get mmuAction() {
-        return this.mmu?.action ?? ACTION_IDLE
-    }
+        mmuAction(): Mmu['action'] {
+            return this.mmu?.action ?? ACTION_IDLE
+        },
 
-    get mmuPrintState() {
-        return this.mmu?.print_state ?? ''
-    }
+        mmuPrintState(): string {
+            return this.mmu?.print_state ?? ''
+        },
 
-    get mmuSensors() {
-        return this.mmu?.sensors ?? undefined
-    }
+        mmuSensors(): Mmu['sensors'] | undefined {
+            return this.mmu?.sensors ?? undefined
+        },
 
-    get mmuEncoder() {
-        return this.mmu?.encoder ?? undefined
-    }
+        mmuEncoder(): Mmu['encoder'] | undefined {
+            return this.mmu?.encoder ?? undefined
+        },
 
-    get mmuNumUnits() {
-        return this.mmuMachine?.num_units ?? 1
-    }
+        mmuNumUnits(): number {
+            return this.mmuMachine?.num_units ?? 1
+        },
 
-    get mmuUnit() {
-        return this.mmu?.unit ?? UNIT_UNKNOWN
-    }
+        mmuUnit(): number {
+            return this.mmu?.unit ?? UNIT_UNKNOWN
+        },
 
-    get mmuGate() {
-        return this.mmu?.gate ?? TOOL_GATE_UNKNOWN
-    }
+        mmuGate(): number {
+            return this.mmu?.gate ?? TOOL_GATE_UNKNOWN
+        },
 
-    get mmuTool() {
-        return this.mmu?.tool ?? TOOL_GATE_UNKNOWN
-    }
+        mmuTool(): number {
+            return this.mmu?.tool ?? TOOL_GATE_UNKNOWN
+        },
 
-    get mmuHasBypass() {
-        return this.mmu?.has_bypass ?? false
-    }
+        mmuHasBypass(): boolean {
+            return this.mmu?.has_bypass ?? false
+        },
 
-    get mmuFilamentPos() {
-        return this.mmu?.filament_pos ?? FILAMENT_POS_UNKNOWN
-    }
+        mmuFilamentPos(): number {
+            return this.mmu?.filament_pos ?? FILAMENT_POS_UNKNOWN
+        },
 
-    get mmuSyncDrive() {
-        return this.mmu?.sync_drive ?? false
-    }
+        mmuSyncDrive(): boolean {
+            return this.mmu?.sync_drive ?? false
+        },
 
-    get mmuSpoolmanSupport() {
-        return this.mmu?.spoolman_support ?? 'off'
-    }
+        mmuSpoolmanSupport(): Mmu['spoolman_support'] {
+            return this.mmu?.spoolman_support ?? 'off'
+        },
 
-    get mmuServo() {
-        return this.mmu?.servo ?? 'Unknown'
-    }
+        mmuServo(): 'Up' | 'Down' | 'Move' | 'Unknown' {
+            return this.mmu?.servo ?? 'Unknown'
+        },
 
-    get mmuGrip() {
-        return this.mmu?.grip ?? 'Unknown'
-    }
+        mmuGrip(): 'Gripped' | 'Released' | 'Unknown' {
+            return this.mmu?.grip ?? 'Unknown'
+        },
 
-    get mmuEspoolers() {
-        return this.mmu?.espooler
-    }
+        mmuEspoolers(): MmuEspoolerState[] | undefined {
+            return this.mmu?.espooler
+        },
 
-    get configGateHomingEndstop(): string {
-        return this.mmuSettings?.gate_homing_endstop
-    }
+        configGateHomingEndstop(): string {
+            return this.mmuSettings?.gate_homing_endstop
+        },
 
-    get canSend(): boolean {
-        const idleTimeout = this.$store.state.printer.idle_timeout?.state ?? ''
+        canSend(): boolean {
+            const idleTimeout = this.$store.state.printer.idle_timeout?.state ?? ''
 
-        return this.klipperReadyForGui && this.printer_state !== 'printing' && idleTimeout !== 'Printing'
-    }
+            return this.klipperReadyForGui && this.printer_state !== 'printing' && idleTimeout !== 'Printing'
+        },
+    },
 
     /*
      * Helper functions
      */
 
-    getMmuMachineUnit(unitIndex: number): MmuMachineUnit | undefined {
-        return (this.mmuMachine?.[`unit_${unitIndex}`] as MmuMachineUnit) ?? undefined
-    }
+    methods: {
+        getMmuMachineUnit(unitIndex: number): MmuMachineUnit | undefined {
+            return (this.mmuMachine?.[`unit_${unitIndex}`] as MmuMachineUnit) ?? undefined
+        },
 
-    hasMmuSensor(sensorName: keyof Mmu['sensors']) {
-        return this.mmuSensors !== undefined && sensorName in this.mmuSensors
-    }
+        hasMmuSensor(sensorName: keyof Mmu['sensors']): boolean {
+            return this.mmuSensors !== undefined && sensorName in this.mmuSensors
+        },
 
-    getMmuSensor(sensorName: keyof Mmu['sensors']) {
-        return this.mmuSensors ? this.mmuSensors[sensorName] : undefined
-    }
+        getMmuSensor(sensorName: keyof Mmu['sensors']): boolean | undefined {
+            return this.mmuSensors ? this.mmuSensors[sensorName] : undefined
+        },
 
-    doSend(gcode: string, loading: string | null = null) {
-        this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
-        this.$socket.emit('printer.gcode.script', { script: gcode }, { loading })
-    }
+        doSend(gcode: string, loading: string | null = null) {
+            this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
+            this.$socket.emit('printer.gcode.script', { script: gcode }, { loading })
+        },
 
-    formColorString(color: string | null) {
-        if (!color) return NO_FILAMENT_COLOR
+        formColorString(color: string | null): string {
+            if (!color) return NO_FILAMENT_COLOR
 
-        const namedColor = W3C_COLORS.find((c) => c.name === color.toLowerCase())
-        if (namedColor) {
-            return namedColor.hex.length === 7 ? `${namedColor.hex}FF` : namedColor.hex.toUpperCase()
-        }
+            const namedColor = W3C_COLORS.find((c) => c.name === color.toLowerCase())
+            if (namedColor) {
+                return namedColor.hex.length === 7 ? `${namedColor.hex}FF` : namedColor.hex.toUpperCase()
+            }
 
-        const hexPattern = /^#?([0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?)$/
-        const match = color.match(hexPattern)
-        if (!match) return NO_FILAMENT_COLOR
+            const hexPattern = /^#?([0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?)$/
+            const match = color.match(hexPattern)
+            if (!match) return NO_FILAMENT_COLOR
 
-        const hex = match[1]
-        const normalized = `#${hex}${hex.length === 6 ? 'FF' : ''}`
+            const hex = match[1]
+            const normalized = `#${hex}${hex.length === 6 ? 'FF' : ''}`
 
-        return normalized.toUpperCase()
-    }
-}
+            return normalized.toUpperCase()
+        },
+    },
+})

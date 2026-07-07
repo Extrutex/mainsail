@@ -1,69 +1,74 @@
-import Vue from 'vue'
-import Component from 'vue-class-component'
+import { defineComponent } from 'vue'
 import { GuiConsoleStateFilter } from '@/store/gui/console/types'
 
-@Component
-export default class ConsoleMixin extends Vue {
-    get helplist() {
-        const commands: { [key: string]: { help?: string } } = this.$store.state.printer.gcode?.commands ?? {}
-        const helplist: { command: string; help: string }[] = []
+export default defineComponent({
+    computed: {
+        helplist(): { command: string; help: string }[] {
+            const commands: { [key: string]: { help?: string } } = this.$store.state.printer.gcode?.commands ?? {}
+            const helplist: { command: string; help: string }[] = []
 
-        for (const [key, values] of Object.entries(commands)) {
-            helplist.push({ command: key, help: values.help ?? '' })
-        }
+            for (const [key, values] of Object.entries(commands)) {
+                helplist.push({ command: key, help: values.help ?? '' })
+            }
 
-        return helplist
-    }
+            return helplist
+        },
 
-    get consoleDirection() {
-        return this.$store.state.gui.console.direction ?? 'table'
-    }
+        consoleDirection(): string {
+            return this.$store.state.gui.console.direction ?? 'table'
+        },
 
-    get hideWaitTemperatures(): boolean {
-        return this.$store.state.gui.console.hideWaitTemperatures
-    }
+        hideWaitTemperatures: {
+            get(): boolean {
+                return this.$store.state.gui.console.hideWaitTemperatures
+            },
+            set(newVal: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'console.hideWaitTemperatures', value: newVal })
+            },
+        },
 
-    set hideWaitTemperatures(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'console.hideWaitTemperatures', value: newVal })
-    }
+        hideTlCommands: {
+            get(): boolean {
+                return this.$store.state.gui.console.hideTlCommands
+            },
+            set(newVal: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'console.hideTlCommands', value: newVal })
+            },
+        },
 
-    get hideTlCommands(): boolean {
-        return this.$store.state.gui.console.hideTlCommands
-    }
+        customFilters(): any {
+            return this.$store.state.gui.console.consolefilters ?? {}
+        },
 
-    set hideTlCommands(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'console.hideTlCommands', value: newVal })
-    }
+        autoscroll: {
+            get(): boolean {
+                return this.$store.state.gui.console.autoscroll ?? true
+            },
+            set(newVal: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'console.autoscroll', value: newVal })
+            },
+        },
 
-    get customFilters() {
-        return this.$store.state.gui.console.consolefilters ?? {}
-    }
+        rawOutput: {
+            get(): boolean {
+                return this.$store.state.gui.console.rawOutput ?? false
+            },
+            set(newVal: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'console.rawOutput', value: newVal })
+            },
+        },
 
-    get autoscroll(): boolean {
-        return this.$store.state.gui.console.autoscroll ?? true
-    }
+        lastCommands(): string[] {
+            return this.$store.state.gui.gcodehistory.entries ?? []
+        },
+    },
+    methods: {
+        toggleFilter(id: string | number, filter: GuiConsoleStateFilter): void {
+            this.$store.dispatch('gui/console/filterUpdate', { id, values: filter })
+        },
 
-    set autoscroll(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'console.autoscroll', value: newVal })
-    }
-
-    get rawOutput(): boolean {
-        return this.$store.state.gui.console.rawOutput ?? false
-    }
-
-    set rawOutput(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'console.rawOutput', value: newVal })
-    }
-
-    get lastCommands(): string[] {
-        return this.$store.state.gui.gcodehistory.entries ?? []
-    }
-
-    toggleFilter(id: string | number, filter: GuiConsoleStateFilter): void {
-        this.$store.dispatch('gui/console/filterUpdate', { id, values: filter })
-    }
-
-    clearConsole() {
-        this.$store.dispatch('gui/console/clear')
-    }
-}
+        clearConsole() {
+            this.$store.dispatch('gui/console/clear')
+        },
+    },
+})

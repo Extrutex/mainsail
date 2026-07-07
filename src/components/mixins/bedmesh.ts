@@ -1,62 +1,62 @@
-import Vue from 'vue'
-import Component from 'vue-class-component'
+import { defineComponent } from 'vue'
 
-@Component
-export default class BedmeshMixin extends Vue {
-    get bed_mesh() {
-        return this.$store.state.printer.bed_mesh ?? {}
-    }
+export default defineComponent({
+    computed: {
+        bed_mesh(): any {
+            return this.$store.state.printer.bed_mesh ?? {}
+        },
 
-    get profiles() {
-        return this.bed_mesh.profiles ?? {}
-    }
+        profiles(): any {
+            return this.bed_mesh.profiles ?? {}
+        },
 
-    get mesh_min() {
-        return this.bed_mesh.mesh_min ?? [0, 0]
-    }
+        mesh_min(): number[] {
+            return this.bed_mesh.mesh_min ?? [0, 0]
+        },
 
-    get mesh_max() {
-        return this.bed_mesh.mesh_max ?? [0, 0]
-    }
+        mesh_max(): number[] {
+            return this.bed_mesh.mesh_max ?? [0, 0]
+        },
 
-    get min() {
-        return Math.min(...this.points)
-    }
+        min(): number {
+            return Math.min(...this.points)
+        },
 
-    get max() {
-        return Math.max(...this.points)
-    }
+        max(): number {
+            return Math.max(...this.points)
+        },
 
-    get variance() {
-        return Math.abs(this.min - this.max).toFixed(3)
-    }
+        variance(): string {
+            return Math.abs(this.min - this.max).toFixed(3)
+        },
 
-    get is_active() {
-        // if the current profile_mane is not empty, return true
-        if (this.bed_mesh.profile_name !== '') return true
+        is_active(): boolean {
+            // if the current profile_mane is not empty, return true
+            if (this.bed_mesh.profile_name !== '') return true
 
-        return this.mesh_min[0] !== 0 || this.mesh_min[1] !== 0 || this.mesh_max[0] !== 0 || this.mesh_max[1] !== 0
-    }
+            return this.mesh_min[0] !== 0 || this.mesh_min[1] !== 0 || this.mesh_max[0] !== 0 || this.mesh_max[1] !== 0
+        },
 
-    get name() {
-        if (this.bed_mesh.profile_name !== '') return this.bed_mesh.profile_name
+        name(): string {
+            if (this.bed_mesh.profile_name !== '') return this.bed_mesh.profile_name
 
-        return 'Unknown'
-    }
+            return 'Unknown'
+        },
 
-    get probed_matrix() {
-        return this.bed_mesh.probed_matrix ?? []
-    }
+        probed_matrix(): number[][] {
+            return this.bed_mesh.probed_matrix ?? []
+        },
 
-    get points() {
-        const points: number[] = []
+        points(): number[] {
+            const points: number[] = []
 
-        for (let i = 0; i < this.probed_matrix.length; i++) {
-            for (let j = 0; j < this.probed_matrix[i].length; j++) {
-                points.push(this.probed_matrix[i][j])
+            for (let i = 0; i < this.probed_matrix.length; i++) {
+                for (let j = 0; j < this.probed_matrix[i].length; j++) {
+                    points.push(this.probed_matrix[i][j])
+                }
             }
-        }
 
-        return points
-    }
-}
+            return points
+        },
+    },
+})

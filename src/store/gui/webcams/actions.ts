@@ -1,7 +1,8 @@
 import { ActionTree } from 'vuex'
 import { RootState } from '@/store/types'
 import { GuiWebcamState, GuiWebcamStateWebcam } from '@/store/gui/webcams/types'
-import Vue from 'vue'
+
+import { getSocketClient } from '@/plugins/webSocketClient'
 
 export const actions: ActionTree<GuiWebcamState, RootState> = {
     reset({ commit }) {
@@ -10,7 +11,7 @@ export const actions: ActionTree<GuiWebcamState, RootState> = {
 
     init() {
         window.console.debug('init gui/webcams')
-        Vue.$socket.emit('server.webcams.list', {}, { action: 'gui/webcams/initStore' })
+        getSocketClient().emit('server.webcams.list', {}, { action: 'gui/webcams/initStore' })
     },
 
     async initStore({ commit, dispatch }, payload) {
@@ -20,11 +21,11 @@ export const actions: ActionTree<GuiWebcamState, RootState> = {
     },
 
     store(_, payload) {
-        Vue.$socket.emit('server.webcams.post_item', payload)
+        getSocketClient().emit('server.webcams.post_item', payload)
     },
 
     update({ dispatch, rootState }, payload: { webcam: GuiWebcamStateWebcam; oldWebcamName: string }) {
-        Vue.$socket.emit('server.webcams.post_item', payload.webcam)
+        getSocketClient().emit('server.webcams.post_item', payload.webcam)
         if (payload.webcam.name !== payload.oldWebcamName) dispatch('delete', payload.oldWebcamName)
 
         // check if timelapse plugin is active, if not stop here
@@ -38,6 +39,6 @@ export const actions: ActionTree<GuiWebcamState, RootState> = {
     },
 
     delete(_, payload: string) {
-        Vue.$socket.emit('server.webcams.delete_item', { name: payload })
+        getSocketClient().emit('server.webcams.delete_item', { name: payload })
     },
 }

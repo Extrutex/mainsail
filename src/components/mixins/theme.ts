@@ -1,99 +1,102 @@
-import Vue from 'vue'
-import Component from 'vue-class-component'
+import { defineComponent } from 'vue'
 
-@Component
-export default class ThemeMixin extends Vue {
-    protected fgColor(alpha: number = 1, dark: boolean = this.$vuetify.theme.dark): string {
-        const base = dark ? 255 : 0
-        return `rgba(${base}, ${base}, ${base}, ${alpha})`
-    }
+export default defineComponent({
+    computed: {
+        themeName(): string {
+            return this.$store.getters['gui/theme']
+        },
 
-    protected bgColor(alpha: number = 1) {
-        return this.fgColor(alpha, !this.$vuetify.theme.dark)
-    }
+        theme(): any {
+            return this.$store.getters['gui/getTheme']
+        },
 
-    get themeName() {
-        return this.$store.getters['gui/theme']
-    }
+        themeMode(): string {
+            return this.$store.state.gui.uiSettings.mode ?? 'dark'
+        },
 
-    get theme() {
-        return this.$store.getters['gui/getTheme']
-    }
+        fgColorHi(): string {
+            return this.fgColor(0.8)
+        },
 
-    get themeMode() {
-        return this.$store.state.gui.uiSettings.mode ?? 'dark'
-    }
+        fgColorMid(): string {
+            return this.fgColor(0.5)
+        },
 
-    get fgColorHi() {
-        return this.fgColor(0.8)
-    }
+        fgColorLow(): string {
+            return this.fgColor(0.2)
+        },
 
-    get fgColorMid() {
-        return this.fgColor(0.5)
-    }
+        fgColorFaint(): string {
+            return this.fgColor(0.1)
+        },
 
-    get fgColorLow() {
-        return this.fgColor(0.2)
-    }
+        machineButtonCol(): string {
+            return this.$vuetify.theme.current.dark ? 'grey darken-3' : 'grey lighten-1'
+        },
 
-    get fgColorFaint() {
-        return this.fgColor(0.1)
-    }
+        draggableBgStyle(): string {
+            const col = this.$vuetify.theme.current.dark ? '#282828' : '#e7e7e7'
+            return `background-color: ${col}`
+        },
 
-    get machineButtonCol() {
-        return this.$vuetify.theme.dark ? 'grey darken-3' : 'grey lighten-1'
-    }
+        progressBarColor(): string {
+            return this.$vuetify.theme.current.dark ? 'white' : 'primary'
+        },
 
-    get draggableBgStyle() {
-        const col = this.$vuetify.theme.dark ? '#282828' : '#e7e7e7'
-        return `background-color: ${col}`
-    }
+        sidebarBgImage(): string {
+            if (this.theme.sidebarBackground?.show) {
+                if (this.theme.sidebarBackground?.light && this.themeMode === 'light')
+                    return `/img/themes/sidebarBackground-${this.themeName}-light.png`
 
-    get progressBarColor() {
-        return this.$vuetify.theme.dark ? 'white' : 'primary'
-    }
+                return `/img/themes/sidebarBackground-${this.themeName}.png`
+            }
 
-    get sidebarBgImage() {
-        if (this.theme.sidebarBackground?.show) {
-            if (this.theme.sidebarBackground?.light && this.themeMode === 'light')
-                return `/img/themes/sidebarBackground-${this.themeName}-light.png`
+            return this.$vuetify.theme.current.dark
+                ? '/img/sidebar-background.svg'
+                : '/img/sidebar-background-light.svg'
+        },
 
-            return `/img/themes/sidebarBackground-${this.themeName}.png`
-        }
+        sidebarLogo(): string {
+            const url = this.$store.getters['files/getSidebarLogo']
+            if (url !== '' || this.themeName === 'mainsail') return url
 
-        return this.$vuetify.theme.dark ? '/img/sidebar-background.svg' : '/img/sidebar-background-light.svg'
-    }
+            // if no theme is set, return empty string to load the default logo
+            if (!(this.theme.logo?.show ?? false)) return ''
 
-    get sidebarLogo(): string {
-        const url = this.$store.getters['files/getSidebarLogo']
-        if (url !== '' || this.themeName === 'mainsail') return url
+            // return light logo if theme is light and sidebarLogo is set to both
+            if (this.theme.logo?.light && this.themeMode === 'light')
+                return `/img/themes/sidebarLogo-${this.themeName}-light.svg`
 
-        // if no theme is set, return empty string to load the default logo
-        if (!(this.theme.logo?.show ?? false)) return ''
+            // return dark/generic theme logo
+            return `/img/themes/sidebarLogo-${this.themeName}.svg`
+        },
 
-        // return light logo if theme is light and sidebarLogo is set to both
-        if (this.theme.logo?.light && this.themeMode === 'light')
-            return `/img/themes/sidebarLogo-${this.themeName}-light.svg`
+        mainBgImage(): string | null {
+            const url = this.$store.getters['files/getMainBackground']
+            if (url || this.themeName === 'mainsail') return url
 
-        // return dark/generic theme logo
-        return `/img/themes/sidebarLogo-${this.themeName}.svg`
-    }
+            if (!this.theme.mainBackground?.show) return null
 
-    get mainBgImage() {
-        const url = this.$store.getters['files/getMainBackground']
-        if (url || this.themeName === 'mainsail') return url
+            if (this.theme.mainBackground?.light && this.themeMode === 'light')
+                return `/img/themes/mainBackground-${this.themeName}-light.png`
 
-        if (!this.theme.mainBackground?.show) return null
+            return `/img/themes/mainBackground-${this.themeName}.png`
+        },
 
-        if (this.theme.mainBackground?.light && this.themeMode === 'light')
-            return `/img/themes/mainBackground-${this.themeName}-light.png`
+        themeCss(): string | null {
+            if (!(this.theme.css ?? false)) return null
 
-        return `/img/themes/mainBackground-${this.themeName}.png`
-    }
+            return `/css/themes/${this.themeName}.css`
+        },
+    },
+    methods: {
+        fgColor(alpha: number = 1, dark: boolean = this.$vuetify.theme.current.dark): string {
+            const base = dark ? 255 : 0
+            return `rgba(${base}, ${base}, ${base}, ${alpha})`
+        },
 
-    get themeCss() {
-        if (!(this.theme.css ?? false)) return null
-
-        return `/css/themes/${this.themeName}.css`
-    }
-}
+        bgColor(alpha: number = 1): string {
+            return this.fgColor(alpha, !this.$vuetify.theme.current.dark)
+        },
+    },
+})

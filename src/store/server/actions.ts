@@ -1,10 +1,11 @@
-import Vue from 'vue'
 import router from '@/plugins/router'
 import { ActionTree } from 'vuex'
 import { ServerState, ServerStateEvent } from '@/store/server/types'
 import { camelize, formatConsoleMessage } from '@/plugins/helpers'
 import { RootState } from '@/store/types'
 import { initableServerComponents } from '@/store/variables'
+import { getSocketClient } from '@/plugins/webSocketClient'
+import { useToast } from 'vue-toast-notification'
 
 export const actions: ActionTree<ServerState, RootState> = {
     reset({ commit, dispatch }) {
@@ -21,7 +22,7 @@ export const actions: ActionTree<ServerState, RootState> = {
 
         // identify client
         try {
-            const connection = await Vue.$socket.emitAndWait('server.connection.identify', {
+            const connection = await getSocketClient().emitAndWait('server.connection.identify', {
                 client_name: 'mainsail',
                 version: rootState.packageVersion,
                 type: 'web',
@@ -44,11 +45,11 @@ export const actions: ActionTree<ServerState, RootState> = {
         dispatch('socket/addInitModule', 'server/procStats', { root: true })
         dispatch('socket/addInitModule', 'server/databaseList', { root: true })
 
-        Vue.$socket.emit('server.info', {}, { action: 'server/initServerInfo' })
-        Vue.$socket.emit('server.config', {}, { action: 'server/initServerConfig' })
-        Vue.$socket.emit('machine.system_info', {}, { action: 'server/initSystemInfo' })
-        Vue.$socket.emit('machine.proc_stats', {}, { action: 'server/initProcStats' })
-        Vue.$socket.emit('server.database.list', { root: 'config' }, { action: 'server/checkDatabases' })
+        getSocketClient().emit('server.info', {}, { action: 'server/initServerInfo' })
+        getSocketClient().emit('server.config', {}, { action: 'server/initServerConfig' })
+        getSocketClient().emit('machine.system_info', {}, { action: 'server/initSystemInfo' })
+        getSocketClient().emit('machine.proc_stats', {}, { action: 'server/initProcStats' })
+        getSocketClient().emit('server.database.list', { root: 'config' }, { action: 'server/checkDatabases' })
 
         await dispatch('socket/removeInitModule', 'server', { root: true })
     },
@@ -69,7 +70,7 @@ export const actions: ActionTree<ServerState, RootState> = {
 
         commit('saveDbNamespaces', payload.namespaces)
 
-        Vue.$socket.emit('server.info', {}, { action: 'server/checkKlippyConnected' })
+        getSocketClient().emit('server.info', {}, { action: 'server/checkKlippyConnected' })
         dispatch('socket/removeInitModule', 'server/databaseList', { root: true })
     },
 
@@ -150,7 +151,7 @@ export const actions: ActionTree<ServerState, RootState> = {
         if (state.klippy_connected_timer) return
 
         const timer = setInterval(() => {
-            Vue.$socket.emit('server.info', {}, { action: 'server/checkKlippyConnected' })
+            getSocketClient().emit('server.info', {}, { action: 'server/checkKlippyConnected' })
         }, 2000)
         commit('setKlippyConnectedTimer', timer)
     },
@@ -179,7 +180,7 @@ export const actions: ActionTree<ServerState, RootState> = {
         if (state.klippy_state_timer) return
 
         const timer = setInterval(() => {
-            Vue.$socket.emit('printer.info', {}, { action: 'server/checkKlippyState' })
+            getSocketClient().emit('printer.info', {}, { action: 'server/checkKlippyState' })
         }, 2000)
         commit('setKlippyStateTimer', timer)
     },
@@ -291,7 +292,7 @@ export const actions: ActionTree<ServerState, RootState> = {
                 !['/', '/console'].includes(router.currentRoute.path) &&
                 message.startsWith('!! ')
             ) {
-                Vue.$toast.error(formatMessage)
+                useToast().error(formatMessage)
             }
         }
     },

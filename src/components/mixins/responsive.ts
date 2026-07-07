@@ -1,6 +1,6 @@
-import Component from 'vue-class-component'
+import { defineComponent } from 'vue'
+import type { PropType } from 'vue'
 import BaseMixin from './base'
-import { Prop } from 'vue-property-decorator'
 import throttle from 'lodash.throttle'
 
 export type ResponsiveElement = {
@@ -9,18 +9,22 @@ export type ResponsiveElement = {
     }
 }
 
-@Component
-export default class ResponsiveMixin extends BaseMixin {
-    @Prop() declare protected breakpoints: {
-        [key: string]: (el: DOMRect) => boolean
-    }
-
-    observer?: ResizeObserver
-
-    el: ResponsiveElement = {
-        is: {},
-    }
-
+export default defineComponent({
+    mixins: [BaseMixin],
+    props: {
+        breakpoints: {
+            type: Object as PropType<{ [key: string]: (el: DOMRect) => boolean }>,
+            default: undefined,
+        },
+    },
+    data() {
+        return {
+            observer: undefined as ResizeObserver | undefined,
+            el: {
+                is: {},
+            } as ResponsiveElement,
+        }
+    },
     mounted() {
         if (this.breakpoints) {
             this.$nextTick(() => {
@@ -30,23 +34,23 @@ export default class ResponsiveMixin extends BaseMixin {
                 }
             })
         }
-    }
-
-    beforeDestroy() {
+    },
+    beforeUnmount() {
         if (this.$el instanceof Element) {
             this.observer?.unobserve(this.$el)
         }
-    }
+    },
+    methods: {
+        onResize(entries: ResizeObserverEntry[]) {
+            if (entries[0].contentRect.height === 0 && entries[0].contentRect.width === 0) {
+                return
+            }
 
-    private onResize(entries: ResizeObserverEntry[]) {
-        if (entries[0].contentRect.height === 0 && entries[0].contentRect.width === 0) {
-            return
-        }
-
-        const cr = entries[0].contentRect
-        const conds = this.breakpoints
-        for (const breakpoint in conds) {
-            this.$set(this.el.is, breakpoint, conds[breakpoint](cr))
-        }
-    }
-}
+            const cr = entries[0].contentRect
+            const conds = this.breakpoints ?? {}
+            for (const breakpoint in conds) {
+                this.el.is[breakpoint] = conds[breakpoint](cr)
+            }
+        },
+    },
+})
