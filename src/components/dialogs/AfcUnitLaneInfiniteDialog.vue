@@ -35,64 +35,81 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop, VModel } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import Panel from '@/components/ui/Panel.vue'
 import { mdiCloseThick } from '@mdi/js'
 import AfcMixin from '@/components/mixins/afc'
 import { afcIconLogo } from '@/plugins/afcIcons'
 
-@Component({
+export default defineComponent({
+    name: 'AfcUnitLaneInfiniteDialog',
     components: { Panel },
-})
-export default class AfcUnitLaneInfiniteDialog extends Mixins(BaseMixin, AfcMixin) {
-    afcIconLogo = afcIconLogo
-    mdiCloseThick = mdiCloseThick
-
-    @VModel({ type: Boolean }) showDialog!: boolean
-    @Prop({ type: String, required: true }) readonly name!: string
-
-    get lane() {
-        return this.getAfcLaneObject(this.name)
-    }
-
-    get runoutLane() {
-        return this.lane.runout_lane ?? 'NONE'
-    }
-
-    get laneList() {
-        const allLanes = this.afc.lanes ?? []
-        let output = []
-
-        for (const laneName of allLanes) {
-            if (laneName === this.name) continue
-
-            const lane = this.getAfcLaneObject(laneName)
-            const prep = lane.prep ?? false
-            const load = lane.load ?? false
-
-            if (prep && load) output.push(lane.name)
+    mixins: [BaseMixin, AfcMixin],
+    props: {
+        modelValue: { type: Boolean, default: false },
+        name: { type: String, required: true },
+    },
+    emits: ['update:modelValue'],
+    data() {
+        return {
+            afcIconLogo: afcIconLogo,
+            mdiCloseThick: mdiCloseThick,
         }
+    },
+    computed: {
+        showDialog: {
+            get(): boolean {
+                return this.modelValue
+            },
+            set(newVal: boolean) {
+                this.$emit('update:modelValue', newVal)
+            },
+        },
 
-        output = output.sort((a, b) => a.localeCompare(b))
-        output.unshift('NONE')
+        lane() {
+            return this.getAfcLaneObject(this.name)
+        },
 
-        return output
-    }
+        runoutLane() {
+            return this.lane.runout_lane ?? 'NONE'
+        },
 
-    setRunout(newLane: string) {
-        this.doSend(`SET_RUNOUT LANE=${this.name} RUNOUT=${newLane}`)
+        laneList() {
+            const allLanes = this.afc.lanes ?? []
+            let output = []
 
-        this.closeDialog()
-    }
+            for (const laneName of allLanes) {
+                if (laneName === this.name) continue
 
-    doSend(gcode: string) {
-        this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
-        this.$socket.emit('printer.gcode.script', { script: gcode })
-    }
+                const lane = this.getAfcLaneObject(laneName)
+                const prep = lane.prep ?? false
+                const load = lane.load ?? false
 
-    closeDialog() {
-        this.showDialog = false
-    }
-}
+                if (prep && load) output.push(lane.name)
+            }
+
+            output = output.sort((a, b) => a.localeCompare(b))
+            output.unshift('NONE')
+
+            return output
+        },
+    },
+    methods: {
+        setRunout(newLane: string) {
+            this.doSend(`SET_RUNOUT LANE=${this.name} RUNOUT=${newLane}`)
+
+            this.closeDialog()
+        },
+
+        doSend(gcode: string) {
+            this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
+            this.$socket.emit('printer.gcode.script', { script: gcode })
+        },
+
+        closeDialog() {
+            this.showDialog = false
+        },
+    },
+})
 </script>

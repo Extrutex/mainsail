@@ -124,148 +124,159 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Ref, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import MmuMixin from '@/components/mixins/mmu'
 
-@Component
-export default class MmuFlowguardMeter extends Mixins(BaseMixin, MmuMixin) {
-    @Ref('dialCircle') dialCircle!: SVGCircleElement
+const CIRCUMFERENCE = 2 * Math.PI * 50
 
-    ROTATION_TIME = 1
-    CIRCUMFERENCE = 2 * Math.PI * 50
-    DIAL_ARC = this.CIRCUMFERENCE * (60 / 360)
-    X1_TANGLE = 70 + 63 * Math.cos((120 * Math.PI) / 180)
-    Y1_TANGLE = 70 + 63 * Math.sin((120 * Math.PI) / 180)
-    X1_CLOG = 70 + 63 * Math.cos((60 * Math.PI) / 180)
-    Y1_CLOG = 70 + 63 * Math.sin((60 * Math.PI) / 180)
-    X1_ZERO = 70 + 59 * Math.cos((270 * Math.PI) / 180)
-    Y1_ZERO = 70 + 59 * Math.sin((270 * Math.PI) / 180)
-    DANGER = 0.8
-
-    get flowguardEnabled() {
-        return this.mmu?.flowguard?.enabled ?? false
-    }
-
-    get flowguardActive() {
-        return this.mmu?.flowguard?.active ?? false
-    }
-
-    get flowguardTrigger() {
-        return (this.mmu?.flowguard?.trigger ?? '').toUpperCase()
-    }
-
-    get flowrateText() {
-        if (this.hasFilamentProportionalSensor) {
-            const flow_rate = this.mmu?.sync_feedback_flow_rate ?? 100.0
-            return `${Math.round(flow_rate)}%`
-        }
-        return this.$t('Panels.MmuPanel.Active').toUpperCase()
-    }
-
-    get flowrateTextSize() {
-        if (this.hasFilamentProportionalSensor) {
-            return '18px'
-        }
-        return '14px'
-    }
-
-    get maxClog() {
-        return Math.abs(this.mmu?.flowguard?.max_clog ?? 0.0)
-    }
-
-    get maxTangle() {
-        return -Math.abs(this.mmu?.flowguard?.max_tangle ?? 0.0)
-    }
-
-    get flowguardLevel() {
-        return this.mmu?.flowguard?.level ?? 0.0
-    }
-
-    get svgClasses() {
-        return { 'disabled-flowguard': !this.flowguardEnabled }
-    }
-
-    get clogWarning() {
-        return Math.abs(this.maxClog) > this.DANGER
-    }
-
-    get maxClogLineClasses() {
+export default defineComponent({
+    name: 'MmuFlowguardMeter',
+    mixins: [BaseMixin, MmuMixin],
+    data() {
         return {
-            'warning-color': this.clogWarning,
-            'primary-color': !this.clogWarning,
+            ROTATION_TIME: 1,
+            CIRCUMFERENCE: CIRCUMFERENCE,
+            DIAL_ARC: CIRCUMFERENCE * (60 / 360),
+            X1_TANGLE: 70 + 63 * Math.cos((120 * Math.PI) / 180),
+            Y1_TANGLE: 70 + 63 * Math.sin((120 * Math.PI) / 180),
+            X1_CLOG: 70 + 63 * Math.cos((60 * Math.PI) / 180),
+            Y1_CLOG: 70 + 63 * Math.sin((60 * Math.PI) / 180),
+            X1_ZERO: 70 + 59 * Math.cos((270 * Math.PI) / 180),
+            Y1_ZERO: 70 + 59 * Math.sin((270 * Math.PI) / 180),
+            DANGER: 0.8,
         }
-    }
+    },
+    computed: {
+        flowguardEnabled() {
+            return this.mmu?.flowguard?.enabled ?? false
+        },
 
-    get clogHeadroomDashOffset() {
-        return this.CIRCUMFERENCE * (1 + (1 - this.DANGER) * (150 / 360))
-    }
+        flowguardActive() {
+            return this.mmu?.flowguard?.active ?? false
+        },
 
-    get tangleWarning() {
-        return Math.abs(this.maxTangle) > this.DANGER
-    }
+        flowguardTrigger() {
+            return (this.mmu?.flowguard?.trigger ?? '').toUpperCase()
+        },
 
-    get maxTangleLineClasses() {
-        return {
-            'warning-color': this.tangleWarning,
-            'primary-color': !this.tangleWarning,
-        }
-    }
+        flowrateText() {
+            if (this.hasFilamentProportionalSensor) {
+                const flow_rate = this.mmu?.sync_feedback_flow_rate ?? 100.0
+                return `${Math.round(flow_rate)}%`
+            }
+            return this.$t('Panels.MmuPanel.Active').toUpperCase()
+        },
 
-    get tangleHeadroomDashOffset() {
-        return this.CIRCUMFERENCE * (1 - (1 - this.DANGER) * (150 / 360))
-    }
+        flowrateTextSize() {
+            if (this.hasFilamentProportionalSensor) {
+                return '18px'
+            }
+            return '14px'
+        },
 
-    get flowguardPercent() {
-        return Math.max(Math.min(1, this.flowguardLevel), -1) * 100
-    }
+        maxClog() {
+            return Math.abs(this.mmu?.flowguard?.max_clog ?? 0.0)
+        },
 
-    get meterDashOffset() {
-        return this.CIRCUMFERENCE * ((100 - (this.flowguardPercent * 150) / 360) / 100)
-    }
+        maxTangle() {
+            return -Math.abs(this.mmu?.flowguard?.max_tangle ?? 0.0)
+        },
 
-    get maxClogAngle() {
-        return this.maxClog * 150 + 150
-    }
+        flowguardLevel() {
+            return this.mmu?.flowguard?.level ?? 0.0
+        },
 
-    get x1MaxClog() {
-        return this.calcX1(this.maxClogAngle)
-    }
+        svgClasses() {
+            return { 'disabled-flowguard': !this.flowguardEnabled }
+        },
 
-    get y1MaxClog() {
-        return this.calcY1(this.maxClogAngle)
-    }
+        clogWarning() {
+            return Math.abs(this.maxClog) > this.DANGER
+        },
 
-    get maxTangleAngle() {
-        return this.maxTangle * 150 + 150
-    }
+        maxClogLineClasses() {
+            return {
+                'warning-color': this.clogWarning,
+                'primary-color': !this.clogWarning,
+            }
+        },
 
-    get x1MaxTangle() {
-        return this.calcX1(this.maxTangleAngle)
-    }
+        clogHeadroomDashOffset() {
+            return this.CIRCUMFERENCE * (1 + (1 - this.DANGER) * (150 / 360))
+        },
 
-    get y1MaxTangle() {
-        return this.calcY1(this.maxTangleAngle)
-    }
+        tangleWarning() {
+            return Math.abs(this.maxTangle) > this.DANGER
+        },
 
-    private calcX1(angle: number) {
-        return 70 + 59 * Math.cos(((120 + angle) * Math.PI) / 180)
-    }
+        maxTangleLineClasses() {
+            return {
+                'warning-color': this.tangleWarning,
+                'primary-color': !this.tangleWarning,
+            }
+        },
 
-    private calcY1(angle: number) {
-        return 70 + 59 * Math.sin(((120 + angle) * Math.PI) / 180)
-    }
+        tangleHeadroomDashOffset() {
+            return this.CIRCUMFERENCE * (1 - (1 - this.DANGER) * (150 / 360))
+        },
 
-    @Watch('meterDashOffset', { immediate: true })
-    onDashOffsetChanged(newValue: number) {
-        if (!this.dialCircle) return
+        flowguardPercent() {
+            return Math.max(Math.min(1, this.flowguardLevel), -1) * 100
+        },
 
-        const currentOffset = parseFloat(this.dialCircle?.style?.strokeDashoffset) || this.CIRCUMFERENCE
-        const difference = Math.abs(currentOffset - newValue)
-        const duration = (difference / this.CIRCUMFERENCE) * this.ROTATION_TIME
-        this.dialCircle.style.transition = `stroke-dashoffset ${duration}s ease-out`
-    }
-}
+        meterDashOffset() {
+            return this.CIRCUMFERENCE * ((100 - (this.flowguardPercent * 150) / 360) / 100)
+        },
+
+        maxClogAngle() {
+            return this.maxClog * 150 + 150
+        },
+
+        x1MaxClog() {
+            return this.calcX1(this.maxClogAngle)
+        },
+
+        y1MaxClog() {
+            return this.calcY1(this.maxClogAngle)
+        },
+
+        maxTangleAngle() {
+            return this.maxTangle * 150 + 150
+        },
+
+        x1MaxTangle() {
+            return this.calcX1(this.maxTangleAngle)
+        },
+
+        y1MaxTangle() {
+            return this.calcY1(this.maxTangleAngle)
+        },
+    },
+    methods: {
+        calcX1(angle: number) {
+            return 70 + 59 * Math.cos(((120 + angle) * Math.PI) / 180)
+        },
+
+        calcY1(angle: number) {
+            return 70 + 59 * Math.sin(((120 + angle) * Math.PI) / 180)
+        },
+    },
+    watch: {
+        meterDashOffset: {
+            handler(newValue: number) {
+                const dialCircle = this.$refs.dialCircle as SVGCircleElement | undefined
+                if (!dialCircle) return
+
+                const currentOffset = parseFloat(dialCircle?.style?.strokeDashoffset) || this.CIRCUMFERENCE
+                const difference = Math.abs(currentOffset - newValue)
+                const duration = (difference / this.CIRCUMFERENCE) * this.ROTATION_TIME
+                dialCircle.style.transition = `stroke-dashoffset ${duration}s ease-out`
+            },
+            immediate: true,
+        },
+    },
+})
 </script>
 
 <style scoped>

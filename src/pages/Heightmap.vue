@@ -2,10 +2,10 @@
     <div>
         <v-row>
             <template v-if="klipperReadyForGui">
-                <v-col class="col-12 col-md-8 pb-0">
+                <v-col cols="12" md="8" class="pb-0">
                     <heightmap-chart-panel />
                 </v-col>
-                <v-col class="col-12 col-md-4">
+                <v-col cols="12" md="4">
                     <heightmap-current-profile-panel />
                     <heightmap-profiles-panel />
                 </v-col>
@@ -13,8 +13,8 @@
             <template v-else>
                 <v-col>
                     <v-alert
-                        dense
-                        text
+                        density="compact"
+                        variant="text"
                         type="warning"
                         elevation="2"
                         class="mx-auto mt-6"
@@ -28,16 +28,20 @@
     </div>
 </template>
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 
 import Panel from '@/components/ui/Panel.vue'
 import { mdiLockOutline } from '@mdi/js'
 
-@Component({
+export default defineComponent({
+    name: 'PageHeightmap',
     components: { Panel },
+    mixins: [BaseMixin],
+    data() {
+        return {
+            mdiLockOutline: mdiLockOutline,
+        }
+    },
 })
-export default class PageHeightmap extends Mixins(BaseMixin) {
-    mdiLockOutline = mdiLockOutline
-}
 </script>

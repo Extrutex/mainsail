@@ -6,7 +6,7 @@
             card-class="mmu-edit-ttg-map-dialog"
             :margin-bottom="false">
             <template #buttons>
-                <v-btn text tile @click="showResetDialog = true">
+                <v-btn variant="text" tile @click="showResetDialog = true">
                     {{ $t('Panels.MmuPanel.TtgMapDialog.Reset') }}
                 </v-btn>
                 <v-btn icon tile @click="showDialog = false">
@@ -79,8 +79,8 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, Prop, VModel, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
+import type { PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import MmuMixin, { TOOL_GATE_UNKNOWN } from '@/components/mixins/mmu'
 import Panel from '@/components/ui/Panel.vue'
@@ -89,111 +89,118 @@ import ConfirmationDialog from '@/components/dialogs/ConfirmationDialog.vue'
 import { mdiCloseThick, mdiStateMachine } from '@mdi/js'
 import MmuEditTtgMapDialogDetails from '@/components/dialogs/MmuEditTtgMapDialogDetails.vue'
 
-@Component({
+export default defineComponent({
+    name: 'MmuEditTtgMapDialog',
     components: { MmuEditTtgMapDialogDetails, Panel, ConfirmationDialog },
-})
-export default class MmuEditTtgMapDialog extends Mixins(BaseMixin, MmuMixin) {
-    mdiCloseThick = mdiCloseThick
-    mdiStateMachine = mdiStateMachine
+    mixins: [BaseMixin, MmuMixin],
+    props: {
+        modelValue: { type: Boolean, default: false },
+        file: { type: Object as PropType<FileStateGcodefile | null>, default: null },
+    },
+    emits: ['update:modelValue'],
+    data() {
+        return {
+            mdiCloseThick: mdiCloseThick,
+            mdiStateMachine: mdiStateMachine,
 
-    @VModel({ type: Boolean }) showDialog!: boolean
-    @Prop({ default: null }) readonly file!: FileStateGcodefile | null
-
-    allTools = true
-    selectedTool = -1
-    showResetDialog = false
-
-    get titleHeader() {
-        if (this.allTools) return this.$t('Panels.MmuPanel.TtgMapDialog.MapTools')
-
-        return this.$t('Panels.MmuPanel.TtgMapDialog.MapSlicerTools')
-    }
-
-    get allToolsDisabled() {
-        return this.file === null
-    }
-
-    get skipAutomap() {
-        return this.mmu?.slicer_tool_map?.skip_automap ?? false
-    }
-
-    set skipAutomap(value: boolean) {
-        this.doSend(`MMU_SLICER_TOOL_MAP SKIP_AUTOMAP=${value ? 1 : 0}`)
-    }
-
-    get showSkipAutomap() {
-        const automapStrategy = this.mmuSoftwareVars.automap_strategy ?? 'none'
-
-        return this.file !== null && automapStrategy !== 'none'
-    }
-
-    get fileTools() {
-        const toolsInFile: number[] = []
-        this.file?.filament_weights?.forEach((weight, index) => {
-            if (weight <= 0) return
-
-            toolsInFile.push(index)
-        })
-
-        if (toolsInFile.length === 0) return null
-
-        return toolsInFile
-    }
-
-    get filteredTtgMap() {
-        const ttgMap: { tool: number; gate: number }[] = []
-
-        this.ttgMap.forEach((gate, tool) => {
-            if (!this.allTools && !this.fileTools?.includes(Number(tool))) return
-
-            ttgMap.push({ tool: Number(tool), gate })
-        })
-
-        return ttgMap
-    }
-
-    get selectedGate() {
-        if (this.selectedTool === TOOL_GATE_UNKNOWN) {
-            return TOOL_GATE_UNKNOWN
+            allTools: true,
+            selectedTool: -1,
+            showResetDialog: false,
         }
+    },
+    computed: {
+        showDialog: {
+            get(): boolean {
+                return this.modelValue
+            },
+            set(newVal: boolean) {
+                this.$emit('update:modelValue', newVal)
+            },
+        },
+        titleHeader() {
+            if (this.allTools) return this.$t('Panels.MmuPanel.TtgMapDialog.MapTools')
 
-        return this.ttgMap[this.selectedTool]
-    }
+            return this.$t('Panels.MmuPanel.TtgMapDialog.MapSlicerTools')
+        },
+        allToolsDisabled() {
+            return this.file === null
+        },
+        skipAutomap: {
+            get(): boolean {
+                return this.mmu?.slicer_tool_map?.skip_automap ?? false
+            },
+            set(value: boolean) {
+                this.doSend(`MMU_SLICER_TOOL_MAP SKIP_AUTOMAP=${value ? 1 : 0}`)
+            },
+        },
+        showSkipAutomap() {
+            const automapStrategy = this.mmuSoftwareVars.automap_strategy ?? 'none'
 
-    selectTool(tool: number) {
-        if (this.selectedTool === tool) {
-            this.selectedTool = TOOL_GATE_UNKNOWN
-            return
-        }
+            return this.file !== null && automapStrategy !== 'none'
+        },
+        fileTools() {
+            const toolsInFile: number[] = []
+            this.file?.filament_weights?.forEach((weight, index) => {
+                if (weight <= 0) return
 
-        this.selectedTool = tool
-    }
+                toolsInFile.push(index)
+            })
 
-    resetTtgMap() {
-        this.doSend('MMU_TTG_MAP RESET=1\nMMU_ENDLESS_SPOOL RESET=1')
-    }
+            if (toolsInFile.length === 0) return null
 
-    handleEscapePress(event: KeyboardEvent) {
-        if (event.key === 'Escape' || event.code === 'Escape') {
-            this.selectedTool = -1
-        }
-    }
+            return toolsInFile
+        },
+        filteredTtgMap() {
+            const ttgMap: { tool: number; gate: number }[] = []
 
+            this.ttgMap.forEach((gate, tool) => {
+                if (!this.allTools && !this.fileTools?.includes(Number(tool))) return
+
+                ttgMap.push({ tool: Number(tool), gate })
+            })
+
+            return ttgMap
+        },
+        selectedGate() {
+            if (this.selectedTool === TOOL_GATE_UNKNOWN) {
+                return TOOL_GATE_UNKNOWN
+            }
+
+            return this.ttgMap[this.selectedTool]
+        },
+    },
+    methods: {
+        selectTool(tool: number) {
+            if (this.selectedTool === tool) {
+                this.selectedTool = TOOL_GATE_UNKNOWN
+                return
+            }
+
+            this.selectedTool = tool
+        },
+        resetTtgMap() {
+            this.doSend('MMU_TTG_MAP RESET=1\nMMU_ENDLESS_SPOOL RESET=1')
+        },
+        handleEscapePress(event: KeyboardEvent) {
+            if (event.key === 'Escape' || event.code === 'Escape') {
+                this.selectedTool = -1
+            }
+        },
+    },
     mounted() {
         document.addEventListener('keydown', this.handleEscapePress)
-    }
-
-    beforeDestroy() {
+    },
+    beforeUnmount() {
         document.removeEventListener('keydown', this.handleEscapePress)
-    }
+    },
+    watch: {
+        showDialog(newValue: boolean) {
+            if (!newValue) return
 
-    @Watch('showDialog')
-    onShowDialogChange(newValue: boolean) {
-        if (!newValue) return
-
-        this.allTools = this.file === null
-    }
-}
+            this.allTools = this.file === null
+        },
+    },
+})
 </script>
 
 <style scoped>

@@ -30,8 +30,8 @@
             <v-divider class="mb-2"></v-divider>
         </template>
         <v-card-actions class="justify-center pb-3">
-            <v-btn small href="https://docs.mainsail.xyz/setup/configuration" target="_blank">
-                <v-icon small class="mr-1">{{ mdiInformation }}</v-icon>
+            <v-btn size="small" href="https://docs.mainsail.xyz/setup/configuration" target="_blank">
+                <v-icon size="small" class="mr-1">{{ mdiInformation }}</v-icon>
                 {{ $t('Panels.MinSettingsPanel.MoreInformation') }}
             </v-btn>
         </v-card-actions>
@@ -39,30 +39,35 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import Panel from '@/components/ui/Panel.vue'
 import { mdiInformation, mdiAlertCircle } from '@mdi/js'
-@Component({
+
+export default defineComponent({
+    name: 'MinSettingsPanel',
     components: { Panel },
+    mixins: [BaseMixin],
+    data() {
+        return {
+            mdiAlertCircle: mdiAlertCircle,
+            mdiInformation: mdiInformation,
+        }
+    },
+    computed: {
+        existsPrinterConfig() {
+            return this.$store.getters['printer/existPrinterConfig'] ?? false
+        },
+
+        missingConfigs() {
+            return this.$store.getters['printer/checkNecessaryConfig'] ?? []
+        },
+
+        mainsailCfgExists() {
+            return this.$store.getters['files/checkConfigFile']('mainsail.cfg') ?? false
+        },
+    },
 })
-export default class MinSettingsPanel extends Mixins(BaseMixin) {
-    mdiAlertCircle = mdiAlertCircle
-    mdiInformation = mdiInformation
-
-    get existsPrinterConfig() {
-        return this.$store.getters['printer/existPrinterConfig'] ?? false
-    }
-
-    get missingConfigs() {
-        return this.$store.getters['printer/checkNecessaryConfig'] ?? []
-    }
-
-    get mainsailCfgExists() {
-        return this.$store.getters['files/checkConfigFile']('mainsail.cfg') ?? false
-    }
-}
 </script>
 
 <style scoped>

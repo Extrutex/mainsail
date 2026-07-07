@@ -63,7 +63,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import MmuMixin, {
     TOOL_GATE_BYPASS,
@@ -76,54 +76,59 @@ import MmuMixin, {
 import { mdiDownloadOutline, mdiEject, mdiCheck, mdiAutoFix, mdiThermometerPlus, mdiDownload, mdiUpload } from '@mdi/js'
 import MmuControlsButton from '@/components/panels/Mmu/MmuControlsButton.vue'
 
-@Component({
+export default defineComponent({
+    name: 'MmuControls',
     components: { MmuControlsButton },
+    mixins: [BaseMixin, MmuMixin],
+    data() {
+        return {
+            mdiDownloadOutline: mdiDownloadOutline,
+            mdiEject: mdiEject,
+            mdiCheck: mdiCheck,
+            mdiAutoFix: mdiAutoFix,
+            mdiThermometerPlus: mdiThermometerPlus,
+            mdiUpload: mdiUpload,
+            mdiDownload: mdiDownload,
+        }
+    },
+    computed: {
+        isMmuPausedAndLocked() {
+            return this.mmuPrintState === 'pause_locked'
+        },
+
+        currentGateStatus(): number {
+            const gateStatus = this.$store.state.printer.mmu?.gate_status ?? null
+
+            return gateStatus?.[this.mmuGate] ?? GATE_UNKNOWN
+        },
+
+        btnPreloadDisabled(): boolean {
+            return !this.canSend || [GATE_AVAILABLE, GATE_AVAILABLE_FROM_BUFFER].includes(this.currentGateStatus)
+        },
+
+        btnEjectDisabled(): boolean {
+            return !this.canSend || this.currentGateStatus === GATE_EMPTY
+        },
+
+        btnUnloadDisabled() {
+            return !this.canSend || this.mmuFilamentPos === FILAMENT_POS_UNLOADED
+        },
+
+        btnUnloadText() {
+            return this.mmuGate === TOOL_GATE_BYPASS
+                ? this.$t('Panels.MmuPanel.ButtonUnloadExt')
+                : this.$t('Panels.MmuPanel.ButtonUnload')
+        },
+
+        btnLoadDisabled() {
+            return !this.canSend || this.mmuFilamentPos !== FILAMENT_POS_UNLOADED
+        },
+
+        btnLoadText() {
+            return this.mmuGate === TOOL_GATE_BYPASS
+                ? this.$t('Panels.MmuPanel.ButtonLoadExt')
+                : this.$t('Panels.MmuPanel.ButtonLoad')
+        },
+    },
 })
-export default class MmuControls extends Mixins(BaseMixin, MmuMixin) {
-    mdiDownloadOutline = mdiDownloadOutline
-    mdiEject = mdiEject
-    mdiCheck = mdiCheck
-    mdiAutoFix = mdiAutoFix
-    mdiThermometerPlus = mdiThermometerPlus
-    mdiUpload = mdiUpload
-    mdiDownload = mdiDownload
-
-    get isMmuPausedAndLocked() {
-        return this.mmuPrintState === 'pause_locked'
-    }
-
-    get currentGateStatus(): number {
-        const gateStatus = this.$store.state.printer.mmu?.gate_status ?? null
-
-        return gateStatus?.[this.mmuGate] ?? GATE_UNKNOWN
-    }
-
-    get btnPreloadDisabled(): boolean {
-        return !this.canSend || [GATE_AVAILABLE, GATE_AVAILABLE_FROM_BUFFER].includes(this.currentGateStatus)
-    }
-
-    get btnEjectDisabled(): boolean {
-        return !this.canSend || this.currentGateStatus === GATE_EMPTY
-    }
-
-    get btnUnloadDisabled() {
-        return !this.canSend || this.mmuFilamentPos === FILAMENT_POS_UNLOADED
-    }
-
-    get btnUnloadText() {
-        return this.mmuGate === TOOL_GATE_BYPASS
-            ? this.$t('Panels.MmuPanel.ButtonUnloadExt')
-            : this.$t('Panels.MmuPanel.ButtonUnload')
-    }
-
-    get btnLoadDisabled() {
-        return !this.canSend || this.mmuFilamentPos !== FILAMENT_POS_UNLOADED
-    }
-
-    get btnLoadText() {
-        return this.mmuGate === TOOL_GATE_BYPASS
-            ? this.$t('Panels.MmuPanel.ButtonLoadExt')
-            : this.$t('Panels.MmuPanel.ButtonLoad')
-    }
-}
 </script>

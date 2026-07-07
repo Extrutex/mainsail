@@ -22,25 +22,28 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, Prop, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '../mixins/base'
 import { defaultLogoColor } from '@/store/variables'
 
-@Component
-export default class MainsailLogo extends Mixins(BaseMixin) {
-    private internalColor = defaultLogoColor
-
-    @Prop({ required: false, default: '' })
-    declare readonly color: string
-
-    @Watch('color')
-    colorChanged(newVal: string) {
-        this.internalColor = newVal !== '' ? newVal : defaultLogoColor
-    }
-
+export default defineComponent({
+    name: 'MainsailLogo',
+    mixins: [BaseMixin],
+    props: {
+        color: { type: String, required: false, default: '' },
+    },
+    data() {
+        return {
+            internalColor: defaultLogoColor,
+        }
+    },
+    watch: {
+        color(newVal: string) {
+            this.internalColor = newVal !== '' ? newVal : defaultLogoColor
+        },
+    },
     created() {
         if (this.color !== '') this.internalColor = this.color
-    }
-}
+    },
+})
 </script>

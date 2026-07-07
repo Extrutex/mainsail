@@ -1,7 +1,7 @@
 <template>
     <div>
         <v-btn :disabled="isLoading" @click="handleClick">
-            <v-icon left>{{ mdiCheck }}</v-icon>
+            <v-icon start>{{ mdiCheck }}</v-icon>
             {{ $t('Common.Save') }}
         </v-btn>
     </div>
@@ -9,71 +9,74 @@
 
 <script lang="ts">
 /**
- * Canonical example of Vue Class Component structure.
+ * Canonical example of the Vue 3 Options API component structure.
  * This file serves as a reference for AI agents - do not delete.
  *
- * Class member order:
- * 1. @Prop declarations
- * 2. Data fields (class properties)
- * 3. Getters (computed properties)
- * 4. Methods
- * 5. @Watch decorators
- * 6. Lifecycle hooks (mounted, beforeDestroy, etc.)
+ * Option order:
+ * 1. name
+ * 2. components
+ * 3. mixins
+ * 4. props
+ * 5. emits
+ * 6. data()
+ * 7. computed
+ * 8. watch
+ * 9. Lifecycle hooks (created, mounted, beforeUnmount, ...)
+ * 10. methods
  */
-import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { mdiCheck } from '@mdi/js'
 
-@Component
-export default class VueComponentExample extends Mixins(BaseMixin) {
-    // Icons
-    mdiCheck = mdiCheck
+export default defineComponent({
+    name: 'VueComponentExample',
+    mixins: [BaseMixin],
+    props: {
+        title: { type: String, required: true },
+        initialCount: { type: Number, default: 0 },
+    },
+    emits: ['click'],
+    data() {
+        return {
+            // Icons
+            mdiCheck: mdiCheck,
 
-    // 1. Props
-    @Prop({ type: String, required: true }) readonly title!: string
-    @Prop({ type: Number, default: 0 }) readonly initialCount!: number
+            isLoading: false,
+            count: 0,
+        }
+    },
+    computed: {
+        formattedTitle(): string {
+            return this.title.toUpperCase()
+        },
 
-    // 2. Data fields
-    isLoading = false
-    count = 0
-
-    // 3. Getters (computed properties)
-    get formattedTitle(): string {
-        return this.title.toUpperCase()
-    }
-
-    get isValid(): boolean {
-        return this.count > 0 && !this.isLoading
-    }
-
-    // 4. Watchers
-    @Watch('initialCount', { immediate: true })
-    onInitialCountChanged(newVal: number): void {
-        this.count = newVal
-    }
-
-    // 5. Lifecycle hooks
-    mounted(): void {
+        isValid(): boolean {
+            return this.count > 0 && !this.isLoading
+        },
+    },
+    watch: {
+        initialCount: {
+            immediate: true,
+            handler(newVal: number) {
+                this.count = newVal
+            },
+        },
+    },
+    mounted() {
         window.addEventListener('resize', this.onResize)
-    }
-
-    beforeDestroy(): void {
-        // Always clean up:
-        // - Event listeners
-        // - Timers/intervals
-        // - Observers
-        // - WebSocket/WebRTC connections
-        // - ECharts instances
+    },
+    beforeUnmount() {
         window.removeEventListener('resize', this.onResize)
-    }
+    },
+    methods: {
+        handleClick(): void {
+            this.isLoading = true
+            this.$emit('click')
+        },
 
-    // 6. Methods
-    handleClick(): void {
-        this.count++
-    }
-
-    onResize(): void {
-        // Handle resize
-    }
-}
+        onResize(): void {
+            // handle resize
+        },
+    },
+})
 </script>

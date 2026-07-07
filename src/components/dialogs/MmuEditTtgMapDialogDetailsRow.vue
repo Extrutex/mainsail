@@ -14,53 +14,53 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import MmuMixin, { GATE_EMPTY } from '@/components/mixins/mmu'
 
-@Component({})
-export default class MmuGateDialogRow extends Mixins(BaseMixin, MmuMixin) {
-    @Prop({ required: true }) readonly gate!: number
-    @Prop({ required: true }) readonly selectedGate!: number
+export default defineComponent({
+    name: 'MmuGateDialogRow',
+    mixins: [BaseMixin, MmuMixin],
+    props: {
+        gate: { type: Number, required: true },
+        selectedGate: { type: Number, required: true },
+    },
+    emits: ['select-gate', 'select-endless-spool-group'],
+    computed: {
+        rowClass() {
+            return {
+                'cursor-pointer': true,
+                'disabled-row': this.gateStatus === GATE_EMPTY,
+                'selected-row': this.gate === this.selectedGate,
+            }
+        },
+        gateStatus() {
+            const status = this.mmu?.gate_status ?? []
 
-    get rowClass() {
-        return {
-            'cursor-pointer': true,
-            'disabled-row': this.gateStatus === GATE_EMPTY,
-            'selected-row': this.gate === this.selectedGate,
-        }
-    }
-
-    get gateStatus() {
-        const status = this.mmu?.gate_status ?? []
-
-        return status[this.gate] ?? GATE_EMPTY
-    }
-
-    get endlessSpoolGroup() {
-        return this.endlessSpoolGroups[this.gate] ?? null
-    }
-
-    get selectedEndlessSpoolGroup() {
-        return this.endlessSpoolGroups[this.selectedGate] ?? null
-    }
-
-    get endlessSpoolClass() {
-        return {
-            'disabled-group': this.selectedEndlessSpoolGroup === this.gate,
-            'selected-group': this.endlessSpoolGroup === this.selectedEndlessSpoolGroup,
-        }
-    }
-
-    selectGate() {
-        this.$emit('select-gate')
-    }
-
-    selectEndlessSpoolGroup() {
-        this.$emit('select-endless-spool-group')
-    }
-}
+            return status[this.gate] ?? GATE_EMPTY
+        },
+        endlessSpoolGroup() {
+            return this.endlessSpoolGroups[this.gate] ?? null
+        },
+        selectedEndlessSpoolGroup() {
+            return this.endlessSpoolGroups[this.selectedGate] ?? null
+        },
+        endlessSpoolClass() {
+            return {
+                'disabled-group': this.selectedEndlessSpoolGroup === this.gate,
+                'selected-group': this.endlessSpoolGroup === this.selectedEndlessSpoolGroup,
+            }
+        },
+    },
+    methods: {
+        selectGate() {
+            this.$emit('select-gate')
+        },
+        selectEndlessSpoolGroup() {
+            this.$emit('select-endless-spool-group')
+        },
+    },
+})
 </script>
 
 <style scoped>
@@ -76,7 +76,7 @@ export default class MmuGateDialogRow extends Mixins(BaseMixin, MmuMixin) {
     opacity: 0.7;
 }
 
-::v-deep .w-36 {
+:deep(.w-36) {
     width: 36px;
 }
 

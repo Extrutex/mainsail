@@ -5,18 +5,17 @@
                 <console-textarea ref="gcodeCommandField" />
             </v-col>
 
-            <v-col class="col-auto d-flex align-center">
+            <v-col cols="auto" class="d-flex align-center">
                 <v-btn class="mr-3 px-2 minwidth-0" color="lightgray" @click="clearConsole">
                     <v-icon>{{ mdiTrashCan }}</v-icon>
                 </v-btn>
                 <command-help-modal @onCommand="commandClick($event)" />
                 <v-menu
-                    offset-y
-                    :top="consoleDirection === 'shell'"
+                    :location="consoleDirection === 'shell' ? 'top' : 'bottom'"
                     :close-on-content-click="false"
                     :title="$t('Console.SetupConsole')">
-                    <template #activator="{ on, attrs }">
-                        <v-btn class="ml-3 px-2 minwidth-0" color="lightgray" v-bind="attrs" v-on="on">
+                    <template #activator="{ props }">
+                        <v-btn class="ml-3 px-2 minwidth-0" color="lightgray" v-bind="props">
                             <v-icon>{{ mdiCog }}</v-icon>
                         </v-btn>
                     </template>
@@ -48,7 +47,7 @@
                                 class="mt-0"
                                 hide-details
                                 :label="filter.name"
-                                @change="toggleFilter(index, filter)" />
+                                @update:model-value="toggleFilter(index, filter)" />
                         </v-list-item>
                         <v-list-item class="minHeight36">
                             <v-checkbox
@@ -62,16 +61,18 @@
             </v-col>
         </v-row>
         <v-row :class="consoleDirection === 'table' ? 'order-1' : 'order-0 mt-0'">
-            <v-col :class="consoleDirection === 'table' ? 'col' : 'col pt-0'">
+            <v-col :class="consoleDirection === 'table' ? '' : 'pt-0'">
                 <v-card>
                     <v-card-text class="pa-0">
-                        <overlay-scrollbars ref="consoleScroll" class="consoleScrollContainer d-flex flex-column">
+                        <overlay-scrollbars-component
+                            ref="consoleScroll"
+                            class="consoleScrollContainer d-flex flex-column">
                             <console-table
                                 ref="console"
                                 :is-mini="false"
                                 :events="events"
                                 @command-click="commandClick" />
-                        </overlay-scrollbars>
+                        </overlay-scrollbars-component>
                     </v-card-text>
                 </v-card>
             </v-col>
@@ -80,7 +81,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Ref, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import ConsoleTable from '@/components/console/ConsoleTable.vue'
 import CommandHelpModal from '@/components/console/CommandHelpModal.vue'
@@ -89,54 +90,60 @@ import ConsoleMixin from '@/components/mixins/console'
 import ConsoleTextarea from '@/components/inputs/ConsoleTextarea.vue'
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-vue'
 
-@Component({
+export default defineComponent({
+    name: 'PageConsole',
     components: {
         CommandHelpModal,
         ConsoleTable,
+        ConsoleTextarea,
+        OverlayScrollbarsComponent,
     },
-})
-export default class PageConsole extends Mixins(BaseMixin, ConsoleMixin) {
-    mdiCog = mdiCog
-    mdiTrashCan = mdiTrashCan
-
-    @Ref() readonly consoleScroll!: OverlayScrollbarsComponent
-    @Ref() readonly gcodeCommandField!: typeof ConsoleTextarea
-
-    get events() {
-        return this.$store.getters['server/getConsoleEvents'](this.consoleDirection === 'table')
-    }
-
-    @Watch('events')
-    eventsChanged() {
-        if (this.consoleDirection === 'shell' && this.autoscroll) {
-            setTimeout(() => {
-                this.scrollToBottom()
-            }, 50)
+    mixins: [BaseMixin, ConsoleMixin],
+    data() {
+        return {
+            mdiCog: mdiCog,
+            mdiTrashCan: mdiTrashCan,
         }
-    }
+    },
+    computed: {
+        events(): any[] {
+            return this.$store.getters['server/getConsoleEvents'](this.consoleDirection === 'table')
+        },
+    },
+    watch: {
+        events() {
+            if (this.consoleDirection === 'shell' && this.autoscroll) {
+                setTimeout(() => {
+                    this.scrollToBottom()
+                }, 50)
+            }
+        },
 
-    @Watch('autoscroll')
-    autoscrollChanged(newVal: boolean) {
-        if (newVal) this.scrollToBottom()
-    }
-
-    commandClick(msg: string): void {
-        this.gcodeCommandField.setGcode(msg)
-    }
-
+        autoscroll(newVal: boolean) {
+            if (newVal) this.scrollToBottom()
+        },
+    },
     mounted() {
         if (this.consoleDirection === 'shell') this.scrollToBottom()
-    }
+    },
+    methods: {
+        commandClick(msg: string): void {
+            const gcodeCommandField = this.$refs.gcodeCommandField as InstanceType<typeof ConsoleTextarea> | undefined
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            ;(gcodeCommandField as any)?.setGcode(msg)
+        },
 
-    scrollToBottom() {
-        this.$nextTick(() => {
-            if (!this.consoleScroll) return
+        scrollToBottom() {
+            this.$nextTick(() => {
+                const consoleScroll = this.$refs.consoleScroll as InstanceType<typeof OverlayScrollbarsComponent> | null
+                if (!consoleScroll) return
 
-            const overlayscroll = this.consoleScroll.osInstance()
-            overlayscroll?.scroll({ y: '100%' })
-        })
-    }
-}
+                const viewport = consoleScroll.osInstance()?.elements().viewport
+                viewport?.scrollTo({ top: viewport.scrollHeight })
+            })
+        },
+    },
+})
 </script>
 
 <style scoped>

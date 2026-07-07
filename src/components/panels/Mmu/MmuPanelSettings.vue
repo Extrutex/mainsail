@@ -1,8 +1,8 @@
 <template>
-    <v-menu :offset-y="true" :left="true" :close-on-content-click="false">
-        <template #activator="{ on, attrs }">
-            <v-btn icon tile v-bind="attrs" v-on="on">
-                <v-icon small>{{ mdiCog }}</v-icon>
+    <v-menu location="bottom end" :close-on-content-click="false">
+        <template #activator="{ props }">
+            <v-btn icon tile v-bind="props">
+                <v-icon size="small">{{ mdiCog }}</v-icon>
             </v-btn>
         </template>
         <v-list>

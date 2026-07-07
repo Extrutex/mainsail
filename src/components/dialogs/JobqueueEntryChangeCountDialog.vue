@@ -21,12 +21,18 @@
                     hide-spin-buttons
                     type="number"
                     @keyup.enter="update">
-                    <template #append-outer>
+                    <template #append>
                         <div class="_spin_button_group">
-                            <v-btn class="mt-n3" icon plain small @click="count++">
+                            <v-btn class="mt-n3" icon variant="plain" size="small" @click="count++">
                                 <v-icon>{{ mdiChevronUp }}</v-icon>
                             </v-btn>
-                            <v-btn :disabled="count <= 1" class="mb-n3" icon plain small @click="count--">
+                            <v-btn
+                                :disabled="count <= 1"
+                                class="mb-n3"
+                                icon
+                                variant="plain"
+                                size="small"
+                                @click="count--">
                                 <v-icon>{{ mdiChevronDown }}</v-icon>
                             </v-btn>
                         </div>
@@ -35,61 +41,77 @@
             </v-card-text>
             <v-card-actions>
                 <v-spacer />
-                <v-btn text @click="closeDialog">{{ $t('Buttons.Cancel') }}</v-btn>
-                <v-btn color="primary" text @click="update">{{ $t('JobQueue.ChangeCount') }}</v-btn>
+                <v-btn variant="text" @click="closeDialog">{{ $t('Buttons.Cancel') }}</v-btn>
+                <v-btn color="primary" variant="text" @click="update">{{ $t('JobQueue.ChangeCount') }}</v-btn>
             </v-card-actions>
         </panel>
     </v-dialog>
 </template>
 <script lang="ts">
-import { Component, Mixins, Prop, Ref, VModel, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
+import type { PropType } from 'vue'
 import type { FocusableRef } from '@/types/vuetify'
 import BaseMixin from '@/components/mixins/base'
 import Panel from '@/components/ui/Panel.vue'
 import { mdiCloseThick, mdiChevronUp, mdiChevronDown, mdiCounter } from '@mdi/js'
 import { ServerJobQueueStateJob } from '@/store/server/jobQueue/types'
 
-@Component({
+export default defineComponent({
+    name: 'JobqueueEntryChangeCountDialog',
     components: { Panel },
+    mixins: [BaseMixin],
+    props: {
+        modelValue: { type: Boolean, default: false },
+        job: { type: Object as PropType<ServerJobQueueStateJob>, required: true },
+    },
+    emits: ['update:modelValue'],
+    data() {
+        return {
+            mdiCloseThick: mdiCloseThick,
+            mdiChevronUp: mdiChevronUp,
+            mdiChevronDown: mdiChevronDown,
+            mdiCounter: mdiCounter,
+            count: 1,
+        }
+    },
+    computed: {
+        showDialog: {
+            get(): boolean {
+                return this.modelValue
+            },
+            set(newVal: boolean) {
+                this.$emit('update:modelValue', newVal)
+            },
+        },
+        countInputRules() {
+            return [
+                (value: string) => !!value || this.$t('JobQueue.InvalidCountEmpty'),
+                (value: string) => parseInt(value) > 0 || this.$t('JobQueue.InvalidCountGreaterZero'),
+            ]
+        },
+    },
+    methods: {
+        update() {
+            this.$store.dispatch('server/jobQueue/changeCount', {
+                job_id: this.job.job_id,
+                count: this.count,
+            })
+
+            this.closeDialog()
+        },
+        closeDialog() {
+            this.showDialog = false
+        },
+    },
+    watch: {
+        showDialog(newVal: boolean) {
+            if (!newVal) return
+
+            this.count = (this.job.combinedIds?.length ?? 0) + 1
+            setTimeout(() => {
+                ;(this.$refs.inputField as FocusableRef).focus()
+            })
+        },
+    },
 })
-export default class JobqueueEntryChangeCountDialog extends Mixins(BaseMixin) {
-    mdiCloseThick = mdiCloseThick
-    mdiChevronUp = mdiChevronUp
-    mdiChevronDown = mdiChevronDown
-    mdiCounter = mdiCounter
-
-    @VModel({ type: Boolean }) showDialog!: boolean
-    @Prop({ type: Object, required: true }) job!: ServerJobQueueStateJob
-    @Ref() readonly inputField!: FocusableRef
-
-    count = 1
-
-    countInputRules = [
-        (value: string) => !!value || this.$t('JobQueue.InvalidCountEmpty'),
-        (value: string) => parseInt(value) > 0 || this.$t('JobQueue.InvalidCountGreaterZero'),
-    ]
-
-    update() {
-        this.$store.dispatch('server/jobQueue/changeCount', {
-            job_id: this.job.job_id,
-            count: this.count,
-        })
-
-        this.closeDialog()
-    }
-
-    closeDialog() {
-        this.showDialog = false
-    }
-
-    @Watch('showDialog')
-    onShowDialogChanged(newVal: boolean) {
-        if (!newVal) return
-
-        this.count = (this.job.combinedIds?.length ?? 0) + 1
-        setTimeout(() => {
-            this.inputField.focus()
-        })
-    }
-}
 </script>

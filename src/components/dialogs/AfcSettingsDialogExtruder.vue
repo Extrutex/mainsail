@@ -9,7 +9,7 @@
                     v-for="lane in lanes"
                     :key="lane"
                     :disabled="!filledLanes.includes(lane)"
-                    small
+                    size="small"
                     class="ma-1"
                     :color="lane_loaded === lane ? 'primary' : ''"
                     @click="toggleLane(lane)">
@@ -89,130 +89,135 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
-import Panel from '@/components/ui/Panel.vue'
 import AfcMixin from '@/components/mixins/afc'
 import { convertName } from '@/plugins/helpers'
 
-@Component({
-    components: { Panel },
-})
-export default class AfcSettingsDialogExtruder extends Mixins(BaseMixin, AfcMixin) {
-    @Prop({ type: String, required: true }) readonly name!: string
+export default defineComponent({
+    name: 'AfcSettingsDialogExtruder',
+    mixins: [BaseMixin, AfcMixin],
+    props: {
+        name: { type: String, required: true },
+    },
+    data() {
+        return {
+            changedValue: false,
+        }
+    },
+    computed: {
+        title() {
+            const name = convertName(this.name)
 
-    changedValue = false
+            return this.$t('Panels.AfcPanel.SettingsDialog.SettingsForTitle', { name })
+        },
 
-    get title() {
-        const name = convertName(this.name)
+        afcSettingsExtruder() {
+            return this.getAfcExtruderSettings(this.name)
+        },
 
-        return this.$t('Panels.AfcPanel.SettingsDialog.SettingsForTitle', { name })
-    }
+        settingsToolStn() {
+            return this.afcSettingsExtruder.tool_stn || 0
+        },
 
-    get afcSettingsExtruder() {
-        return this.getAfcExtruderSettings(this.name)
-    }
+        settingsToolStnUnload() {
+            return this.afcSettingsExtruder.tool_stn_unload || 0
+        },
 
-    get settingsToolStn() {
-        return this.afcSettingsExtruder.tool_stn || 0
-    }
+        settingsToolSensorAfterExtruder() {
+            return this.afcSettingsExtruder.tool_sensor_after_extruder || 0
+        },
 
-    get settingsToolStnUnload() {
-        return this.afcSettingsExtruder.tool_stn_unload || 0
-    }
+        printerObject() {
+            return this.getAfcExtruderObject(this.name)
+        },
 
-    get settingsToolSensorAfterExtruder() {
-        return this.afcSettingsExtruder.tool_sensor_after_extruder || 0
-    }
+        currentToolStn() {
+            return this.printerObject.tool_stn || 0
+        },
 
-    get printerObject() {
-        return this.getAfcExtruderObject(this.name)
-    }
+        currentToolStnUnload() {
+            return this.printerObject.tool_stn_unload || 0
+        },
 
-    get currentToolStn() {
-        return this.printerObject.tool_stn || 0
-    }
+        currentToolSensorAfterExtruder() {
+            return this.printerObject.tool_sensor_after_extruder || 0
+        },
 
-    get currentToolStnUnload() {
-        return this.printerObject.tool_stn_unload || 0
-    }
+        lanes() {
+            return this.printerObject.lanes ?? []
+        },
 
-    get currentToolSensorAfterExtruder() {
-        return this.printerObject.tool_sensor_after_extruder || 0
-    }
+        lane_loaded() {
+            return this.printerObject.lane_loaded ?? ''
+        },
 
-    get lanes() {
-        return this.printerObject.lanes ?? []
-    }
+        filledLanes() {
+            const filledLanes = []
 
-    get lane_loaded() {
-        return this.printerObject.lane_loaded ?? ''
-    }
+            for (const lane of this.lanes) {
+                const laneObject = this.getAfcLaneObject(lane)
 
-    get filledLanes() {
-        const filledLanes = []
-
-        for (const lane of this.lanes) {
-            const laneObject = this.getAfcLaneObject(lane)
-
-            if (laneObject?.load && laneObject?.prep) {
-                filledLanes.push(lane)
+                if (laneObject?.load && laneObject?.prep) {
+                    filledLanes.push(lane)
+                }
             }
-        }
 
-        return filledLanes
-    }
+            return filledLanes
+        },
 
-    get existsToolEndSensor() {
-        return 'pin_tool_end' in this.afcSettingsExtruder
-    }
+        existsToolEndSensor() {
+            return 'pin_tool_end' in this.afcSettingsExtruder
+        },
 
-    get toolStnSubTitle() {
-        if (this.existsToolEndSensor) {
-            return this.$t('Panels.AfcPanel.SettingsDialog.ToolStnDescriptionWithEndSensor')
-        }
+        toolStnSubTitle() {
+            if (this.existsToolEndSensor) {
+                return this.$t('Panels.AfcPanel.SettingsDialog.ToolStnDescriptionWithEndSensor')
+            }
 
-        if (this.afcSettingsExtruder.pin_tool_start === 'buffer') {
-            return this.$t('Panels.AfcPanel.SettingsDialog.ToolStnDescriptionWithRamming')
-        }
+            if (this.afcSettingsExtruder.pin_tool_start === 'buffer') {
+                return this.$t('Panels.AfcPanel.SettingsDialog.ToolStnDescriptionWithRamming')
+            }
 
-        return this.$t('Panels.AfcPanel.SettingsDialog.ToolStnDescriptionWithoutEndSensor')
-    }
+            return this.$t('Panels.AfcPanel.SettingsDialog.ToolStnDescriptionWithoutEndSensor')
+        },
 
-    get enableSaveButton() {
-        if (!this.changedValue) return false
+        enableSaveButton() {
+            if (!this.changedValue) return false
 
-        return (
-            this.currentToolStn !== this.settingsToolStn ||
-            this.currentToolStnUnload !== this.settingsToolStnUnload ||
-            this.currentToolSensorAfterExtruder !== this.settingsToolSensorAfterExtruder
-        )
-    }
+            return (
+                this.currentToolStn !== this.settingsToolStn ||
+                this.currentToolStnUnload !== this.settingsToolStnUnload ||
+                this.currentToolSensorAfterExtruder !== this.settingsToolSensorAfterExtruder
+            )
+        },
+    },
+    methods: {
+        toggleLane(lane: string) {
+            if (this.lane_loaded === lane) {
+                this.doSend(`TOOL_UNLOAD LANE=${lane}`)
 
-    toggleLane(lane: string) {
-        if (this.lane_loaded === lane) {
-            this.doSend(`TOOL_UNLOAD LANE=${lane}`)
+                return
+            }
 
-            return
-        }
+            this.doSend(`CHANGE_TOOL LANE=${lane}`)
+        },
 
-        this.doSend(`CHANGE_TOOL LANE=${lane}`)
-    }
+        updateToolheadSensors(args: { name: string; value: number }) {
+            this.changedValue = true
+            this.doSend(`UPDATE_TOOLHEAD_SENSORS EXTRUDER=${this.name} ${args.name}=${args.value}`)
+        },
 
-    updateToolheadSensors(args: { name: string; value: number }) {
-        this.changedValue = true
-        this.doSend(`UPDATE_TOOLHEAD_SENSORS EXTRUDER=${this.name} ${args.name}=${args.value}`)
-    }
+        saveExtruderValues() {
+            this.changedValue = false
+            const gcode = `SAVE_EXTRUDER_VALUES EXTRUDER=${this.name}`
+            this.doSend(gcode)
+        },
 
-    saveExtruderValues() {
-        this.changedValue = false
-        const gcode = `SAVE_EXTRUDER_VALUES EXTRUDER=${this.name}`
-        this.doSend(gcode)
-    }
-
-    doSend(gcode: string) {
-        this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
-        this.$socket.emit('printer.gcode.script', { script: gcode })
-    }
-}
+        doSend(gcode: string) {
+            this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
+            this.$socket.emit('printer.gcode.script', { script: gcode })
+        },
+    },
+})
 </script>

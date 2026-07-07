@@ -1,16 +1,15 @@
 <template>
     <v-dialog v-model="isOpen" transition="dialog-bottom-transition" max-width="600" :fullscreen="isMobile">
-        <template #activator="{ on, attrs }">
-            <v-btn v-if="inToolbar" icon tile v-bind="attrs" v-on="on">
-                <v-icon small>{{ mdiHelp }}</v-icon>
+        <template #activator="{ props }">
+            <v-btn v-if="inToolbar" icon tile v-bind="props">
+                <v-icon size="small">{{ mdiHelp }}</v-icon>
             </v-btn>
             <v-btn
                 v-else
                 class="gcode-command-btn px-2 minwidth-0"
                 color="lightgray"
-                :small="isMini"
-                v-bind="attrs"
-                v-on="on">
+                :size="isMini ? 'small' : 'default'"
+                v-bind="props">
                 <v-icon>{{ mdiHelp }}</v-icon>
             </v-btn>
         </template>
@@ -31,15 +30,17 @@
                             <v-text-field
                                 v-model="cmdListSearch"
                                 :label="$t('Console.Search')"
-                                outlined
+                                variant="outlined"
                                 hide-details
                                 clearable
-                                dense />
+                                density="compact" />
                         </v-col>
                     </v-row>
                 </v-card-title>
                 <v-divider />
-                <overlay-scrollbars class="command-help-content" :class="isMobile ? 'mobileHeight' : 'height300'">
+                <overlay-scrollbars-component
+                    class="command-help-content"
+                    :class="isMobile ? 'mobileHeight' : 'height300'">
                     <v-card-text class="pt-0">
                         <v-list>
                             <command-help-modal-entry
@@ -49,59 +50,66 @@
                                 @click-on-command="onCommand" />
                         </v-list>
                     </v-card-text>
-                </overlay-scrollbars>
+                </overlay-scrollbars-component>
             </panel>
         </template>
     </v-dialog>
 </template>
 
 <script lang="ts">
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
-import { Mixins, Prop, Watch } from 'vue-property-decorator'
-import Component from 'vue-class-component'
 import Panel from '@/components/ui/Panel.vue'
 import { mdiHelp, mdiCloseThick } from '@mdi/js'
 import CommandHelpModalEntry from '@/components/console/CommandHelpModalEntry.vue'
+import { OverlayScrollbarsComponent } from 'overlayscrollbars-vue'
 
-@Component({
-    components: { CommandHelpModalEntry, Panel },
+export default defineComponent({
+    name: 'CommandHelpModal',
+    components: { CommandHelpModalEntry, Panel, OverlayScrollbarsComponent },
+    mixins: [BaseMixin],
+    props: {
+        isMini: { type: Boolean, required: false, default: false },
+        inToolbar: { type: Boolean, required: false, default: false },
+    },
+    emits: ['onCommand'],
+    data() {
+        return {
+            cmdListSearch: '',
+            isOpen: false,
+
+            /**
+             * Icons
+             */
+            mdiHelp: mdiHelp,
+            mdiCloseThick: mdiCloseThick,
+        }
+    },
+    computed: {
+        helplist(): string[] {
+            return Object.keys(this.$store.state.printer.gcode?.commands ?? {})
+        },
+
+        helplistFiltered(): string[] {
+            return this.helplist
+                .filter((cmd) => cmd.includes(this.cmdListSearch.toUpperCase()))
+                .sort((a, b) => a.localeCompare(b))
+        },
+    },
+    watch: {
+        isOpen(val: boolean) {
+            if (val) return
+
+            this.cmdListSearch = ''
+        },
+    },
+    methods: {
+        onCommand(gcode: string): void {
+            this.$emit('onCommand', gcode)
+            this.isOpen = false
+        },
+    },
 })
-export default class CommandHelpModal extends Mixins(BaseMixin) {
-    @Prop({ required: false, default: false }) readonly isMini!: boolean
-    @Prop({ required: false, default: false }) readonly inToolbar!: boolean
-
-    cmdListSearch = ''
-    isOpen = false
-
-    /**
-     * Icons
-     */
-
-    mdiHelp = mdiHelp
-    mdiCloseThick = mdiCloseThick
-
-    get helplist(): string[] {
-        return Object.keys(this.$store.state.printer.gcode?.commands ?? {})
-    }
-
-    get helplistFiltered(): string[] {
-        return this.helplist
-            .filter((cmd) => cmd.includes(this.cmdListSearch.toUpperCase()))
-            .sort((a, b) => a.localeCompare(b))
-    }
-
-    onCommand(gcode: string): void {
-        this.$emit('onCommand', gcode)
-        this.isOpen = false
-    }
-
-    @Watch('isOpen')
-    onIsOpen(val: boolean): void {
-        if (val) return
-
-        this.cmdListSearch = ''
-    }
-}
 </script>
 
 <style scoped>

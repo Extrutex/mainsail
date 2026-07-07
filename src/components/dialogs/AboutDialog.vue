@@ -1,7 +1,7 @@
 <template>
-    <v-tooltip right color="panel">
-        <template #activator="{ on, attrs }">
-            <v-icon v-bind="attrs" v-on="on">
+    <v-tooltip location="end">
+        <template #activator="{ props }">
+            <v-icon v-bind="props">
                 {{ mdiHelpCircleOutline }}
             </v-icon>
         </template>
@@ -9,7 +9,7 @@
             <div><img height="12" src="/img/logo.svg" alt="mainsail-logo" /></div>
             <div>v{{ mainsailVersion }}</div>
             <div>
-                <v-icon small class="moonraker-logo">{{ mdiMoonWaningCrescent }}</v-icon>
+                <v-icon size="small" class="moonraker-logo">{{ mdiMoonWaningCrescent }}</v-icon>
             </div>
             <div>{{ moonrakerVersion }}</div>
             <div><img height="12" src="/img/klipper.svg" class="klipper-logo" alt="klipper-logo" /></div>
@@ -19,29 +19,34 @@
 </template>
 
 <script lang="ts">
+import { defineComponent } from 'vue'
 import BaseMixin from '../mixins/base'
-import { Mixins } from 'vue-property-decorator'
-import Component from 'vue-class-component'
 import { mdiCloseThick, mdiHelpCircleOutline, mdiMoonWaningCrescent } from '@mdi/js'
 
-@Component({})
-export default class AboutDialog extends Mixins(BaseMixin) {
-    mdiHelpCircleOutline = mdiHelpCircleOutline
-    mdiCloseThick = mdiCloseThick
-    mdiMoonWaningCrescent = mdiMoonWaningCrescent
+export default defineComponent({
+    name: 'AboutDialog',
+    mixins: [BaseMixin],
+    data() {
+        return {
+            mdiHelpCircleOutline: mdiHelpCircleOutline,
+            mdiCloseThick: mdiCloseThick,
+            mdiMoonWaningCrescent: mdiMoonWaningCrescent,
+        }
+    },
+    computed: {
+        mainsailVersion(): string {
+            return this.$store.state.packageVersion
+        },
 
-    get mainsailVersion(): string {
-        return this.$store.state.packageVersion
-    }
+        klipperVersion(): string {
+            return this.$store.state.printer?.software_version ?? ''
+        },
 
-    get klipperVersion(): string {
-        return this.$store.state.printer?.software_version ?? ''
-    }
-
-    get moonrakerVersion(): string {
-        return this.$store.state.server?.moonraker_version ?? ''
-    }
-}
+        moonrakerVersion(): string {
+            return this.$store.state.server?.moonraker_version ?? ''
+        },
+    },
+})
 </script>
 
 <style scoped>

@@ -13,13 +13,14 @@
     </div>
 </template>
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import HistoryListPanel from '@/components/panels/HistoryListPanel.vue'
 import HistoryStatisticsPanel from '@/components/panels/HistoryStatisticsPanel.vue'
 
-@Component({
+export default defineComponent({
+    name: 'PageHistory',
     components: { HistoryListPanel, HistoryStatisticsPanel },
+    mixins: [BaseMixin],
 })
-export default class PageHistory extends Mixins(BaseMixin) {}
 </script>

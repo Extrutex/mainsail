@@ -21,12 +21,18 @@
                         hide-spin-buttons
                         type="number"
                         :rules="rules.count">
-                        <template #append-outer>
+                        <template #append>
                             <div class="_spin_button_group">
-                                <v-btn class="mt-n3" icon plain small @click="input++">
+                                <v-btn class="mt-n3" icon variant="plain" size="small" @click="input++">
                                     <v-icon>{{ mdiChevronUp }}</v-icon>
                                 </v-btn>
-                                <v-btn :disabled="input <= 1" class="mb-n3" icon plain small @click="input--">
+                                <v-btn
+                                    :disabled="input <= 1"
+                                    class="mb-n3"
+                                    icon
+                                    variant="plain"
+                                    size="small"
+                                    @click="input--">
                                     <v-icon>{{ mdiChevronDown }}</v-icon>
                                 </v-btn>
                             </div>
@@ -35,8 +41,8 @@
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer />
-                    <v-btn text @click="closeDialog">{{ $t('Buttons.Cancel') }}</v-btn>
-                    <v-btn color="primary" text type="submit" :disabled="!isValid">
+                    <v-btn variant="text" @click="closeDialog">{{ $t('Buttons.Cancel') }}</v-btn>
+                    <v-btn color="primary" variant="text" type="submit" :disabled="!isValid">
                         {{ $t('Files.AddToQueue') }}
                     </v-btn>
                 </v-card-actions>
@@ -46,64 +52,78 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, Prop, Ref, VModel, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import type { FocusableRef } from '@/types/vuetify'
 import BaseMixin from '@/components/mixins/base'
 import { mdiChevronDown, mdiChevronUp, mdiPlaylistPlus, mdiCloseThick } from '@mdi/js'
 
-@Component
-export default class AddBatchToQueueDialog extends Mixins(BaseMixin) {
-    mdiChevronDown = mdiChevronDown
-    mdiChevronUp = mdiChevronUp
-    mdiPlaylistPlus = mdiPlaylistPlus
-    mdiCloseThick = mdiCloseThick
+export default defineComponent({
+    name: 'AddBatchToQueueDialog',
+    mixins: [BaseMixin],
+    props: {
+        modelValue: { type: Boolean, default: false },
+        showToast: { type: Boolean, default: false },
+        filename: { type: String, required: true },
+    },
+    emits: ['update:modelValue'],
+    data() {
+        return {
+            mdiChevronDown: mdiChevronDown,
+            mdiChevronUp: mdiChevronUp,
+            mdiPlaylistPlus: mdiPlaylistPlus,
+            mdiCloseThick: mdiCloseThick,
+            isValid: false,
+            // because of the text field, the input is always a string
+            input: '1' as string,
+        }
+    },
+    computed: {
+        showDialog: {
+            get(): boolean {
+                return this.modelValue
+            },
+            set(newVal: boolean) {
+                this.$emit('update:modelValue', newVal)
+            },
+        },
+        rules() {
+            return {
+                count: [
+                    (value: string) => !!value || this.$t('JobQueue.InvalidCountEmpty'),
+                    (value: string) => parseInt(value, 10) > 0 || this.$t('JobQueue.InvalidCountGreaterZero'),
+                ],
+            }
+        },
+    },
+    methods: {
+        async addBatchToQueueAction() {
+            const array = Array(parseInt(this.input)).fill(this.filename)
 
-    @VModel({ type: Boolean }) showDialog!: boolean
-    @Prop({ type: Boolean, default: false }) readonly showToast!: boolean
-    @Prop({ type: String, required: true }) readonly filename!: string
-    @Ref() readonly inputField!: FocusableRef
+            await this.$store.dispatch('server/jobQueue/addToQueue', array)
 
-    isValid = false
-    // because of the text field, the input is always a string
-    input: string = '1'
+            if (this.showToast)
+                this.$toast.info(this.$t('History.AddToQueueSuccessful', { filename: this.filename }).toString())
 
-    rules = {
-        count: [
-            (value: string) => !!value || this.$t('JobQueue.InvalidCountEmpty'),
-            (value: string) => parseInt(value, 10) > 0 || this.$t('JobQueue.InvalidCountGreaterZero'),
-        ],
-    }
+            this.closeDialog()
+        },
+        closeDialog() {
+            this.showDialog = false
+        },
+        resetFormState() {
+            this.input = '1'
+        },
+    },
+    watch: {
+        showDialog(newVal: boolean) {
+            if (!newVal) return
 
-    async addBatchToQueueAction() {
-        const array = Array(parseInt(this.input)).fill(this.filename)
-
-        await this.$store.dispatch('server/jobQueue/addToQueue', array)
-
-        if (this.showToast)
-            this.$toast.info(this.$t('History.AddToQueueSuccessful', { filename: this.filename }).toString())
-
-        this.closeDialog()
-    }
-
-    closeDialog() {
-        this.showDialog = false
-    }
-
-    resetFormState() {
-        this.input = '1'
-    }
-
-    @Watch('showDialog')
-    onShowDialogChanged(newVal: boolean) {
-        if (!newVal) return
-
-        this.resetFormState()
-        setTimeout(() => {
-            this.inputField?.focus()
-        })
-    }
-}
+            this.resetFormState()
+            setTimeout(() => {
+                ;(this.$refs.inputField as FocusableRef)?.focus()
+            })
+        },
+    },
+})
 </script>
 
 <style scoped>

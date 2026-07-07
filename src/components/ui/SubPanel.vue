@@ -12,8 +12,8 @@
 <template>
     <div>
         <div class="px-3 d-flex align-center">
-            <v-btn class="px-0 btn-collapsible" plain small :ripple="false" @click="expand = !expand">
-                <v-icon small :class="!expand ? 'icon-rotate-n90' : ''">
+            <v-btn class="px-0 btn-collapsible" variant="plain" size="small" :ripple="false" @click="expand = !expand">
+                <v-icon size="small" :class="!expand ? 'icon-rotate-n90' : ''">
                     {{ expand ? iconExpanded : iconCollapsed }}
                 </v-icon>
                 <span class="pl-1">{{ title }}</span>
@@ -29,28 +29,33 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
+import type { PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { mdiChevronDown } from '@mdi/js'
 
-@Component
-export default class Panel extends Mixins(BaseMixin) {
-    @Prop({ required: false, default: mdiChevronDown }) declare readonly iconExpanded: string | null
-    @Prop({ required: false, default: mdiChevronDown }) declare readonly iconCollapsed: string | null
-    @Prop({ required: true, default: '' }) declare readonly title: string
-    @Prop({ required: true }) declare readonly subPanelClass: string
-
-    get expand() {
-        return this.$store.getters['gui/getPanelExpand'](this.subPanelClass, this.viewport)
-    }
-
-    set expand(newVal) {
-        this.$store.dispatch('gui/saveExpandPanel', {
-            name: this.subPanelClass,
-            value: newVal,
-            viewport: this.viewport,
-        })
-    }
-}
+export default defineComponent({
+    name: 'SubPanel',
+    mixins: [BaseMixin],
+    props: {
+        iconExpanded: { type: String as PropType<string | null>, required: false, default: mdiChevronDown },
+        iconCollapsed: { type: String as PropType<string | null>, required: false, default: mdiChevronDown },
+        title: { type: String, required: true, default: '' },
+        subPanelClass: { type: String, required: true },
+    },
+    computed: {
+        expand: {
+            get(): boolean {
+                return this.$store.getters['gui/getPanelExpand'](this.subPanelClass, this.viewport)
+            },
+            set(newVal: boolean) {
+                this.$store.dispatch('gui/saveExpandPanel', {
+                    name: this.subPanelClass,
+                    value: newVal,
+                    viewport: this.viewport,
+                })
+            },
+        },
+    },
+})
 </script>

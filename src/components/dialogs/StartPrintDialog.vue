@@ -20,10 +20,10 @@
             <v-divider v-if="showDivider" class="my-0" />
             <v-card-actions>
                 <v-spacer />
-                <v-btn text @click="closeDialog">{{ $t('Buttons.Cancel') }}</v-btn>
+                <v-btn variant="text" @click="closeDialog">{{ $t('Buttons.Cancel') }}</v-btn>
                 <v-btn
                     color="primary"
-                    text
+                    variant="text"
                     :disabled="printerIsPrinting || !klipperReadyForGui"
                     @click="startPrint(file.filename)">
                     {{ $t('Dialogs.StartPrint.Print') }}
@@ -34,7 +34,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop, VModel } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
+import type { PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { FileStateGcodefile } from '@/store/files/types'
 import SettingsRow from '@/components/settings/SettingsRow.vue'
@@ -42,53 +43,65 @@ import { mdiPrinter3d } from '@mdi/js'
 import { ServerSpoolmanStateSpool } from '@/store/server/spoolman/types'
 import AfcMixin from '@/components/mixins/afc'
 
-@Component({
+export default defineComponent({
+    name: 'StartPrintDialog',
     components: { SettingsRow },
-})
-export default class StartPrintDialog extends Mixins(BaseMixin, AfcMixin) {
-    mdiPrinter3d = mdiPrinter3d
+    mixins: [BaseMixin, AfcMixin],
+    props: {
+        modelValue: { type: Boolean, default: false },
+        currentPath: { type: String, required: true, default: '' },
+        file: { type: Object as PropType<FileStateGcodefile>, required: true },
+    },
+    emits: ['update:modelValue'],
+    data() {
+        return {
+            mdiPrinter3d: mdiPrinter3d,
+        }
+    },
+    computed: {
+        showDialog: {
+            get(): boolean {
+                return this.modelValue
+            },
+            set(newVal: boolean) {
+                this.$emit('update:modelValue', newVal)
+            },
+        },
+        existsMmu() {
+            return this.$store.state.printer.mmu?.enabled && this.$store.state.printer.mmu?.gate !== -2
+        },
+        existsSpoolman() {
+            return this.moonrakerComponents.includes('spoolman')
+        },
+        existsTimelapse() {
+            return this.moonrakerComponents.includes('timelapse')
+        },
+        showDivider() {
+            return this.afcExists || this.existsSpoolman || this.existsTimelapse
+        },
+        active_spool(): ServerSpoolmanStateSpool | null {
+            return this.$store.state.server.spoolman.active_spool ?? null
+        },
+        question() {
+            if (this.active_spool)
+                return this.$t('Dialogs.StartPrint.DoYouWantToStartFilenameFilament', {
+                    filename: this.file?.filename ?? 'unknown',
+                })
 
-    @VModel({ type: Boolean }) showDialog!: boolean
-    @Prop({ required: true, default: '' }) readonly currentPath!: string
-    @Prop({ required: true }) readonly file!: FileStateGcodefile
-
-    get existsMmu() {
-        return this.$store.state.printer.mmu?.enabled && this.$store.state.printer.mmu?.gate !== -2
-    }
-
-    get existsSpoolman() {
-        return this.moonrakerComponents.includes('spoolman')
-    }
-
-    get existsTimelapse() {
-        return this.moonrakerComponents.includes('timelapse')
-    }
-
-    get showDivider() {
-        return this.afcExists || this.existsSpoolman || this.existsTimelapse
-    }
-
-    get active_spool(): ServerSpoolmanStateSpool | null {
-        return this.$store.state.server.spoolman.active_spool ?? null
-    }
-
-    get question() {
-        if (this.active_spool)
-            return this.$t('Dialogs.StartPrint.DoYouWantToStartFilenameFilament', {
+            return this.$t('Dialogs.StartPrint.DoYouWantToStartFilename', {
                 filename: this.file?.filename ?? 'unknown',
             })
-
-        return this.$t('Dialogs.StartPrint.DoYouWantToStartFilename', { filename: this.file?.filename ?? 'unknown' })
-    }
-
-    startPrint(filename = '') {
-        filename = (this.currentPath + '/' + filename).substring(1)
-        this.closeDialog()
-        this.$socket.emit('printer.print.start', { filename: filename }, { action: 'switchToDashboard' })
-    }
-
-    closeDialog() {
-        this.showDialog = false
-    }
-}
+        },
+    },
+    methods: {
+        startPrint(filename = '') {
+            filename = (this.currentPath + '/' + filename).substring(1)
+            this.closeDialog()
+            this.$socket.emit('printer.print.start', { filename: filename }, { action: 'switchToDashboard' })
+        },
+        closeDialog() {
+            this.showDialog = false
+        },
+    },
+})
 </script>

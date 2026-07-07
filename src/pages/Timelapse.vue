@@ -1,22 +1,22 @@
-<style scoped></style>
-
 <template>
     <v-row>
-        <v-col class="col-12 col-md-8 pt-0 pt-md-3" :order="$vuetify.breakpoint.mdAndUp ? '' : '2'">
+        <v-col cols="12" md="8" class="pt-0 pt-md-3" :order="$vuetify.display.mdAndUp ? '' : '2'">
             <timelapse-files-panel></timelapse-files-panel>
         </v-col>
-        <v-col class="col-12 col-md-4" :order="$vuetify.breakpoint.mdAndUp ? '' : '1'">
+        <v-col cols="12" md="4" :order="$vuetify.display.mdAndUp ? '' : '1'">
             <timelapse-status-panel></timelapse-status-panel>
         </v-col>
     </v-row>
 </template>
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import TimelapseFilesPanel from '@/components/panels/Timelapse/TimelapseFilesPanel.vue'
 import TimelapseStatusPanel from '@/components/panels/Timelapse/TimelapseStatusPanel.vue'
-@Component({
+
+export default defineComponent({
+    name: 'PageTimelapse',
     components: { TimelapseStatusPanel, TimelapseFilesPanel },
+    mixins: [BaseMixin],
 })
-export default class PageTimelapse extends Mixins(BaseMixin) {}
 </script>

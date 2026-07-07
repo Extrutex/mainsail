@@ -4,11 +4,11 @@
     <v-card-text class="pa-0">
         <v-container class="py-0">
             <v-row class="text-center py-5" align="center">
-                <v-col class="col-3 pa-0">
+                <v-col cols="3" class="pa-0">
                     <template v-if="live_velocity !== null">
-                        <v-tooltip top>
-                            <template #activator="{ on, attrs }">
-                                <div v-bind="attrs" v-on="on">
+                        <v-tooltip location="top">
+                            <template #activator="{ props }">
+                                <div v-bind="props">
                                     <strong>{{ $t('Panels.StatusPanel.Speed') }}</strong>
                                     <br />
                                     <span class="text-no-wrap">{{ live_velocity }} mm/s</span>
@@ -23,10 +23,10 @@
                         <span class="text-no-wrap">{{ requested_speed }} mm/s</span>
                     </template>
                 </v-col>
-                <v-col class="col-3 pa-0">
-                    <v-tooltip top>
-                        <template #activator="{ on, attrs }">
-                            <div v-bind="attrs" v-on="on">
+                <v-col cols="3" class="pa-0">
+                    <v-tooltip location="top">
+                        <template #activator="{ props }">
+                            <div v-bind="props">
                                 <strong>{{ $t('Panels.StatusPanel.Flow') }}</strong>
                                 <br />
                                 <span class="d-block text-center text-no-wrap">
@@ -37,10 +37,10 @@
                         <span>{{ $t('Panels.StatusPanel.Max') }}: {{ outputMaxFlow }}</span>
                     </v-tooltip>
                 </v-col>
-                <v-col class="col-3 pa-0">
-                    <v-tooltip top>
-                        <template #activator="{ on, attrs }">
-                            <div v-bind="attrs" v-on="on">
+                <v-col cols="3" class="pa-0">
+                    <v-tooltip location="top">
+                        <template #activator="{ props }">
+                            <div v-bind="props">
                                 <strong>{{ outputFilamentTitle }}</strong>
                                 <br />
                                 <span class="d-block text-center text-no-wrap">
@@ -55,10 +55,10 @@
                         </span>
                     </v-tooltip>
                 </v-col>
-                <v-col class="col-3 pa-0 text-center">
-                    <v-tooltip top>
-                        <template #activator="{ on, attrs }">
-                            <div v-bind="attrs" class="text-center" v-on="on">
+                <v-col cols="3" class="pa-0 text-center">
+                    <v-tooltip location="top">
+                        <template #activator="{ props }">
+                            <div v-bind="props" class="text-center">
                                 <strong>{{ $t('Panels.StatusPanel.Layer') }}</strong>
                                 <br />
                                 <span class="text-no-wrap">{{ current_layer }} of {{ max_layers }}</span>
@@ -74,10 +74,10 @@
         <v-divider class="my-0"></v-divider>
         <v-container class="py-0">
             <v-row class="text-center pt-5 pb-2 mb-0" align="center">
-                <v-col class="col-3 pa-0">
-                    <v-tooltip top>
-                        <template #activator="{ on, attrs }">
-                            <div v-bind="attrs" class="text-center" v-on="on">
+                <v-col cols="3" class="pa-0">
+                    <v-tooltip location="top">
+                        <template #activator="{ props }">
+                            <div v-bind="props" class="text-center">
                                 <strong>{{ $t('Panels.StatusPanel.Estimate') }}</strong>
                                 <br />
                                 <span class="text-no-wrap">
@@ -94,17 +94,17 @@
                         </div>
                     </v-tooltip>
                 </v-col>
-                <v-col class="col-3 pa-0">
+                <v-col cols="3" class="pa-0">
                     <strong>{{ $t('Panels.StatusPanel.Slicer') }}</strong>
                     <br />
                     <span class="text-no-wrap">
                         {{ estimated_time_slicer ? formatDuration(estimated_time_slicer) : '--' }}
                     </span>
                 </v-col>
-                <v-col class="col-3 pa-0">
-                    <v-tooltip top>
-                        <template #activator="{ on, attrs }">
-                            <div v-bind="attrs" class="text-center" v-on="on">
+                <v-col cols="3" class="pa-0">
+                    <v-tooltip location="top">
+                        <template #activator="{ props }">
+                            <div v-bind="props" class="text-center">
                                 <strong>{{ $t('Panels.StatusPanel.Total') }}</strong>
                                 <br />
                                 <span class="text-no-wrap">
@@ -121,7 +121,7 @@
                         </div>
                     </v-tooltip>
                 </v-col>
-                <v-col class="col-3 pa-0">
+                <v-col cols="3" class="pa-0">
                     <strong>{{ $t('Panels.StatusPanel.ETA') }}</strong>
                     <br />
                     <span class="text-no-wrap">{{ eta }}</span>
@@ -132,137 +132,144 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import StatusPanelFilesJobqueue from '@/components/panels/Status/Jobqueue.vue'
 import StatusPanelFilesGcodes from '@/components/panels/Status/Gcodefiles.vue'
 import AfcMixin from '@/components/mixins/afc'
 
-@Component({
+export default defineComponent({
+    name: 'StatusPanelPrintstatusPrinting',
     components: {
         StatusPanelFilesJobqueue,
         StatusPanelFilesGcodes,
     },
-})
-export default class StatusPanelPrintstatusPrinting extends Mixins(BaseMixin, AfcMixin) {
-    private maxFlow: number = 0
-
-    get current_file() {
-        return this.$store.state.printer.current_file ?? {}
-    }
-
-    get live_velocity() {
-        return Math.abs(this.$store.state.printer.motion_report?.live_velocity?.toFixed(0)) ?? null
-    }
-
-    get live_extruder_velocity() {
-        const live_extruder_velocity = this.$store.state.printer.motion_report?.live_extruder_velocity ?? null
-        if (live_extruder_velocity === null) return null
-
-        return live_extruder_velocity > 0 ? live_extruder_velocity : 0
-    }
-
-    get live_flow() {
-        if (this.live_extruder_velocity === null) return null
-
-        const filamentCrossSection = Math.pow(this.filament_diameter / 2, 2) * Math.PI
-        const currentFlow = filamentCrossSection * this.live_extruder_velocity
-
-        if (currentFlow && this.maxFlow < currentFlow) this.maxFlow = currentFlow
-
-        return currentFlow?.toFixed(1)
-    }
-
-    get outputMaxFlow() {
-        return this.maxFlow ? this.maxFlow.toFixed(1) + ' mm³/s' : '--'
-    }
-
-    get requested_speed() {
-        const requested_speed = this.$store.state.printer.gcode_move?.speed ?? 0
-        const speed_factor = this.$store.state.printer.gcode_move?.speed_factor ?? 0
-        const max_velocity = this.$store.state.printer.toolhead?.max_velocity ?? 0
-
-        const speed = (requested_speed / 60) * speed_factor
-        if (speed > max_velocity) return max_velocity
-
-        return speed.toFixed(0)
-    }
-
-    get max_layers() {
-        return this.$store.getters['printer/getPrintMaxLayers'] ?? 0
-    }
-
-    get current_layer() {
-        return this.$store.getters['printer/getPrintCurrentLayer'] ?? 0
-    }
-
-    get estimated_time_file() {
-        return this.$store.getters['printer/getEstimatedTimeFile']
-    }
-
-    get estimated_time_filament() {
-        return this.$store.getters['printer/getEstimatedTimeFilament']
-    }
-
-    get estimated_time_slicer() {
-        return this.$store.getters['printer/getEstimatedTimeSlicer']
-    }
-
-    get estimated_time_avg() {
-        return this.$store.getters['printer/getEstimatedTimeAvg']
-    }
-
-    get eta() {
-        return this.$store.getters['printer/getEstimatedTimeETAFormat']
-    }
-
-    get filament_diameter() {
-        return this.$store.state.printer.configfile?.settings?.extruder?.filament_diameter ?? 1.75
-    }
-
-    get print_time() {
-        return this.$store.state.printer.print_stats?.print_duration ?? 0
-    }
-
-    get print_time_total() {
-        return this.$store.state.printer.print_stats?.total_duration ?? 0
-    }
-
-    get filament_used() {
-        return this.$store.state.printer.print_stats?.filament_used ?? 0
-    }
-
-    get showToolchange() {
-        return this.afcExists && this.current_file.filament_change_count > 10 && this.afcCurrentToolchange !== undefined
-    }
-
-    get outputFilamentTitle() {
-        if (this.showToolchange) return this.$t('Panels.StatusPanel.Toolchange')
-
-        return this.$t('Panels.StatusPanel.Filament')
-    }
-
-    get outputFilamentUsed() {
-        if (this.showToolchange) {
-            return `${this.afcCurrentToolchange} / ${this.current_file.filament_change_count}`
+    mixins: [BaseMixin, AfcMixin],
+    data() {
+        return {
+            maxFlow: 0,
         }
+    },
+    computed: {
+        current_file() {
+            return this.$store.state.printer.current_file ?? {}
+        },
 
-        return this.filament_used >= 1000
-            ? (this.filament_used / 1000).toFixed(2) + ' m'
-            : this.filament_used.toFixed(2) + ' mm'
-    }
+        live_velocity() {
+            return Math.abs(this.$store.state.printer.motion_report?.live_velocity?.toFixed(0)) ?? null
+        },
 
-    formatDuration(seconds: number) {
-        const prefix = seconds < 0 ? '-' : ''
-        let absSeconds = Math.abs(seconds)
+        live_extruder_velocity() {
+            const live_extruder_velocity = this.$store.state.printer.motion_report?.live_extruder_velocity ?? null
+            if (live_extruder_velocity === null) return null
 
-        const h = Math.floor(absSeconds / 3600)
-        absSeconds %= 3600
-        const m = ('0' + Math.floor(absSeconds / 60)).slice(-2)
-        const s = ('0' + Math.floor(absSeconds % 60)).slice(-2)
+            return live_extruder_velocity > 0 ? live_extruder_velocity : 0
+        },
 
-        return prefix + h + ':' + m + ':' + s
-    }
-}
+        live_flow() {
+            if (this.live_extruder_velocity === null) return null
+
+            const filamentCrossSection = Math.pow(this.filament_diameter / 2, 2) * Math.PI
+            const currentFlow = filamentCrossSection * this.live_extruder_velocity
+
+            if (currentFlow && this.maxFlow < currentFlow) this.maxFlow = currentFlow
+
+            return currentFlow?.toFixed(1)
+        },
+
+        outputMaxFlow() {
+            return this.maxFlow ? this.maxFlow.toFixed(1) + ' mm³/s' : '--'
+        },
+
+        requested_speed() {
+            const requested_speed = this.$store.state.printer.gcode_move?.speed ?? 0
+            const speed_factor = this.$store.state.printer.gcode_move?.speed_factor ?? 0
+            const max_velocity = this.$store.state.printer.toolhead?.max_velocity ?? 0
+
+            const speed = (requested_speed / 60) * speed_factor
+            if (speed > max_velocity) return max_velocity
+
+            return speed.toFixed(0)
+        },
+
+        max_layers() {
+            return this.$store.getters['printer/getPrintMaxLayers'] ?? 0
+        },
+
+        current_layer() {
+            return this.$store.getters['printer/getPrintCurrentLayer'] ?? 0
+        },
+
+        estimated_time_file() {
+            return this.$store.getters['printer/getEstimatedTimeFile']
+        },
+
+        estimated_time_filament() {
+            return this.$store.getters['printer/getEstimatedTimeFilament']
+        },
+
+        estimated_time_slicer() {
+            return this.$store.getters['printer/getEstimatedTimeSlicer']
+        },
+
+        estimated_time_avg() {
+            return this.$store.getters['printer/getEstimatedTimeAvg']
+        },
+
+        eta() {
+            return this.$store.getters['printer/getEstimatedTimeETAFormat']
+        },
+
+        filament_diameter() {
+            return this.$store.state.printer.configfile?.settings?.extruder?.filament_diameter ?? 1.75
+        },
+
+        print_time() {
+            return this.$store.state.printer.print_stats?.print_duration ?? 0
+        },
+
+        print_time_total() {
+            return this.$store.state.printer.print_stats?.total_duration ?? 0
+        },
+
+        filament_used() {
+            return this.$store.state.printer.print_stats?.filament_used ?? 0
+        },
+
+        showToolchange() {
+            return (
+                this.afcExists && this.current_file.filament_change_count > 10 && this.afcCurrentToolchange !== undefined
+            )
+        },
+
+        outputFilamentTitle() {
+            if (this.showToolchange) return this.$t('Panels.StatusPanel.Toolchange')
+
+            return this.$t('Panels.StatusPanel.Filament')
+        },
+
+        outputFilamentUsed() {
+            if (this.showToolchange) {
+                return `${this.afcCurrentToolchange} / ${this.current_file.filament_change_count}`
+            }
+
+            return this.filament_used >= 1000
+                ? (this.filament_used / 1000).toFixed(2) + ' m'
+                : this.filament_used.toFixed(2) + ' mm'
+        },
+    },
+    methods: {
+        formatDuration(seconds: number) {
+            const prefix = seconds < 0 ? '-' : ''
+            let absSeconds = Math.abs(seconds)
+
+            const h = Math.floor(absSeconds / 3600)
+            absSeconds %= 3600
+            const m = ('0' + Math.floor(absSeconds / 60)).slice(-2)
+            const s = ('0' + Math.floor(absSeconds % 60)).slice(-2)
+
+            return prefix + h + ':' + m + ':' + s
+        },
+    },
+})
 </script>

@@ -1,10 +1,11 @@
 <template>
-    <v-card ref="filesGcodeCard" class="filesGcodeCard" flat>
+    <v-card ref="filesGcodeCard" class="filesGcodeCard" variant="flat">
         <v-data-table
             :items="gcodeFiles"
+            hide-default-header
             hide-default-footer
             class="dashboard-gcodes-table"
-            sort-by="time_added"
+            :sort-by="[{ key: 'time_added' }]"
             mobile-breakpoint="0">
             <template #no-data>
                 <div class="text-center">{{ $t('Panels.StatusPanel.EmptyGcodes') }}</div>
@@ -18,91 +19,92 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, Ref } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
+import type { ComponentPublicInstance } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import ControlMixin from '@/components/mixins/control'
 import { FileStateGcodefile } from '@/store/files/types'
 import Panel from '@/components/ui/Panel.vue'
 import StatusPanelGcodefilesEntry from '@/components/panels/Status/GcodefilesEntry.vue'
-import Vue from 'vue'
-import { Debounce } from 'vue-debounce-decorator'
+import { debounce } from '@/plugins/helpers'
 
-@Component({
+export default defineComponent({
+    name: 'StatusPanelGcodefiles',
     components: { Panel, StatusPanelGcodefilesEntry },
-})
-export default class StatusPanelGcodefiles extends Mixins(BaseMixin, ControlMixin) {
-    contentTdWidth = 100
-    resizeObserver: ResizeObserver | null = null
-
-    @Ref() readonly filesGcodeCard!: Vue
-
-    get filesLimit() {
-        return this.$store.state.gui.uiSettings.dashboardFilesLimit ?? 5
-    }
-
-    get filesFilter() {
-        return this.$store.state.gui.uiSettings.dashboardFilesFilter ?? []
-    }
-
-    get gcodeFiles() {
-        let gcodes = this.$store.getters['files/getAllGcodes'] ?? []
-
-        if (this.filesFilter.length > 0 && this.filesFilter.length < 3) {
-            gcodes = gcodes.filter((file: FileStateGcodefile) => {
-                if (this.filesFilter.includes('new') && file.last_status === null) return true
-                if (this.filesFilter.includes('completed') && file.last_status === 'completed') return true
-                if (
-                    this.filesFilter.includes('failed') &&
-                    file.last_status !== null &&
-                    file.last_status !== 'completed'
-                )
-                    return true
-
-                return false
-            })
+    mixins: [BaseMixin, ControlMixin],
+    data() {
+        return {
+            contentTdWidth: 100,
+            resizeObserver: null as ResizeObserver | null,
         }
+    },
+    computed: {
+        filesLimit() {
+            return this.$store.state.gui.uiSettings.dashboardFilesLimit ?? 5
+        },
 
-        gcodes = gcodes
-            .sort((a: FileStateGcodefile, b: FileStateGcodefile) => {
-                return b.modified.getTime() - a.modified.getTime()
-            })
-            .slice(0, this.filesLimit)
+        filesFilter() {
+            return this.$store.state.gui.uiSettings.dashboardFilesFilter ?? []
+        },
 
-        const requestItems = gcodes.filter(
-            (file: FileStateGcodefile) => !file.metadataRequested && !file.metadataPulled
-        )
-        this.$store.dispatch(
-            'files/requestMetadata',
-            requestItems.map((file: FileStateGcodefile) => ({
-                filename: 'gcodes/' + file.filename,
-            }))
-        )
-        return gcodes
-    }
+        gcodeFiles() {
+            let gcodes = this.$store.getters['files/getAllGcodes'] ?? []
 
+            if (this.filesFilter.length > 0 && this.filesFilter.length < 3) {
+                gcodes = gcodes.filter((file: FileStateGcodefile) => {
+                    if (this.filesFilter.includes('new') && file.last_status === null) return true
+                    if (this.filesFilter.includes('completed') && file.last_status === 'completed') return true
+                    if (
+                        this.filesFilter.includes('failed') &&
+                        file.last_status !== null &&
+                        file.last_status !== 'completed'
+                    )
+                        return true
+
+                    return false
+                })
+            }
+
+            gcodes = gcodes
+                .sort((a: FileStateGcodefile, b: FileStateGcodefile) => {
+                    return b.modified.getTime() - a.modified.getTime()
+                })
+                .slice(0, this.filesLimit)
+
+            const requestItems = gcodes.filter(
+                (file: FileStateGcodefile) => !file.metadataRequested && !file.metadataPulled
+            )
+            this.$store.dispatch(
+                'files/requestMetadata',
+                requestItems.map((file: FileStateGcodefile) => ({
+                    filename: 'gcodes/' + file.filename,
+                }))
+            )
+            return gcodes
+        },
+    },
     mounted() {
         this.resizeObserver = new ResizeObserver(() => this.handleResize())
-        this.resizeObserver.observe(this.filesGcodeCard.$el)
+        this.resizeObserver.observe((this.$refs.filesGcodeCard as ComponentPublicInstance).$el)
 
         this.calcContentTdWidth()
-    }
-
-    beforeDestroy() {
+    },
+    beforeUnmount() {
         this.resizeObserver?.disconnect()
-    }
+    },
+    methods: {
+        calcContentTdWidth() {
+            const filesGcodeCard = this.$refs.filesGcodeCard as ComponentPublicInstance | undefined
+            this.contentTdWidth = (filesGcodeCard?.$el.clientWidth ?? 0) - 48 - 48 - 32
+        },
 
-    calcContentTdWidth() {
-        this.contentTdWidth = this.filesGcodeCard?.$el.clientWidth - 48 - 48 - 32
-    }
-
-    @Debounce(200)
-    handleResize() {
-        this.$nextTick(() => {
-            this.calcContentTdWidth()
-        })
-    }
-}
+        handleResize: debounce(function (this: any) {
+            this.$nextTick(() => {
+                this.calcContentTdWidth()
+            })
+        }, 200),
+    },
+})
 </script>
 
 <style scoped>

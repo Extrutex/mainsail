@@ -20,29 +20,33 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 
-@Component({})
-export default class SpoolIcon extends Mixins(BaseMixin) {
-    @Prop({ required: false, default: '#ff0' })
-    declare readonly color: string
+export default defineComponent({
+    name: 'SpoolIcon',
+    mixins: [BaseMixin],
+    props: {
+        color: { type: String, required: false, default: '#ff0' },
+    },
+    emits: ['click-spool'],
+    computed: {
+        styleCircle1() {
+            return { fill: this.color }
+        },
 
-    get styleCircle1() {
-        return { fill: this.color }
-    }
+        styleCircle2() {
+            return { fill: '#bebebe' }
+        },
 
-    get styleCircle2() {
-        return { fill: '#bebebe' }
-    }
-
-    get styleCircle3() {
-        return { fill: '#343434' }
-    }
-
-    clickSpool() {
-        this.$emit('click-spool')
-    }
-}
+        styleCircle3() {
+            return { fill: '#343434' }
+        },
+    },
+    methods: {
+        clickSpool() {
+            this.$emit('click-spool')
+        },
+    },
+})
 </script>

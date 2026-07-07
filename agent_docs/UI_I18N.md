@@ -2,9 +2,9 @@
 
 ## Vuetify
 
-Use Vuetify 2 utility classes instead of custom CSS.
+Use Vuetify 3 utility classes instead of custom CSS.
 
-Documentation: [Vuetify 2 Spacing](https://v2.vuetifyjs.com/en/styles/spacing/) | [Flex](https://v2.vuetifyjs.com/en/styles/flex/) | [Typography](https://v2.vuetifyjs.com/en/styles/text-and-typography/)
+Documentation: [Vuetify 3 Spacing](https://vuetifyjs.com/en/styles/spacing/) | [Flex](https://vuetifyjs.com/en/styles/flex/) | [Typography](https://vuetifyjs.com/en/styles/text-and-typography/)
 
 ## Icons
 

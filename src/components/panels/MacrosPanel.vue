@@ -21,26 +21,32 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '../mixins/base'
 import Panel from '@/components/ui/Panel.vue'
 import MacroButton from '@/components/inputs/MacroButton.vue'
 import { mdiCodeTags } from '@mdi/js'
 import { PrinterStateMacro } from '@/store/printer/types'
-@Component({
+
+export default defineComponent({
+    name: 'MacrosPanel',
     components: { MacroButton, Panel },
+    mixins: [BaseMixin],
+    data() {
+        return {
+            mdiCodeTags: mdiCodeTags,
+        }
+    },
+    computed: {
+        hiddenMacros() {
+            return (this.$store.state.gui?.macros?.hiddenMacros ?? []).map((name: string) => name.toLowerCase())
+        },
+
+        macros() {
+            const macros = this.$store.getters['printer/getMacros']
+
+            return macros.filter((macro: PrinterStateMacro) => !this.hiddenMacros.includes(macro.name.toLowerCase()))
+        },
+    },
 })
-export default class MacrosPanel extends Mixins(BaseMixin) {
-    mdiCodeTags = mdiCodeTags
-
-    get hiddenMacros() {
-        return (this.$store.state.gui?.macros?.hiddenMacros ?? []).map((name: string) => name.toLowerCase())
-    }
-
-    get macros() {
-        const macros = this.$store.getters['printer/getMacros']
-
-        return macros.filter((macro: PrinterStateMacro) => !this.hiddenMacros.includes(macro.name.toLowerCase()))
-    }
-}
 </script>

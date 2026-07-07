@@ -3,27 +3,25 @@
         <v-col cols="4" class="d-flex align-center pr-0">
             <v-list v-if="fileNeedsTool" class="max-width-100">
                 <v-list-item class="pr-0">
-                    <v-list-item-content>
-                        <div class="text-overline">{{ $t('Panels.MmuPanel.TtgMapDialog.SlicerExpects') }}</div>
-                        <v-divider />
-                        <div class="mb-2 mt-2">
-                            <span class="tool-swatch mr-1" :style="'background-color: ' + fileFilamentColor" />
-                            {{ toolName }}
-                        </div>
-                        <v-list-item-title class="wrap-tool-name">{{ fileFilamentName }}</v-list-item-title>
-                        <v-list-item-subtitle>{{ fileFilamentDetails }}</v-list-item-subtitle>
-                        <v-alert
-                            v-if="selectedGateWarnings.length > 0"
-                            color="warning"
-                            dense
-                            text
-                            class="mt-2 max-width-100">
-                            <p class="mb-2">{{ $t('Panels.MmuPanel.TtgMapDialog.Mismatch') }}</p>
-                            <ul class="mb-0">
-                                <li v-for="(warning, index) in selectedGateWarnings" :key="index">{{ warning }}</li>
-                            </ul>
-                        </v-alert>
-                    </v-list-item-content>
+                    <div class="text-overline">{{ $t('Panels.MmuPanel.TtgMapDialog.SlicerExpects') }}</div>
+                    <v-divider />
+                    <div class="mb-2 mt-2">
+                        <span class="tool-swatch mr-1" :style="'background-color: ' + fileFilamentColor" />
+                        {{ toolName }}
+                    </div>
+                    <v-list-item-title class="wrap-tool-name">{{ fileFilamentName }}</v-list-item-title>
+                    <v-list-item-subtitle>{{ fileFilamentDetails }}</v-list-item-subtitle>
+                    <v-alert
+                        v-if="selectedGateWarnings.length > 0"
+                        color="warning"
+                        density="compact"
+                        variant="tonal"
+                        class="mt-2 max-width-100">
+                        <p class="mb-2">{{ $t('Panels.MmuPanel.TtgMapDialog.Mismatch') }}</p>
+                        <ul class="mb-0">
+                            <li v-for="(warning, index) in selectedGateWarnings" :key="index">{{ warning }}</li>
+                        </ul>
+                    </v-alert>
                 </v-list-item>
             </v-list>
             <div v-else class="body-2 text--secondary">{{ toolRowText }}</div>
@@ -35,8 +33,8 @@
             <v-data-table
                 :headers="gateTableHeaders"
                 :items="gateItems"
-                item-key="index"
-                sort-by="index"
+                item-value="index"
+                :sort-by="[{ key: 'index' }]"
                 class="drop-down-table"
                 :items-per-page="-1"
                 hide-default-footer>
@@ -61,183 +59,170 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, Prop, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
+import type { ComponentPublicInstance, PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import MmuMixin, { GATE_UNKNOWN, TOOL_GATE_BYPASS } from '@/components/mixins/mmu'
 import { FileStateGcodefile } from '@/store/files/types'
-import Vue from 'vue'
 import { colorsMatch, convertStringToArray } from '@/plugins/helpers'
 
-@Component
-export default class MmuEditTtgMapDialogDetails extends Mixins(BaseMixin, MmuMixin) {
-    @Prop({ required: true }) readonly tool!: number
-    @Prop({ default: null }) readonly file!: FileStateGcodefile | null
+export default defineComponent({
+    name: 'MmuEditTtgMapDialogDetails',
+    mixins: [BaseMixin, MmuMixin],
+    props: {
+        tool: { type: Number, required: true },
+        file: { type: Object as PropType<FileStateGcodefile | null>, default: null },
+    },
+    computed: {
+        toolName() {
+            if (this.tool === TOOL_GATE_BYPASS) return this.$t('Panels.MmuPanel.TtgMapDialog.Bypass')
 
-    get toolName() {
-        if (this.tool === TOOL_GATE_BYPASS) return this.$t('Panels.MmuPanel.TtgMapDialog.Bypass')
+            return `T${this.tool}`
+        },
+        toolRowText() {
+            if (this.file && this.fileFilamentWeight === 0)
+                return this.$t('Panels.MmuPanel.TtgMapDialog.ToolNotUsed', { tool: this.toolName })
 
-        return `T${this.tool}`
-    }
+            return this.$t('Panels.MmuPanel.TtgMapDialog.NoSlicerInfo', { tool: this.toolName })
+        },
+        fileNeedsTool() {
+            return this.file && this.fileFilamentWeight > 0
+        },
+        fileFilamentColor() {
+            let colors = this.file?.extruder_colors ?? []
+            if (['BambuStudio', 'OrcaSlicer'].includes(this.file?.slicer ?? '')) {
+                colors = this.file?.filament_colors ?? []
+            }
 
-    get toolRowText() {
-        if (this.file && this.fileFilamentWeight === 0)
-            return this.$t('Panels.MmuPanel.TtgMapDialog.ToolNotUsed', { tool: this.toolName })
+            return this.formColorString(colors[this.tool] ?? '')
+        },
+        fileFilamentName() {
+            const names = convertStringToArray(this.file?.filament_name ?? '')
 
-        return this.$t('Panels.MmuPanel.TtgMapDialog.NoSlicerInfo', { tool: this.toolName })
-    }
+            return names[this.tool]?.trim() ?? 'Unknown'
+        },
+        fileFilamentTemp() {
+            const temps = this.file?.filament_temps ?? []
 
-    get fileNeedsTool() {
-        return this.file && this.fileFilamentWeight > 0
-    }
+            return temps[this.tool] ?? 0
+        },
+        fileFilamentType() {
+            const types = convertStringToArray(this.file?.filament_type ?? '')
 
-    get fileFilamentColor() {
-        let colors = this.file?.extruder_colors ?? []
-        if (['BambuStudio', 'OrcaSlicer'].includes(this.file?.slicer ?? '')) {
-            colors = this.file?.filament_colors ?? []
-        }
+            return types[this.tool]?.trim() ?? 'Unknown'
+        },
+        fileFilamentWeight() {
+            const weights = this.file?.filament_weights ?? []
 
-        return this.formColorString(colors[this.tool] ?? '')
-    }
+            return weights[this.tool] ?? 0
+        },
+        fileFilamentDetails() {
+            const details = [this.fileFilamentType]
+            if (this.fileFilamentTemp) {
+                details.push(this.fileFilamentTemp + '°C')
+            }
 
-    get fileFilamentName() {
-        const names = convertStringToArray(this.file?.filament_name ?? '')
+            return details.join(' | ')
+        },
+        gateItems() {
+            const gates = []
+            for (let i = 0; i < (this.mmu?.num_gates ?? 0); i++) {
+                gates.push(i)
+            }
 
-        return names[this.tool]?.trim() ?? 'Unknown'
-    }
+            return gates
+        },
+        gateTableHeaders() {
+            if (this.tool < 0) return []
 
-    get fileFilamentTemp() {
-        const temps = this.file?.filament_temps ?? []
+            return [
+                {
+                    title: this.$t('Panels.MmuPanel.TtgMapDialog.Gate'),
+                    align: 'center',
+                    key: 'index',
+                    sortable: false,
+                },
+                {
+                    title: '',
+                    align: 'center',
+                    sortable: false,
+                },
+                {
+                    title: this.$t('Panels.MmuPanel.TtgMapDialog.FilamentInfo'),
+                    align: 'start',
+                    sortable: false,
+                },
+                {
+                    title: this.$t('Panels.MmuPanel.TtgMapDialog.EndlessSpool'),
+                    align: 'end',
+                    sortable: false,
+                },
+            ]
+        },
+        selectedGate() {
+            return this.ttgMap[this.tool] ?? null
+        },
+        selectedGateMaterial() {
+            return this.mmu?.gate_material?.[this.selectedGate] ?? null
+        },
+        selectedGateTemperature() {
+            return this.mmu?.gate_temperature?.[this.selectedGate] ?? null
+        },
+        selectedGateColor() {
+            return this.mmu?.gate_color?.[this.selectedGate] ?? null
+        },
+        selectedGateWarnings() {
+            const warnings = []
 
-        return temps[this.tool] ?? 0
-    }
+            if (this.selectedGateMaterial !== this.fileFilamentType) {
+                warnings.push(this.$t('Panels.MmuPanel.TtgMapDialog.Material'))
+            }
 
-    get fileFilamentType() {
-        const types = convertStringToArray(this.file?.filament_type ?? '')
+            if (this.selectedGateTemperature !== this.fileFilamentTemp) {
+                warnings.push(this.$t('Panels.MmuPanel.TtgMapDialog.Temperature'))
+            }
 
-        return types[this.tool]?.trim() ?? 'Unknown'
-    }
+            const selectedGateColorString = this.formColorString(this.selectedGateColor)
+            if (this.selectedGateColor === null || !colorsMatch(selectedGateColorString, this.fileFilamentColor, 10)) {
+                warnings.push(this.$t('Panels.MmuPanel.TtgMapDialog.Color'))
+            }
 
-    get fileFilamentWeight() {
-        const weights = this.file?.filament_weights ?? []
+            return warnings
+        },
+    },
+    methods: {
+        selectGate(gate: number) {
+            this.doSend(`MMU_REMAP_TTG TOOL=${this.tool} GATE=${gate} QUIET=1`)
+        },
+        selectEndlessSpoolGroup(gate: number) {
+            if (gate === GATE_UNKNOWN) return
 
-        return weights[this.tool] ?? 0
-    }
+            // copy the array to change one value
+            const groups = [...this.endlessSpoolGroups]
+            // get the current group of the selected gate
+            const selectedGroup = groups[this.selectedGate]
+            // toggle the group of the clicked gate
+            groups[gate] = groups[gate] === selectedGroup ? gate : selectedGroup
 
-    get fileFilamentDetails() {
-        const details = [this.fileFilamentType]
-        if (this.fileFilamentTemp) {
-            details.push(this.fileFilamentTemp + '°C')
-        }
-
-        return details.join(' | ')
-    }
-
-    get gateItems() {
-        const gates = []
-        for (let i = 0; i < (this.mmu?.num_gates ?? 0); i++) {
-            gates.push(i)
-        }
-
-        return gates
-    }
-
-    get gateTableHeaders() {
-        if (this.tool < 0) return []
-
-        return [
-            {
-                text: this.$t('Panels.MmuPanel.TtgMapDialog.Gate'),
-                align: 'center',
-                value: 'index',
-                sortable: false,
-            },
-            {
-                text: '',
-                align: 'center',
-                sortable: false,
-            },
-            {
-                text: this.$t('Panels.MmuPanel.TtgMapDialog.FilamentInfo'),
-                align: 'start',
-                sortable: false,
-            },
-            {
-                text: this.$t('Panels.MmuPanel.TtgMapDialog.EndlessSpool'),
-                align: 'right',
-                sortable: false,
-            },
-        ]
-    }
-
-    get selectedGate() {
-        return this.ttgMap[this.tool] ?? null
-    }
-
-    get selectedGateMaterial() {
-        return this.mmu?.gate_material?.[this.selectedGate] ?? null
-    }
-
-    get selectedGateTemperature() {
-        return this.mmu?.gate_temperature?.[this.selectedGate] ?? null
-    }
-
-    get selectedGateColor() {
-        return this.mmu?.gate_color?.[this.selectedGate] ?? null
-    }
-
-    get selectedGateWarnings() {
-        const warnings = []
-
-        if (this.selectedGateMaterial !== this.fileFilamentType) {
-            warnings.push(this.$t('Panels.MmuPanel.TtgMapDialog.Material'))
-        }
-
-        if (this.selectedGateTemperature !== this.fileFilamentTemp) {
-            warnings.push(this.$t('Panels.MmuPanel.TtgMapDialog.Temperature'))
-        }
-
-        const selectedGateColorString = this.formColorString(this.selectedGateColor)
-        if (this.selectedGateColor === null || !colorsMatch(selectedGateColorString, this.fileFilamentColor, 10)) {
-            warnings.push(this.$t('Panels.MmuPanel.TtgMapDialog.Color'))
-        }
-
-        return warnings
-    }
-
-    selectGate(gate: number) {
-        this.doSend(`MMU_REMAP_TTG TOOL=${this.tool} GATE=${gate} QUIET=1`)
-    }
-
-    selectEndlessSpoolGroup(gate: number) {
-        if (gate === GATE_UNKNOWN) return
-
-        // copy the array to change one value
-        const groups = [...this.endlessSpoolGroups]
-        // get the current group of the selected gate
-        const selectedGroup = groups[this.selectedGate]
-        // toggle the group of the clicked gate
-        groups[gate] = groups[gate] === selectedGroup ? gate : selectedGroup
-
-        this.doSend(`MMU_ENDLESS_SPOOL GROUPS="${groups.join(',')}" QUIET=1`)
-    }
-
+            this.doSend(`MMU_ENDLESS_SPOOL GROUPS="${groups.join(',')}" QUIET=1`)
+        },
+        scrollToSelectedGate() {
+            this.$nextTick(() => {
+                const element = (this.$refs[`ttg-map-row-${this.selectedGate}`] as ComponentPublicInstance)
+                    ?.$el as HTMLTableRowElement
+                element?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+            })
+        },
+    },
     mounted() {
         this.scrollToSelectedGate()
-    }
-
-    @Watch('tool')
-    onToolChanged() {
-        this.scrollToSelectedGate()
-    }
-
-    scrollToSelectedGate() {
-        this.$nextTick(() => {
-            const element = (this.$refs[`ttg-map-row-${this.selectedGate}`] as Vue)?.$el as HTMLTableRowElement
-            element?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-        })
-    }
-}
+    },
+    watch: {
+        tool() {
+            this.scrollToSelectedGate()
+        },
+    },
+})
 </script>
 
 <style scoped>
@@ -262,22 +247,22 @@ export default class MmuEditTtgMapDialogDetails extends Mixins(BaseMixin, MmuMix
     border-color: transparent transparent transparent #595959;
 }
 
-::v-deep .drop-down-table .v-data-table__wrapper {
+:deep(.drop-down-table .v-table__wrapper) {
     height: 300px;
     overflow-y: auto;
 }
 
-::v-deep .drop-down-table .v-data-table__wrapper table {
+:deep(.drop-down-table .v-table__wrapper table) {
     table-layout: fixed;
     width: 100%;
 }
 
-::v-deep .drop-down-table table th:nth-child(1),
-::v-deep .drop-down-table table th:nth-child(4) {
+:deep(.drop-down-table table th:nth-child(1)),
+:deep(.drop-down-table table th:nth-child(4)) {
     width: 64px;
 }
 
-::v-deep .drop-down-table table th:nth-child(2) {
+:deep(.drop-down-table table th:nth-child(2)) {
     width: 36px;
 }
 </style>

@@ -1,20 +1,21 @@
-<style scoped></style>
-
 <template>
     <div>
         <v-row>
-            <v-col col-12>
+            <v-col cols="12">
                 <webcam-panel current-page="page" />
             </v-col>
         </v-row>
     </div>
 </template>
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import WebcamPanel from '@/components/panels/WebcamPanel.vue'
-@Component({
+
+export default defineComponent({
+    name: 'PageWebcam',
     components: { WebcamPanel },
+    mixins: [BaseMixin],
 })
-export default class PageWebcam extends Mixins(BaseMixin) {}
 </script>
+<style></style>

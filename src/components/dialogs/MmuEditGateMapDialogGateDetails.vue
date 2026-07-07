@@ -16,7 +16,7 @@
                             :label="$t('Panels.MmuPanel.GateMapDialog.Spoolman')"
                             hide-details
                             class="pt-0 mt-0"
-                            @change="resetSpoolId" />
+                            @update:model-value="resetSpoolId" />
                     </v-col>
                     <v-col :cols="hideSpoolmanSwitch ? 12 : 6">
                         <v-text-field
@@ -26,8 +26,8 @@
                             :rules="spoolIdRules"
                             :disabled="disableSpoolId"
                             hide-spin-buttons
-                            outlined
-                            dense
+                            variant="outlined"
+                            density="compact"
                             hide-details />
                     </v-col>
                 </v-row>
@@ -37,8 +37,8 @@
                             v-model.trim="filamentName"
                             :label="$t('Panels.MmuPanel.GateMapDialog.FilamentName')"
                             :disabled="disableFilamentFields"
-                            outlined
-                            dense
+                            variant="outlined"
+                            density="compact"
                             clearable
                             hide-details />
                     </v-col>
@@ -49,8 +49,8 @@
                             v-model.trim="filamentMaterial"
                             :label="$t('Panels.MmuPanel.GateMapDialog.Material')"
                             :disabled="disableFilamentFields"
-                            outlined
-                            dense
+                            variant="outlined"
+                            density="compact"
                             clearable
                             hide-details />
                     </v-col>
@@ -63,8 +63,8 @@
                             :hide-spin-buttons="disableFilamentFields"
                             suffix="°C"
                             :rules="temperatureRules"
-                            outlined
-                            dense
+                            variant="outlined"
+                            density="compact"
                             hide-details />
                     </v-col>
                 </v-row>
@@ -77,8 +77,8 @@
 
                 <v-row>
                     <v-col>
-                        <v-subheader class="px-0 height-auto">
-                            <v-icon small class="mr-2">{{ mdiSpeedometer }}</v-icon>
+                        <v-list-subheader class="px-0 height-auto">
+                            <v-icon size="small" class="mr-2">{{ mdiSpeedometer }}</v-icon>
                             <span>{{ $t('Panels.MmuPanel.GateMapDialog.LoadSpeed') }}</span>
                             <v-spacer />
                             <v-text-field
@@ -87,15 +87,15 @@
                                 suffix="%"
                                 hide-spin-buttons
                                 hide-details
-                                outlined
-                                dense
+                                variant="outlined"
+                                density="compact"
                                 readonly
                                 class="_slider-input d-flex align-center pt-1">
-                                <template v-if="speedOverride !== 100" #append>
-                                    <v-icon small @click="resetSpeed">{{ mdiRestart }}</v-icon>
+                                <template v-if="speedOverride !== 100" #append-inner>
+                                    <v-icon size="small" @click="resetSpeed">{{ mdiRestart }}</v-icon>
                                 </template>
                             </v-text-field>
-                        </v-subheader>
+                        </v-list-subheader>
 
                         <v-slider
                             v-model="speedOverride"
@@ -125,7 +125,7 @@
             <v-col cols="12" md="6" class="d-flex justify-center align-center">
                 <v-color-picker
                     v-if="!useSpoolman"
-                    :value="filamentColor"
+                    :model-value="filamentColor"
                     hide-inputs
                     swatches-max-height="120px"
                     show-swatches
@@ -148,7 +148,7 @@
                     </div>
                     <div class="mt-3">
                         <v-btn color="secondary" @click="showSpoolmanSpoolChooserDialog = true">
-                            <v-icon left>{{ mdiAdjust }}</v-icon>
+                            <v-icon start>{{ mdiAdjust }}</v-icon>
                             {{ $t('Panels.MmuPanel.GateMapDialog.ChooseSpool') }}
                         </v-btn>
                     </div>
@@ -165,8 +165,7 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, Prop, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import MmuMixin, {
     GATE_EMPTY,
@@ -178,288 +177,278 @@ import MmuMixin, {
 } from '@/components/mixins/mmu'
 import type { ServerSpoolmanStateSpool } from '@/store/server/spoolman/types'
 import { mdiSpeedometer, mdiRestart, mdiMinus, mdiPlus, mdiAdjust } from '@mdi/js'
-import { Debounce } from 'vue-debounce-decorator'
+import { debounce } from '@/plugins/helpers'
 import { VColorPickerColor } from '@/types/vuetify'
 
-@Component
-export default class MmuEditGateMapDialogGateDetails extends Mixins(BaseMixin, MmuMixin) {
-    FILAMENT_SPEED_OVERRIDE_MIN = FILAMENT_SPEED_OVERRIDE_MIN
-    FILAMENT_SPEED_OVERRIDE_MAX = FILAMENT_SPEED_OVERRIDE_MAX
+export default defineComponent({
+    name: 'MmuEditGateMapDialogGateDetails',
+    mixins: [BaseMixin, MmuMixin],
+    props: {
+        selectedGate: { type: Number, required: true },
+    },
+    data() {
+        return {
+            FILAMENT_SPEED_OVERRIDE_MIN: FILAMENT_SPEED_OVERRIDE_MIN,
+            FILAMENT_SPEED_OVERRIDE_MAX: FILAMENT_SPEED_OVERRIDE_MAX,
 
-    mdiSpeedometer = mdiSpeedometer
-    mdiRestart = mdiRestart
-    mdiMinus = mdiMinus
-    mdiPlus = mdiPlus
-    mdiAdjust = mdiAdjust
+            mdiSpeedometer: mdiSpeedometer,
+            mdiRestart: mdiRestart,
+            mdiMinus: mdiMinus,
+            mdiPlus: mdiPlus,
+            mdiAdjust: mdiAdjust,
 
-    @Prop({ required: true }) readonly selectedGate!: number
+            useSpoolman: false,
+            showSpoolmanSpoolChooserDialog: false,
+        }
+    },
+    computed: {
+        extruderSettings() {
+            return this.$store.state.server.printer?.extruder ?? undefined
+        },
+        minExtruderTemp() {
+            return this.extruderSettings?.min_extrude_temp ?? 170
+        },
+        maxExtruderTemp() {
+            return this.extruderSettings?.max_temp ?? 290
+        },
+        spoolmanSupportOutput() {
+            if (this.mmuSpoolmanSupport === 'off') return this.$t('Panels.MmuPanel.GateMapDialog.SpoolmanOff')
+            else if (this.mmuSpoolmanSupport === 'pull') return this.$t('Panels.MmuPanel.GateMapDialog.SpoolmanPull')
 
-    useSpoolman = false
-    showSpoolmanSpoolChooserDialog = false
-
-    @Watch('selectedGate', { immediate: true })
-    onSelectedGateChanged() {
-        this.useSpoolman = this.spoolId === null || this.spoolId > 0
-    }
-
-    get extruderSettings() {
-        return this.$store.state.server.printer?.extruder ?? undefined
-    }
-
-    get minExtruderTemp() {
-        return this.extruderSettings?.min_extrude_temp ?? 170
-    }
-
-    get maxExtruderTemp() {
-        return this.extruderSettings?.max_temp ?? 290
-    }
-
-    get spoolmanSupportOutput() {
-        if (this.mmuSpoolmanSupport === 'off') return this.$t('Panels.MmuPanel.GateMapDialog.SpoolmanOff')
-        else if (this.mmuSpoolmanSupport === 'pull') return this.$t('Panels.MmuPanel.GateMapDialog.SpoolmanPull')
-
-        return this.$t('Panels.MmuPanel.GateMapDialog.SpoolmanOther', { mode: this.mmuSpoolmanSupport })
-    }
-
-    get spoolmanSpools() {
-        return this.$store.state.server.spoolman?.spools ?? []
-    }
-
-    get spoolIdRules() {
-        return [
-            (val: string | number) => {
-                const numValue = typeof val === 'string' ? parseInt(val) : val
-                if (!numValue || numValue <= 0) return true
-                const spoolExists = this.spoolmanSpools.some((spool: ServerSpoolmanStateSpool) => spool.id === numValue)
-                return spoolExists ? true : this.$t('Panels.MmuPanel.GateMapDialog.NoMatchingSpool')
+            return this.$t('Panels.MmuPanel.GateMapDialog.SpoolmanOther', { mode: this.mmuSpoolmanSupport })
+        },
+        spoolmanSpools() {
+            return this.$store.state.server.spoolman?.spools ?? []
+        },
+        spoolIdRules() {
+            return [
+                (val: string | number) => {
+                    const numValue = typeof val === 'string' ? parseInt(val) : val
+                    if (!numValue || numValue <= 0) return true
+                    const spoolExists = this.spoolmanSpools.some(
+                        (spool: ServerSpoolmanStateSpool) => spool.id === numValue
+                    )
+                    return spoolExists ? true : this.$t('Panels.MmuPanel.GateMapDialog.NoMatchingSpool')
+                },
+            ]
+        },
+        spoolId: {
+            get(): number {
+                return this.mmu?.gate_spool_id[this.selectedGate] ?? -1
             },
-        ]
-    }
+            set(newSpoolId: number | string) {
+                const spool_id = typeof newSpoolId !== 'number' ? parseInt(newSpoolId) : newSpoolId
+                if (isNaN(spool_id)) return
 
-    get spoolId() {
-        return this.mmu?.gate_spool_id[this.selectedGate] ?? -1
-    }
+                const isValid = this.spoolIdRules.every((rule) => rule(spool_id) === true)
+                if (!isValid) return
 
-    set spoolId(newSpoolId: number | string) {
-        const spool_id = typeof newSpoolId !== 'number' ? parseInt(newSpoolId) : newSpoolId
-        if (isNaN(spool_id)) return
+                if (spool_id === -1) {
+                    this.resetSpoolId()
+                    return
+                }
 
-        const isValid = this.spoolIdRules.every((rule) => rule(spool_id) === true)
-        if (!isValid) return
+                const spool = this.spoolmanSpools.find((spool: ServerSpoolmanStateSpool) => spool.id === spool_id)
+                if (!spool) return
 
-        if (spool_id === -1) {
-            this.resetSpoolId()
-            return
-        }
+                const name = String(spool?.filament?.name ?? this.$t('Panels.MmuPanel.Unknown')).replace(/["']/g, '')
+                const material = String(spool?.filament?.material ?? this.$t('Panels.MmuPanel.Unknown')).replace(
+                    /["']/g,
+                    ''
+                )
+                const color = this.formColorString(spool?.filament?.color_hex).slice(1)
+                const temperature = spool?.filament?.settings_extruder_temp ?? -1
 
-        const spool = this.spoolmanSpools.find((spool: ServerSpoolmanStateSpool) => spool.id === spool_id)
-        if (!spool) return
-
-        const name = String(spool?.filament?.name ?? this.$t('Panels.MmuPanel.Unknown')).replace(/["']/g, '')
-        const material = String(spool?.filament?.material ?? this.$t('Panels.MmuPanel.Unknown')).replace(/["']/g, '')
-        const color = this.formColorString(spool?.filament?.color_hex).slice(1)
-        const temperature = spool?.filament?.settings_extruder_temp ?? -1
-
-        const gcode = `MMU_GATE_MAP GATE=${this.selectedGate} SPOOLID=${spool_id} NAME="${name}" MATERIAL="${material}" COLOR="${color}" TEMP=${temperature} QUIET=1`
-        this.doSend(gcode)
-    }
-
-    get spoolIdExists() {
-        return this.spoolmanSpool ?? false
-    }
-
-    get disableSpoolId() {
-        return !this.useSpoolman || ['pull', 'off'].includes(this.mmuSpoolmanSupport)
-    }
-
-    get disableFilamentFields() {
-        return this.useSpoolman || this.mmuSpoolmanSupport === 'pull'
-    }
-
-    get hideSpoolmanSwitch() {
-        return ['pull', 'off'].includes(this.mmuSpoolmanSupport)
-    }
-
-    get filamentName() {
-        return this.mmu?.gate_filament_name[this.selectedGate] ?? this.$t('Panels.MmuPanel.Unknown')
-    }
-
-    set filamentName(newName: unknown) {
-        const value = String(newName ?? 'Unknown').replace(/["']/g, '')
-
-        this.debounceSetMmuGateMap('name', value)
-    }
-
-    get filamentMaterial() {
-        return this.mmu?.gate_material[this.selectedGate] ?? this.$t('Panels.MmuPanel.Unknown')
-    }
-
-    set filamentMaterial(newValue: unknown) {
-        const value = String(newValue ?? 'Unknown').replace(/["']/g, '')
-        this.debounceSetMmuGateMap('material', value)
-    }
-
-    get filamentTemperature() {
-        return this.mmu?.gate_temperature[this.selectedGate] ?? 0
-    }
-
-    set filamentTemperature(newValue: number) {
-        const isValid = this.temperatureRules.every((rule) => rule(newValue) === true)
-        if (!isValid) return
-
-        this.debounceSetMmuGateMap('temp', newValue)
-    }
-
-    get temperatureRules() {
-        return [
-            (v: string | number) => {
-                const num = parseFloat(String(v))
-                return !isNaN(num) && num >= this.minExtruderTemp && num <= this.maxExtruderTemp
-                    ? true
-                    : this.$t('Panels.MmuPanel.GateMapDialog.BadTemperature')
+                const gcode = `MMU_GATE_MAP GATE=${this.selectedGate} SPOOLID=${spool_id} NAME="${name}" MATERIAL="${material}" COLOR="${color}" TEMP=${temperature} QUIET=1`
+                this.doSend(gcode)
             },
-        ]
-    }
+        },
+        spoolIdExists() {
+            return this.spoolmanSpool ?? false
+        },
+        disableSpoolId() {
+            return !this.useSpoolman || ['pull', 'off'].includes(this.mmuSpoolmanSupport)
+        },
+        disableFilamentFields() {
+            return this.useSpoolman || this.mmuSpoolmanSupport === 'pull'
+        },
+        hideSpoolmanSwitch() {
+            return ['pull', 'off'].includes(this.mmuSpoolmanSupport)
+        },
+        filamentName: {
+            get() {
+                return this.mmu?.gate_filament_name[this.selectedGate] ?? this.$t('Panels.MmuPanel.Unknown')
+            },
+            set(newName: unknown) {
+                const value = String(newName ?? 'Unknown').replace(/["']/g, '')
 
-    get filamentColor() {
-        return this.formColorString(this.mmu?.gate_color[this.selectedGate] ?? null)
-    }
+                this.debounceSetMmuGateMap('name', value)
+            },
+        },
+        filamentMaterial: {
+            get() {
+                return this.mmu?.gate_material[this.selectedGate] ?? this.$t('Panels.MmuPanel.Unknown')
+            },
+            set(newValue: unknown) {
+                const value = String(newValue ?? 'Unknown').replace(/["']/g, '')
+                this.debounceSetMmuGateMap('material', value)
+            },
+        },
+        filamentTemperature: {
+            get(): number {
+                return this.mmu?.gate_temperature[this.selectedGate] ?? 0
+            },
+            set(newValue: number) {
+                const isValid = this.temperatureRules.every((rule) => rule(newValue) === true)
+                if (!isValid) return
 
-    set filamentColor(newValue: string) {
-        if (this.filamentColor.toUpperCase() === newValue.toUpperCase()) return
+                this.debounceSetMmuGateMap('temp', newValue)
+            },
+        },
+        temperatureRules() {
+            return [
+                (v: string | number) => {
+                    const num = parseFloat(String(v))
+                    return !isNaN(num) && num >= this.minExtruderTemp && num <= this.maxExtruderTemp
+                        ? true
+                        : this.$t('Panels.MmuPanel.GateMapDialog.BadTemperature')
+                },
+            ]
+        },
+        filamentColor: {
+            get(): string {
+                return this.formColorString(this.mmu?.gate_color[this.selectedGate] ?? null)
+            },
+            set(newValue: string) {
+                if (this.filamentColor.toUpperCase() === newValue.toUpperCase()) return
 
-        this.setMmuGateMap('color', newValue.slice(1))
-    }
+                this.setMmuGateMap('color', newValue.slice(1))
+            },
+        },
+        gateStatus() {
+            return this.mmu?.gate_status[this.selectedGate] ?? GATE_UNKNOWN
+        },
+        gateStatusSwitch: {
+            get(): boolean {
+                return this.gateStatus === GATE_AVAILABLE || this.gateStatus === GATE_AVAILABLE_FROM_BUFFER
+            },
+            set(value: boolean) {
+                this.setMmuGateMap('available', value ? GATE_AVAILABLE : GATE_EMPTY)
+            },
+        },
+        gateStatusLabel() {
+            switch (this.gateStatus) {
+                case GATE_EMPTY:
+                    return this.$t('Panels.MmuPanel.GateMapDialog.FilamentEmpty')
+                case GATE_UNKNOWN:
+                    return this.$t('Panels.MmuPanel.GateMapDialog.FilamentUnknown')
+                default:
+                    return this.$t('Panels.MmuPanel.GateMapDialog.FilamentAvailable')
+            }
+        },
+        speedOverride: {
+            get(): number {
+                return this.mmu?.gate_speed_override[this.selectedGate] ?? 100
+            },
+            set(newValue: number) {
+                const value = isNaN(newValue)
+                    ? 100
+                    : Math.min(Math.max(newValue, FILAMENT_SPEED_OVERRIDE_MIN), FILAMENT_SPEED_OVERRIDE_MAX)
+                this.debounceSetMmuGateMap('speed', value)
+            },
+        },
+        spoolmanSpool() {
+            return this.spoolmanSpools.find((spool: ServerSpoolmanStateSpool) => spool.id === this.spoolId) ?? null
+        },
+        spoolmanColor(): string {
+            return `#${this.spoolmanSpool?.filament?.color_hex ?? '000'}`
+        },
+        spoolmanRemainingWeight() {
+            if (!this.spoolmanSpool) return '-'
 
-    get gateStatus() {
-        return this.mmu?.gate_status[this.selectedGate] ?? GATE_UNKNOWN
-    }
+            const remaining = this.spoolmanSpool.remaining_weight ?? 0
+            return `${remaining.toFixed(0)}g`
+        },
+        spoolmanTotalWeight() {
+            if (!this.spoolmanSpool) return '-'
 
-    get gateStatusSwitch() {
-        return this.gateStatus === GATE_AVAILABLE || this.gateStatus === GATE_AVAILABLE_FROM_BUFFER
-    }
+            const total = this.spoolmanSpool.initial_weight ?? this.spoolmanSpool.filament?.weight ?? 0
+            if (total < 1000) {
+                return `${total.toFixed(0)}g`
+            }
 
-    set gateStatusSwitch(value: boolean) {
-        this.setMmuGateMap('available', value ? GATE_AVAILABLE : GATE_EMPTY)
-    }
+            let totalRound = Math.round(total / 1000)
+            if (totalRound !== total / 1000) {
+                totalRound = Math.round(total / 100) / 10
+            }
 
-    get gateStatusLabel() {
-        switch (this.gateStatus) {
-            case GATE_EMPTY:
-                return this.$t('Panels.MmuPanel.GateMapDialog.FilamentEmpty')
-            case GATE_UNKNOWN:
-                return this.$t('Panels.MmuPanel.GateMapDialog.FilamentUnknown')
-            default:
-                return this.$t('Panels.MmuPanel.GateMapDialog.FilamentAvailable')
-        }
-    }
+            return `${totalRound}kg`
+        },
+        spoolmanLastUsed() {
+            if (!this.spoolmanSpool) return '-'
 
-    get speedOverride() {
-        return this.mmu?.gate_speed_override[this.selectedGate] ?? 100
-    }
+            const last_used = this.spoolmanSpool.last_used ?? null
+            if (!last_used) return this.$t('Panels.SpoolmanPanel.Never')
 
-    set speedOverride(newValue: number) {
-        const value = isNaN(newValue)
-            ? 100
-            : Math.min(Math.max(newValue, FILAMENT_SPEED_OVERRIDE_MIN), FILAMENT_SPEED_OVERRIDE_MAX)
-        this.debounceSetMmuGateMap('speed', value)
-    }
+            const date = new Date(this.spoolmanSpool.last_used)
+            const now = new Date()
+            const diff = now.getTime() - date.getTime()
 
-    get spoolmanSpool() {
-        return this.spoolmanSpools.find((spool: ServerSpoolmanStateSpool) => spool.id === this.spoolId) ?? null
-    }
+            if (diff <= 1000 * 60 * 60 * 24) return this.$t('Panels.SpoolmanPanel.Today')
+            if (diff <= 1000 * 60 * 60 * 24 * 2) return this.$t('Panels.SpoolmanPanel.Yesterday')
+            if (diff <= 1000 * 60 * 60 * 24 * 14) {
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+                return this.$t('Panels.SpoolmanPanel.DaysAgo', { days })
+            }
 
-    get spoolmanColor(): string {
-        return `#${this.spoolmanSpool?.filament?.color_hex ?? '000'}`
-    }
+            return date.toLocaleDateString()
+        },
+    },
+    watch: {
+        selectedGate: {
+            handler() {
+                this.useSpoolman = this.spoolId === null || this.spoolId > 0
+            },
+            immediate: true,
+        },
+    },
+    methods: {
+        selectFilamentColor: debounce(function (this: any, newColor: VColorPickerColor) {
+            this.filamentColor = newColor.hexa
+        }, 500),
+        selectSpoolmanSpool(newSpool: ServerSpoolmanStateSpool) {
+            this.spoolId = newSpool.id
+        },
+        decrementSpeed() {
+            const value = Math.max(FILAMENT_SPEED_OVERRIDE_MIN, Math.round(this.speedOverride - 10))
+            this.setMmuGateMap('speed', value)
+        },
+        incrementSpeed() {
+            const value = Math.min(FILAMENT_SPEED_OVERRIDE_MAX, Math.round(this.speedOverride + 10))
+            this.setMmuGateMap('speed', value)
+        },
+        resetSpeed() {
+            this.setMmuGateMap('speed', 100)
+        },
+        resetSpoolId() {
+            if (this.spoolId === -1) return
 
-    get spoolmanRemainingWeight() {
-        if (!this.spoolmanSpool) return '-'
+            this.setMmuGateMap('spoolid', -1)
+        },
+        setMmuGateMap(attribute: string, value: string | number) {
+            let escapedValue = value
+            if (typeof value === 'string' && value.includes(' ')) {
+                escapedValue = `"${value}"`
+            }
 
-        const remaining = this.spoolmanSpool.remaining_weight ?? 0
-        return `${remaining.toFixed(0)}g`
-    }
-
-    get spoolmanTotalWeight() {
-        if (!this.spoolmanSpool) return '-'
-
-        const total = this.spoolmanSpool.initial_weight ?? this.spoolmanSpool.filament?.weight ?? 0
-        if (total < 1000) {
-            return `${total.toFixed(0)}g`
-        }
-
-        let totalRound = Math.round(total / 1000)
-        if (totalRound !== total / 1000) {
-            totalRound = Math.round(total / 100) / 10
-        }
-
-        return `${totalRound}kg`
-    }
-
-    get spoolmanLastUsed() {
-        if (!this.spoolmanSpool) return '-'
-
-        const last_used = this.spoolmanSpool.last_used ?? null
-        if (!last_used) return this.$t('Panels.SpoolmanPanel.Never')
-
-        const date = new Date(this.spoolmanSpool.last_used)
-        const now = new Date()
-        const diff = now.getTime() - date.getTime()
-
-        if (diff <= 1000 * 60 * 60 * 24) return this.$t('Panels.SpoolmanPanel.Today')
-        if (diff <= 1000 * 60 * 60 * 24 * 2) return this.$t('Panels.SpoolmanPanel.Yesterday')
-        if (diff <= 1000 * 60 * 60 * 24 * 14) {
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24))
-            return this.$t('Panels.SpoolmanPanel.DaysAgo', { days })
-        }
-
-        return date.toLocaleDateString()
-    }
-
-    @Debounce(500)
-    selectFilamentColor(newColor: VColorPickerColor) {
-        this.filamentColor = newColor.hexa
-    }
-
-    selectSpoolmanSpool(newSpool: ServerSpoolmanStateSpool) {
-        this.spoolId = newSpool.id
-    }
-
-    decrementSpeed() {
-        const value = Math.max(FILAMENT_SPEED_OVERRIDE_MIN, Math.round(this.speedOverride - 10))
-        this.setMmuGateMap('speed', value)
-    }
-
-    incrementSpeed() {
-        const value = Math.min(FILAMENT_SPEED_OVERRIDE_MAX, Math.round(this.speedOverride + 10))
-        this.setMmuGateMap('speed', value)
-    }
-
-    resetSpeed() {
-        this.setMmuGateMap('speed', 100)
-    }
-
-    resetSpoolId() {
-        if (this.spoolId === -1) return
-
-        this.setMmuGateMap('spoolid', -1)
-    }
-
-    setMmuGateMap(attribute: string, value: string | number) {
-        let escapedValue = value
-        if (typeof value === 'string' && value.includes(' ')) {
-            escapedValue = `"${value}"`
-        }
-
-        const gcode = `MMU_GATE_MAP GATE=${this.selectedGate} ${attribute.toUpperCase()}=${escapedValue} QUIET=1`
-        this.doSend(gcode)
-    }
-
-    @Debounce(500)
-    debounceSetMmuGateMap(attribute: string, value: string | number) {
-        this.setMmuGateMap(attribute, value)
-    }
-}
+            const gcode = `MMU_GATE_MAP GATE=${this.selectedGate} ${attribute.toUpperCase()}=${escapedValue} QUIET=1`
+            this.doSend(gcode)
+        },
+        debounceSetMmuGateMap: debounce(function (this: any, attribute: string, value: string | number) {
+            this.setMmuGateMap(attribute, value)
+        }, 500),
+    },
+})
 </script>
 
 <style scoped>
@@ -477,16 +466,16 @@ export default class MmuEditGateMapDialogGateDetails extends Mixins(BaseMixin, M
     margin-left: 12px;
 }
 
-._slider-input >>> .v-input__slot {
+._slider-input :deep(.v-input__slot) {
     min-height: 1rem !important;
 }
 
-._slider-input >>> .v-text-field__slot input {
+._slider-input :deep(.v-text-field__slot input) {
     padding-top: 4px;
     padding-bottom: 4px;
 }
 
-._slider-input >>> .v-input__append-inner {
+._slider-input :deep(.v-input__append-inner) {
     margin: auto -5px auto 0 !important;
 }
 </style>

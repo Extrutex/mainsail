@@ -18,21 +18,27 @@
     </panel>
 </template>
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import AfcMixin from '@/components/mixins/afc'
 import { afcIconLogo } from '@/plugins/afcIcons'
 
-@Component
-export default class AfcPanel extends Mixins(BaseMixin, AfcMixin) {
-    afcIconLogo = afcIconLogo
+export default defineComponent({
+    name: 'AfcPanel',
+    mixins: [BaseMixin, AfcMixin],
+    data() {
+        return {
+            afcIconLogo: afcIconLogo,
+        }
+    },
+    computed: {
+        filteredExtruders() {
+            return this.afcExtruders.filter((extruder) => !this.afcHiddenExtruders.includes(extruder))
+        },
 
-    get filteredExtruders() {
-        return this.afcExtruders.filter((extruder) => !this.afcHiddenExtruders.includes(extruder))
-    }
-
-    get filteredUnits() {
-        return this.afcUnits.filter((unit) => !this.afcHiddenUnits.includes(unit))
-    }
-}
+        filteredUnits() {
+            return this.afcUnits.filter((unit) => !this.afcHiddenUnits.includes(unit))
+        },
+    },
+})
 </script>

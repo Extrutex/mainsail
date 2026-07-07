@@ -1,6 +1,6 @@
 <template>
     <v-row :class="entryStyle">
-        <v-col class="col-auto pr-0 text--disabled console-time">{{ entryFormatTime }}</v-col>
+        <v-col cols="auto" class="pr-0 text-disabled console-time">{{ entryFormatTime }}</v-col>
         <v-col
             v-if="!rawOutput"
             :class="messageClass"
@@ -12,50 +12,54 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent, PropType } from 'vue'
 import { ServerStateEvent } from '@/store/server/types'
 import BaseMixin from '@/components/mixins/base'
 
-@Component
-export default class ConsoleTableEntry extends Mixins(BaseMixin) {
-    @Prop({ required: true }) readonly event!: ServerStateEvent
+export default defineComponent({
+    name: 'ConsoleTableEntry',
+    mixins: [BaseMixin],
+    props: {
+        event: { type: Object as PropType<ServerStateEvent>, required: true },
+    },
+    emits: ['command-click'],
+    computed: {
+        entryStyle(): string[] {
+            const classes = ['ma-0', 'flex-nowrap']
+            classes.push(this.$store.state.gui.console.entryStyle ?? 'default')
+            if (['action', 'debug'].includes(this.event.type)) classes.push('text-disabled')
 
-    get entryStyle() {
-        const classes = ['ma-0', 'flex-nowrap']
-        classes.push(this.$store.state.gui.console.entryStyle ?? 'default')
-        if (['action', 'debug'].includes(this.event.type)) classes.push('text--disabled')
+            return classes
+        },
 
-        return classes
-    }
+        entryFormatTime(): string {
+            return this.formatTime(this.event.date.getTime(), true)
+        },
 
-    get entryFormatTime() {
-        return this.formatTime(this.event.date.getTime(), true)
-    }
+        messageClass(): string[] {
+            const classes = ['console-message']
 
-    get messageClass() {
-        const classes = ['console-message']
+            if (['action', 'debug'].includes(this.event.type)) classes.push('text-disabled')
+            else if (this.event.message.startsWith('!! ')) classes.push('text-error')
 
-        if (['action', 'debug'].includes(this.event.type)) classes.push('text--disabled')
-        else if (this.event.message.startsWith('!! ')) classes.push('error--text')
-        else classes.push('text--primary')
+            return classes
+        },
 
-        return classes
-    }
+        rawOutput(): boolean {
+            return this.$store.state.gui.console.rawOutput ?? false
+        },
+    },
+    methods: {
+        commandClick(event: Event) {
+            const eventTarget = event.target as Element
+            if (eventTarget.localName === 'a' && eventTarget.className.indexOf('command') !== -1) {
+                const command = eventTarget.innerHTML.replace(/<br>/g, '\n')
 
-    get rawOutput() {
-        return this.$store.state.gui.console.rawOutput ?? false
-    }
-
-    commandClick(event: Event) {
-        const eventTarget = event.target as Element
-        if (eventTarget.localName === 'a' && eventTarget.className.indexOf('command') !== -1) {
-            const command = eventTarget.innerHTML.replace(/<br>/g, '\n')
-
-            this.$emit('command-click', command)
-        }
-    }
-}
+                this.$emit('command-click', command)
+            }
+        },
+    },
+})
 </script>
 
 <style scoped>
@@ -65,25 +69,25 @@ export default class ConsoleTableEntry extends Mixins(BaseMixin) {
     white-space: pre-wrap;
 
     &.default {
-        .col {
+        .v-col {
             padding-top: 8px !important;
             padding-bottom: 8px !important;
         }
 
-        & + .consoleTableRow .col {
+        & + .consoleTableRow .v-col {
             border-top: 1px solid rgba(255, 255, 255, 0.12);
         }
     }
 
     &.compact {
-        .col {
+        .v-col {
             padding-top: 2px !important;
             padding-bottom: 2px !important;
         }
     }
 }
 
-html.theme--light .consoleTableRow.default + .consoleTableRow .col {
+html.theme--light .consoleTableRow.default + .consoleTableRow .v-col {
     border-top: 1px solid rgba(0, 0, 0, 0.12);
 }
 </style>

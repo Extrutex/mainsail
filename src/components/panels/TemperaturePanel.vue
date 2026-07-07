@@ -20,8 +20,7 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import { capitalize, convertName } from '@/plugins/helpers'
 import BaseMixin from '@/components/mixins/base'
 import ControlMixin from '@/components/mixins/control'
@@ -32,18 +31,23 @@ import Responsive from '@/components/ui/Responsive.vue'
 import { mdiCloseThick, mdiThermometerLines } from '@mdi/js'
 import TemperaturePanelPresets from '@/components/panels/Temperature/TemperaturePanelPresets.vue'
 
-@Component({
+export default defineComponent({
+    name: 'TemperaturePanel',
     components: { Panel, TempChart, TemperatureInput, Responsive, TemperaturePanelPresets },
+    mixins: [BaseMixin, ControlMixin],
+    data() {
+        return {
+            mdiCloseThick: mdiCloseThick,
+            mdiThermometerLines: mdiThermometerLines,
+
+            convertName: convertName,
+            capitalize: capitalize,
+        }
+    },
+    computed: {
+        boolTempchart(): boolean {
+            return this.$store.state.gui.view.tempchart.boolTempchart ?? false
+        },
+    },
 })
-export default class TemperaturePanel extends Mixins(BaseMixin, ControlMixin) {
-    mdiCloseThick = mdiCloseThick
-    mdiThermometerLines = mdiThermometerLines
-
-    convertName = convertName
-    capitalize = capitalize
-
-    get boolTempchart(): boolean {
-        return this.$store.state.gui.view.tempchart.boolTempchart ?? false
-    }
-}
 </script>

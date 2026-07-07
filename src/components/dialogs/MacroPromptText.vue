@@ -7,16 +7,21 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
+import type { PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { ServerStateEventPromptContent } from '@/store/server/types'
 
-@Component({})
-export default class MacroPromptText extends Mixins(BaseMixin) {
-    @Prop({ type: Object, required: true }) readonly event!: ServerStateEventPromptContent
-
-    get text() {
-        return this.event.message
-    }
-}
+export default defineComponent({
+    name: 'MacroPromptText',
+    mixins: [BaseMixin],
+    props: {
+        event: { type: Object as PropType<ServerStateEventPromptContent>, required: true },
+    },
+    computed: {
+        text() {
+            return this.event.message
+        },
+    },
+})
 </script>

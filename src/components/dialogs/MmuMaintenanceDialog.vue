@@ -26,25 +26,40 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, VModel } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import MmuMixin from '@/components/mixins/mmu'
 import { mdiCloseThick, mdiWrenchCog } from '@mdi/js'
 
-@Component
-export default class MmuMaintenanceStateDialog extends Mixins(BaseMixin, MmuMixin) {
-    mdiCloseThick = mdiCloseThick
-    mdiWrenchCog = mdiWrenchCog
-
-    @VModel({ type: Boolean }) showDialog!: boolean
-
-    get mmuLedUnits() {
-        return Object.keys(this.$store.state.printer)
-            .filter((key) => key.toLowerCase().startsWith('mmu_leds '))
-            .map((key) => {
-                return key.slice(9)
-            })
-    }
-}
+export default defineComponent({
+    name: 'MmuMaintenanceStateDialog',
+    mixins: [BaseMixin, MmuMixin],
+    props: {
+        modelValue: { type: Boolean, default: false },
+    },
+    emits: ['update:modelValue'],
+    data() {
+        return {
+            mdiCloseThick: mdiCloseThick,
+            mdiWrenchCog: mdiWrenchCog,
+        }
+    },
+    computed: {
+        showDialog: {
+            get(): boolean {
+                return this.modelValue
+            },
+            set(newVal: boolean) {
+                this.$emit('update:modelValue', newVal)
+            },
+        },
+        mmuLedUnits() {
+            return Object.keys(this.$store.state.printer)
+                .filter((key) => key.toLowerCase().startsWith('mmu_leds '))
+                .map((key) => {
+                    return key.slice(9)
+                })
+        },
+    },
+})
 </script>

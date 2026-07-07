@@ -9,18 +9,22 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import ResponsiveMixin from '@/components/mixins/responsive'
 
-@Component
-export default class Responsive extends Mixins(ResponsiveMixin) {
-    @Prop({ default: false }) declare protected noHide: boolean
-
-    init = false
-
+export default defineComponent({
+    name: 'Responsive',
+    mixins: [ResponsiveMixin],
+    props: {
+        noHide: { type: Boolean, default: false },
+    },
+    data() {
+        return {
+            init: false,
+        }
+    },
     mounted() {
         this.init = true
-    }
-}
+    },
+})
 </script>

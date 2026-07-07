@@ -9,7 +9,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
+import type { PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import MmuMixin, {
     FILAMENT_POS_HOMED_ENTRY,
@@ -18,45 +19,49 @@ import MmuMixin, {
     Mmu,
 } from '@/components/mixins/mmu'
 
-@Component
-export default class MmuFilamentStatusSensor extends Mixins(BaseMixin, MmuMixin) {
-    @Prop({ required: true }) readonly sensorName!: keyof Mmu['sensors']
-    @Prop({ required: true }) readonly sensorText!: string
-    @Prop({ required: true }) readonly yPosition!: number
-    @Prop({ default: false }) readonly outsideZone!: boolean
+export default defineComponent({
+    name: 'MmuFilamentStatusSensor',
+    mixins: [BaseMixin, MmuMixin],
+    props: {
+        sensorName: { type: String as PropType<keyof Mmu['sensors']>, required: true },
+        sensorText: { type: String, required: true },
+        yPosition: { type: Number, required: true },
+        outsideZone: { type: Boolean, default: false },
+    },
+    computed: {
+        hasSensor() {
+            return this.hasMmuSensor(this.sensorName)
+        },
 
-    get hasSensor() {
-        return this.hasMmuSensor(this.sensorName)
-    }
+        sensorStatus() {
+            return this.getMmuSensor(this.sensorName)
+        },
 
-    get sensorStatus() {
-        return this.getMmuSensor(this.sensorName)
-    }
+        circleClass() {
+            return {
+                'sensor-disabled': this.sensorStatus === null,
+                'sensor-triggered': this.sensorStatus === true,
+                'sensor-open': this.sensorStatus === false,
+                'outside-zone': this.outsideZone,
+            }
+        },
 
-    get circleClass() {
-        return {
-            'sensor-disabled': this.sensorStatus === null,
-            'sensor-triggered': this.sensorStatus === true,
-            'sensor-open': this.sensorStatus === false,
-            'outside-zone': this.outsideZone,
-        }
-    }
+        textClass() {
+            return {
+                'text-disabled': this.sensorStatus === null,
+            }
+        },
 
-    get textClass() {
-        return {
-            'text-disabled': this.sensorStatus === null,
-        }
-    }
+        homedTo() {
+            if (this.sensorName === 'extruder') return this.mmuFilamentPos === FILAMENT_POS_HOMED_ENTRY
+            if (this.sensorName === 'toolhead') return this.mmuFilamentPos === FILAMENT_POS_HOMED_TS
 
-    get homedTo() {
-        if (this.sensorName === 'extruder') return this.mmuFilamentPos === FILAMENT_POS_HOMED_ENTRY
-        if (this.sensorName === 'toolhead') return this.mmuFilamentPos === FILAMENT_POS_HOMED_TS
+            if (!['mmu_gear', 'mmu_gate'].includes(this.sensorName)) return false
 
-        if (!['mmu_gear', 'mmu_gate'].includes(this.sensorName)) return false
-
-        return this.configGateHomingEndstop === this.sensorName && this.mmuFilamentPos === FILAMENT_POS_HOMED_GATE
-    }
-}
+            return this.configGateHomingEndstop === this.sensorName && this.mmuFilamentPos === FILAMENT_POS_HOMED_GATE
+        },
+    },
+})
 </script>
 
 <style scoped>

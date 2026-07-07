@@ -52,7 +52,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import MiscellaneousSlider from '@/components/inputs/MiscellaneousSlider.vue'
 import FilamentSensor from '@/components/inputs/FilamentSensor.vue'
@@ -62,7 +62,9 @@ import MoonrakerSensor from '@/components/panels/Miscellaneous/MoonrakerSensor.v
 import Panel from '@/components/ui/Panel.vue'
 import { mdiDipSwitch } from '@mdi/js'
 import MiscellaneousMixin from '@/components/mixins/miscellaneous'
-@Component({
+
+export default defineComponent({
+    name: 'MiscellaneousPanel',
     components: {
         Panel,
         FilamentSensor,
@@ -71,30 +73,35 @@ import MiscellaneousMixin from '@/components/mixins/miscellaneous'
         MiscellaneousSensor,
         MoonrakerSensor,
     },
+    mixins: [BaseMixin, MiscellaneousMixin],
+    data() {
+        return {
+            mdiDipSwitch: mdiDipSwitch,
+        }
+    },
+    computed: {
+        filamentSensors() {
+            return this.$store.getters['printer/getFilamentSensors'] ?? []
+        },
+
+        miscellaneous() {
+            return this.$store.getters['printer/getMiscellaneous'] ?? []
+        },
+
+        miscellaneousSensors() {
+            return this.$store.getters['printer/getMiscellaneousSensors'] ?? []
+        },
+
+        moonrakerSensors() {
+            return this.$store.getters['server/sensor/getSensors'] ?? []
+        },
+
+        showMiscellaneousPanel() {
+            return (
+                this.klipperReadyForGui &&
+                (this.miscellaneous.length || this.filamentSensors.length || this.lights.length)
+            )
+        },
+    },
 })
-export default class MiscellaneousPanel extends Mixins(BaseMixin, MiscellaneousMixin) {
-    mdiDipSwitch = mdiDipSwitch
-
-    get filamentSensors() {
-        return this.$store.getters['printer/getFilamentSensors'] ?? []
-    }
-
-    get miscellaneous() {
-        return this.$store.getters['printer/getMiscellaneous'] ?? []
-    }
-
-    get miscellaneousSensors() {
-        return this.$store.getters['printer/getMiscellaneousSensors'] ?? []
-    }
-
-    get moonrakerSensors() {
-        return this.$store.getters['server/sensor/getSensors'] ?? []
-    }
-
-    get showMiscellaneousPanel() {
-        return (
-            this.klipperReadyForGui && (this.miscellaneous.length || this.filamentSensors.length || this.lights.length)
-        )
-    }
-}
 </script>

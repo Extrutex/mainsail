@@ -5,24 +5,27 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import MmuMixin from '@/components/mixins/mmu'
 
-@Component
-export default class MmuFilamentStatusTemperature extends Mixins(BaseMixin, MmuMixin) {
-    get temperatureClass() {
-        const canExtrude = this.$store.state.printer.extruder?.can_extrude ?? false
+export default defineComponent({
+    name: 'MmuFilamentStatusTemperature',
+    mixins: [BaseMixin, MmuMixin],
+    computed: {
+        temperatureClass() {
+            const canExtrude = this.$store.state.printer.extruder?.can_extrude ?? false
 
-        return {
-            'text-disabled': !canExtrude,
-        }
-    }
+            return {
+                'text-disabled': !canExtrude,
+            }
+        },
 
-    get temperatureText() {
-        const extTemp = this.$store.state.printer.extruder?.temperature ?? null
+        temperatureText() {
+            const extTemp = this.$store.state.printer.extruder?.temperature ?? null
 
-        return extTemp ? `${extTemp.toFixed(0)}°C` : ''
-    }
-}
+            return extTemp ? `${extTemp.toFixed(0)}°C` : ''
+        },
+    },
+})
 </script>

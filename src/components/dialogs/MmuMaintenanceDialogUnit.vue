@@ -7,26 +7,26 @@
             :title="$t('Panels.MmuPanel.MmuMaintenanceDialog.Selector')"
             dense
             dynamic-slot-width>
-            <v-btn small :disabled="!canSend" color="secondary" @click="doSend('MMU_HOME')">
-                <v-icon left>{{ mdiHomeOutline }}</v-icon>
+            <v-btn size="small" :disabled="!canSend" color="secondary" @click="doSend('MMU_HOME')">
+                <v-icon start>{{ mdiHomeOutline }}</v-icon>
                 {{ $t('Panels.MmuPanel.MmuMaintenanceDialog.Home') }}
             </v-btn>
             <v-btn
-                small
+                size="small"
                 :disabled="!canSend || mmuGrip === 'Gripped'"
                 color="secondary"
                 class="ml-2"
                 @click="doSend('MMU_GRIP')">
-                <v-icon left>{{ mdiArrowCollapseHorizontal }}</v-icon>
+                <v-icon start>{{ mdiArrowCollapseHorizontal }}</v-icon>
                 {{ $t('Panels.MmuPanel.MmuMaintenanceDialog.Grip') }}
             </v-btn>
             <v-btn
-                small
+                size="small"
                 :disabled="!canSend || mmuGrip === 'Released'"
                 color="secondary"
                 class="ml-2"
                 @click="doSend('MMU_RELEASE')">
-                <v-icon left>{{ mdiArrowExpandHorizontal }}</v-icon>
+                <v-icon start>{{ mdiArrowExpandHorizontal }}</v-icon>
                 {{ $t('Panels.MmuPanel.MmuMaintenanceDialog.Release') }}
             </v-btn>
         </settings-row>
@@ -36,35 +36,35 @@
             :title="$t('Panels.MmuPanel.MmuMaintenanceDialog.Selector')"
             dense
             dynamic-slot-width>
-            <v-btn small :disabled="!canSend" class="ml-2" color="secondary" @click="doSend('MMU_HOME')">
-                <v-icon left>{{ mdiHomeOutline }}</v-icon>
+            <v-btn size="small" :disabled="!canSend" class="ml-2" color="secondary" @click="doSend('MMU_HOME')">
+                <v-icon start>{{ mdiHomeOutline }}</v-icon>
                 {{ $t('Panels.MmuPanel.MmuMaintenanceDialog.Home') }}
             </v-btn>
             <v-btn
-                small
+                size="small"
                 :disabled="!canSend || mmuServo === 'Up'"
                 color="secondary"
                 class="ml-2"
                 @click="doSend('MMU_SERVO POS=up')">
-                <v-icon left>{{ mdiArrowUpThin }}</v-icon>
+                <v-icon start>{{ mdiArrowUpThin }}</v-icon>
                 {{ $t('Panels.MmuPanel.MmuMaintenanceDialog.Up') }}
             </v-btn>
             <v-btn
-                small
+                size="small"
                 :disabled="!canSend || mmuServo === 'Down'"
                 color="secondary"
                 class="ml-2"
                 @click="doSend('MMU_SERVO POS=down')">
-                <v-icon left>{{ mdiArrowDownThin }}</v-icon>
+                <v-icon start>{{ mdiArrowDownThin }}</v-icon>
                 {{ $t('Panels.MmuPanel.MmuMaintenanceDialog.Down') }}
             </v-btn>
             <v-btn
-                small
+                size="small"
                 :disabled="!canSend || mmuServo === 'Move'"
                 color="secondary"
                 class="ml-2"
                 @click="doSend('MMU_SERVO POS=move')">
-                <v-icon left>{{ mdiArrowLeftRight }}</v-icon>
+                <v-icon start>{{ mdiArrowLeftRight }}</v-icon>
                 {{ $t('Panels.MmuPanel.MmuMaintenanceDialog.Move') }}
             </v-btn>
         </settings-row>
@@ -74,8 +74,7 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import MmuMixin from '@/components/mixins/mmu'
 import {
@@ -88,38 +87,41 @@ import {
     mdiArrowExpandHorizontal,
 } from '@mdi/js'
 
-@Component
-export default class MmuMaintenanceStateDialogUnit extends Mixins(BaseMixin, MmuMixin) {
-    mdiCloseThick = mdiCloseThick
-    mdiHomeOutline = mdiHomeOutline
-    mdiArrowDownThin = mdiArrowDownThin
-    mdiArrowUpThin = mdiArrowUpThin
-    mdiArrowLeftRight = mdiArrowLeftRight
-    mdiArrowCollapseHorizontal = mdiArrowCollapseHorizontal
-    mdiArrowExpandHorizontal = mdiArrowExpandHorizontal
+export default defineComponent({
+    name: 'MmuMaintenanceStateDialogUnit',
+    mixins: [BaseMixin, MmuMixin],
+    props: {
+        unitIndex: { type: Number, required: true },
+    },
+    data() {
+        return {
+            mdiCloseThick: mdiCloseThick,
+            mdiHomeOutline: mdiHomeOutline,
+            mdiArrowDownThin: mdiArrowDownThin,
+            mdiArrowUpThin: mdiArrowUpThin,
+            mdiArrowLeftRight: mdiArrowLeftRight,
+            mdiArrowCollapseHorizontal: mdiArrowCollapseHorizontal,
+            mdiArrowExpandHorizontal: mdiArrowExpandHorizontal,
+        }
+    },
+    computed: {
+        unit() {
+            return this.getMmuMachineUnit(this.unitIndex)
+        },
+        name() {
+            const name = this.mmuUnit?.name ?? 'Unit'
 
-    @Prop({ required: true }) readonly unitIndex!: number
-
-    get unit() {
-        return this.getMmuMachineUnit(this.unitIndex)
-    }
-
-    get name() {
-        const name = this.mmuUnit?.name ?? 'Unit'
-
-        return `MMU #${this.unitIndex + 1} - ${name}`
-    }
-
-    get selectorType() {
-        return this.mmuUnit.selectorType ?? 'VirtualSelector'
-    }
-
-    get isRotaryOrServoSelector() {
-        return ['RotarySelector', 'ServoSelector'].includes(this.selectorType)
-    }
-
-    get isLinearSelector() {
-        return this.selectorType === 'LinearSelector'
-    }
-}
+            return `MMU #${this.unitIndex + 1} - ${name}`
+        },
+        selectorType() {
+            return this.mmuUnit.selectorType ?? 'VirtualSelector'
+        },
+        isRotaryOrServoSelector() {
+            return ['RotarySelector', 'ServoSelector'].includes(this.selectorType)
+        },
+        isLinearSelector() {
+            return this.selectorType === 'LinearSelector'
+        },
+    },
+})
 </script>

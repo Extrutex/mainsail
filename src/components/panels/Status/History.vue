@@ -1,5 +1,5 @@
 <template>
-    <v-card class="history" flat>
+    <v-card class="history" variant="flat">
         <template v-if="jobsCombined.length">
             <v-row class="mx-0 mt-0 pb-3">
                 <v-col class="history-list">
@@ -14,56 +14,58 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import StatusPanelHistoryEntry from '@/components/panels/Status/HistoryEntry.vue'
 import { ServerHistoryStateJob, ServerHistoryStateJobWithCount } from '@/store/server/history/types'
 
-@Component({
+export default defineComponent({
+    name: 'StatusPanelHistory',
     components: { StatusPanelHistoryEntry },
-})
-export default class StatusPanelHistory extends Mixins(BaseMixin) {
-    get jobs(): ServerHistoryStateJob[] {
-        return this.$store.state.server.history.jobs ?? []
-    }
+    mixins: [BaseMixin],
+    computed: {
+        jobs(): ServerHistoryStateJob[] {
+            return this.$store.state.server.history.jobs ?? []
+        },
 
-    get maxLength() {
-        return this.$store.state.gui.uiSettings.dashboardHistoryLimit ?? 5
-    }
+        maxLength() {
+            return this.$store.state.gui.uiSettings.dashboardHistoryLimit ?? 5
+        },
 
-    get jobsCombined() {
-        const jobs: ServerHistoryStateJobWithCount[] = []
+        jobsCombined() {
+            const jobs: ServerHistoryStateJobWithCount[] = []
 
-        for (const job of this.jobs) {
-            if (jobs.length === 0) {
+            for (const job of this.jobs) {
+                if (jobs.length === 0) {
+                    jobs.push({ ...job, count: 1 })
+                    continue
+                }
+
+                const lastJob = jobs[jobs.length - 1]
+                const lastJobUuid = lastJob.metadata.uuid ?? null
+                const jobUuid = job.metadata.uuid ?? null
+                if (lastJobUuid === jobUuid && lastJob.status === job.status) {
+                    lastJob.filament_used += job.filament_used
+                    lastJob.print_duration += job.print_duration
+                    lastJob.total_duration += job.total_duration
+                    lastJob.count += 1
+                    continue
+                }
+
+                if (jobs.length >= this.maxLength) break
+
                 jobs.push({ ...job, count: 1 })
-                continue
             }
 
-            const lastJob = jobs[jobs.length - 1]
-            const lastJobUuid = lastJob.metadata.uuid ?? null
-            const jobUuid = job.metadata.uuid ?? null
-            if (lastJobUuid === jobUuid && lastJob.status === job.status) {
-                lastJob.filament_used += job.filament_used
-                lastJob.print_duration += job.print_duration
-                lastJob.total_duration += job.total_duration
-                lastJob.count += 1
-                continue
-            }
-
-            if (jobs.length >= this.maxLength) break
-
-            jobs.push({ ...job, count: 1 })
-        }
-
-        return jobs
-    }
-
-    startJobqueue() {
-        this.$store.dispatch('server/jobQueue/start')
-    }
-}
+            return jobs
+        },
+    },
+    methods: {
+        startJobqueue() {
+            this.$store.dispatch('server/jobQueue/start')
+        },
+    },
+})
 </script>
 
 <style scoped>

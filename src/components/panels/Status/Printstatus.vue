@@ -12,17 +12,17 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import StatusPanelPrintstatusPrinting from '@/components/panels/Status/PrintstatusPrinting.vue'
 import StatusPanelPrintstatusComplete from '@/components/panels/Status/PrintstatusComplete.vue'
 
-@Component({
+export default defineComponent({
+    name: 'StatusPanelPrintstatus',
     components: {
         StatusPanelPrintstatusPrinting,
         StatusPanelPrintstatusComplete,
     },
+    mixins: [BaseMixin],
 })
-export default class StatusPanelPrintstatus extends Mixins(BaseMixin) {}
 </script>

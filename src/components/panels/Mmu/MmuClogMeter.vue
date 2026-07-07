@@ -84,124 +84,136 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Ref, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import MmuMixin, { DIRECTION_UNKNOWN } from '@/components/mixins/mmu'
 
-@Component
-export default class MmuClogMeter extends Mixins(BaseMixin, MmuMixin) {
-    @Ref('dialCircle') dialCircle!: SVGCircleElement
+const CIRCUMFERENCE = 2 * Math.PI * 50
 
-    ROTATION_TIME = 1
-    CIRCUMFERENCE = 2 * Math.PI * 50
-    DIAL_ARC = this.CIRCUMFERENCE * (60 / 360)
-    X1_START = 70 + 63 * Math.cos((120 * Math.PI) / 180)
-    Y1_START = 70 + 63 * Math.sin((120 * Math.PI) / 180)
-    X1_END = 70 + 63 * Math.cos((60 * Math.PI) / 180)
-    Y1_END = 70 + 63 * Math.sin((60 * Math.PI) / 180)
-
-    get encoderDesiredHeadroom() {
-        return this.mmuEncoder?.desired_headroom ?? 0
-    }
-
-    get encoderDetectionLength() {
-        return this.mmuEncoder?.detection_length ?? 0
-    }
-
-    get encoderDetectionMode() {
-        return this.mmuEncoder?.detection_mode ?? DIRECTION_UNKNOWN
-    }
-
-    get encoderEnabled() {
-        return this.mmuEncoder?.enabled ?? false
-    }
-
-    get encoderFlowRate() {
-        return this.mmuEncoder?.flow_rate ?? 0
-    }
-
-    get svgClasses() {
-        return { 'disabled-clog': this.encoderDetectionMode === 0 || !this.encoderEnabled }
-    }
-
-    get headroom() {
-        return this.mmuEncoder?.headroom ?? 0
-    }
-
-    get headroomMin() {
-        return this.mmuEncoder?.min_headroom ?? 0
-    }
-
-    get headroomWarning() {
-        return this.headroomMin < this.encoderDesiredHeadroom
-    }
-
-    get minHeadroomLineClasses() {
+export default defineComponent({
+    name: 'MmuClogMeter',
+    mixins: [BaseMixin, MmuMixin],
+    data() {
         return {
-            'warning-color': this.headroomWarning,
-            'primary-color': !this.headroomWarning,
+            ROTATION_TIME: 1,
+            CIRCUMFERENCE: CIRCUMFERENCE,
+            DIAL_ARC: CIRCUMFERENCE * (60 / 360),
+            X1_START: 70 + 63 * Math.cos((120 * Math.PI) / 180),
+            Y1_START: 70 + 63 * Math.sin((120 * Math.PI) / 180),
+            X1_END: 70 + 63 * Math.cos((60 * Math.PI) / 180),
+            Y1_END: 70 + 63 * Math.sin((60 * Math.PI) / 180),
         }
-    }
+    },
+    computed: {
+        encoderDesiredHeadroom() {
+            return this.mmuEncoder?.desired_headroom ?? 0
+        },
 
-    get headroomArc() {
-        return this.CIRCUMFERENCE * (1 - (this.encoderDesiredHeadroom / this.encoderDetectionLength) * (300 / 360))
-    }
+        encoderDetectionLength() {
+            return this.mmuEncoder?.detection_length ?? 0
+        },
 
-    get headroomRotate() {
-        if (this.encoderDetectionLength === 0) return 120
+        encoderDetectionMode() {
+            return this.mmuEncoder?.detection_mode ?? DIRECTION_UNKNOWN
+        },
 
-        return 420 - (this.encoderDesiredHeadroom / this.encoderDetectionLength) * 300
-    }
+        encoderEnabled() {
+            return this.mmuEncoder?.enabled ?? false
+        },
 
-    get headroomTransform() {
-        return `rotate(${this.headroomRotate} 70 70)`
-    }
+        encoderFlowRate() {
+            return this.mmuEncoder?.flow_rate ?? 0
+        },
 
-    get clogPercent() {
-        if (this.encoderDetectionLength === 0) return 100
+        svgClasses() {
+            return { 'disabled-clog': this.encoderDetectionMode === 0 || !this.encoderEnabled }
+        },
 
-        return this.calcClogPercent(this.headroom, this.encoderDetectionLength)
-    }
+        headroom() {
+            return this.mmuEncoder?.headroom ?? 0
+        },
 
-    get minHeadroomPercent() {
-        if (this.encoderDetectionLength === 0) return 100
+        headroomMin() {
+            return this.mmuEncoder?.min_headroom ?? 0
+        },
 
-        return this.calcClogPercent(this.headroomMin, this.encoderDetectionLength)
-    }
+        headroomWarning() {
+            return this.headroomMin < this.encoderDesiredHeadroom
+        },
 
-    get minHeadroomAngle() {
-        return this.minHeadroomPercent * 3 // 300 degree range
-    }
+        minHeadroomLineClasses() {
+            return {
+                'warning-color': this.headroomWarning,
+                'primary-color': !this.headroomWarning,
+            }
+        },
 
-    get x1MinHeadroom() {
-        return 70 + 64 * Math.cos(((120 + this.minHeadroomAngle) * Math.PI) / 180)
-    }
+        headroomArc() {
+            return this.CIRCUMFERENCE * (1 - (this.encoderDesiredHeadroom / this.encoderDetectionLength) * (300 / 360))
+        },
 
-    get y1MinHeadroom() {
-        return 70 + 64 * Math.sin(((120 + this.minHeadroomAngle) * Math.PI) / 180)
-    }
+        headroomRotate() {
+            if (this.encoderDetectionLength === 0) return 120
 
-    get dashOffset() {
-        return this.CIRCUMFERENCE * ((100 - (this.clogPercent * 300) / 360) / 100)
-    }
+            return 420 - (this.encoderDesiredHeadroom / this.encoderDetectionLength) * 300
+        },
 
-    private calcClogPercent(value: number, encoderDetectionLength: number) {
-        return (
-            (Math.min(Math.max(0, encoderDetectionLength - value), encoderDetectionLength) / encoderDetectionLength) *
-            100
-        )
-    }
+        headroomTransform() {
+            return `rotate(${this.headroomRotate} 70 70)`
+        },
 
-    @Watch('dashOffset', { immediate: true })
-    onDashOffsetChanged(newValue: number) {
-        if (!this.dialCircle) return
+        clogPercent() {
+            if (this.encoderDetectionLength === 0) return 100
 
-        const currentOffset = parseFloat(this.dialCircle?.style?.strokeDashoffset) || this.CIRCUMFERENCE
-        const difference = Math.abs(currentOffset - newValue)
-        const duration = (difference / this.CIRCUMFERENCE) * this.ROTATION_TIME
-        this.dialCircle.style.transition = `stroke-dashoffset ${duration}s ease-out`
-    }
-}
+            return this.calcClogPercent(this.headroom, this.encoderDetectionLength)
+        },
+
+        minHeadroomPercent() {
+            if (this.encoderDetectionLength === 0) return 100
+
+            return this.calcClogPercent(this.headroomMin, this.encoderDetectionLength)
+        },
+
+        minHeadroomAngle() {
+            return this.minHeadroomPercent * 3 // 300 degree range
+        },
+
+        x1MinHeadroom() {
+            return 70 + 64 * Math.cos(((120 + this.minHeadroomAngle) * Math.PI) / 180)
+        },
+
+        y1MinHeadroom() {
+            return 70 + 64 * Math.sin(((120 + this.minHeadroomAngle) * Math.PI) / 180)
+        },
+
+        dashOffset() {
+            return this.CIRCUMFERENCE * ((100 - (this.clogPercent * 300) / 360) / 100)
+        },
+    },
+    methods: {
+        calcClogPercent(value: number, encoderDetectionLength: number) {
+            return (
+                (Math.min(Math.max(0, encoderDetectionLength - value), encoderDetectionLength) /
+                    encoderDetectionLength) *
+                100
+            )
+        },
+    },
+    watch: {
+        dashOffset: {
+            handler(newValue: number) {
+                const dialCircle = this.$refs.dialCircle as SVGCircleElement | undefined
+                if (!dialCircle) return
+
+                const currentOffset = parseFloat(dialCircle?.style?.strokeDashoffset) || this.CIRCUMFERENCE
+                const difference = Math.abs(currentOffset - newValue)
+                const duration = (difference / this.CIRCUMFERENCE) * this.ROTATION_TIME
+                dialCircle.style.transition = `stroke-dashoffset ${duration}s ease-out`
+            },
+            immediate: true,
+        },
+    },
+})
 </script>
 
 <style scoped>

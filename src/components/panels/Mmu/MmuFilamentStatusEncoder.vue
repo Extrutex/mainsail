@@ -11,38 +11,41 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import MmuMixin, { DIRECTION_UNKNOWN, FILAMENT_POS_START_BOWDEN } from '@/components/mixins/mmu'
 
-@Component
-export default class MmuFilamentStatusEncoder extends Mixins(BaseMixin, MmuMixin) {
-    get encoderClass() {
-        return this.mmuEncoder?.enabled ? 'sensor-normal' : 'sensor-disabled'
-    }
+export default defineComponent({
+    name: 'MmuFilamentStatusEncoder',
+    mixins: [BaseMixin, MmuMixin],
+    computed: {
+        encoderClass() {
+            return this.mmuEncoder?.enabled ? 'sensor-normal' : 'sensor-disabled'
+        },
 
-    get textClass() {
-        return {
-            'text-disabled': !this.mmuEncoder?.enabled,
-        }
-    }
+        textClass() {
+            return {
+                'text-disabled': !this.mmuEncoder?.enabled,
+            }
+        },
 
-    get encoderPosText() {
-        return this.encoderPos < 10000 ? `${this.encoderPos} mm` : `${this.encoderPos}`
-    }
+        encoderPosText() {
+            return this.encoderPos < 10000 ? `${this.encoderPos} mm` : `${this.encoderPos}`
+        },
 
-    get filamentDirection() {
-        return this.mmu?.filament_direction ?? DIRECTION_UNKNOWN
-    }
+        filamentDirection() {
+            return this.mmu?.filament_direction ?? DIRECTION_UNKNOWN
+        },
 
-    get homedToEncoder(): boolean {
-        return this.configGateHomingEndstop === 'encoder' && this.mmuFilamentPos === FILAMENT_POS_START_BOWDEN
-    }
+        homedToEncoder(): boolean {
+            return this.configGateHomingEndstop === 'encoder' && this.mmuFilamentPos === FILAMENT_POS_START_BOWDEN
+        },
 
-    get encoderPos() {
-        return Math.round(this.mmuEncoder?.encoder_pos ?? 0)
-    }
-}
+        encoderPos() {
+            return Math.round(this.mmuEncoder?.encoder_pos ?? 0)
+        },
+    },
+})
 </script>
 
 <style scoped>

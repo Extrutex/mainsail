@@ -2,7 +2,7 @@
 
 <template>
     <div>
-        <v-dialog v-model="showDialog" width="400" persistent :fullscreen="isMobile">
+        <v-dialog :model-value="showDialog" width="400" persistent :fullscreen="isMobile">
             <panel
                 :title="$t('Panels.StatusPanel.PauseAtLayer.PauseAtLayer').toString()"
                 :icon="mdiLayersPlus"
@@ -16,7 +16,7 @@
                 <v-card-text>
                     <v-row v-if="type === 'atLayer' && macroSettingsPauseAtLayerEnable">
                         <v-col>
-                            <v-alert text type="warning" border="left">
+                            <v-alert variant="tonal" type="warning" border="start">
                                 {{
                                     $t('Panels.StatusPanel.PauseAtLayer.DescriptionPauseAtLayerActive', {
                                         layer: macroSettingsPauseAtLayerLayer,
@@ -28,7 +28,7 @@
                     </v-row>
                     <v-row v-if="type === 'nextLayer' && macroSettingsPauseNextLayerEnable">
                         <v-col>
-                            <v-alert text type="warning" border="left">
+                            <v-alert variant="tonal" type="warning" border="start">
                                 {{
                                     $t('Panels.StatusPanel.PauseAtLayer.DescriptionPauseNextLayerActive', {
                                         call: macroSettingsPauseAtLayerCall,
@@ -43,14 +43,14 @@
                                 v-model="type"
                                 :items="itemsFiltered"
                                 :label="$t('Panels.StatusPanel.PauseAtLayer.Type')"
-                                outlined
+                                variant="outlined"
                                 hide-details />
                         </v-col>
                         <v-col v-if="type === 'atLayer'">
                             <v-text-field
                                 v-model="layer"
                                 :label="$t('Panels.StatusPanel.PauseAtLayer.Layer')"
-                                outlined
+                                variant="outlined"
                                 hide-details />
                         </v-col>
                     </v-row>
@@ -60,15 +60,17 @@
                                 v-model="call"
                                 :items="itemsCall"
                                 :label="$t('Panels.StatusPanel.PauseAtLayer.Call')"
-                                outlined
+                                variant="outlined"
                                 hide-details />
                         </v-col>
                     </v-row>
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer />
-                    <v-btn text @click="hideDialog">{{ $t('Panels.StatusPanel.PauseAtLayer.Abort') }}</v-btn>
-                    <v-btn color="primary" text @click="sendCommand">
+                    <v-btn variant="text" @click="hideDialog">
+                        {{ $t('Panels.StatusPanel.PauseAtLayer.Abort') }}
+                    </v-btn>
+                    <v-btn color="primary" variant="text" @click="sendCommand">
                         {{ $t('Panels.StatusPanel.PauseAtLayer.Accept') }}
                     </v-btn>
                 </v-card-actions>
@@ -78,148 +80,155 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, Prop, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import StatusPanelExcludeObjectDialogMap from '@/components/panels/Status/ExcludeObjectDialogMap.vue'
 import StatusPanelExcludeObjectDialogList from '@/components/panels/Status/ExcludeObjectDialogList.vue'
 import Panel from '@/components/ui/Panel.vue'
 import { mdiCloseThick, mdiLayersPlus } from '@mdi/js'
 import { PrinterStateMacro } from '@/store/printer/types'
-@Component({
+
+export default defineComponent({
+    name: 'StatusPanelPauseAtLayerDialog',
     components: { Panel, StatusPanelExcludeObjectDialogList, StatusPanelExcludeObjectDialogMap },
-})
-export default class StatusPanelPauseAtLayerDialog extends Mixins(BaseMixin) {
-    mdiLayersPlus = mdiLayersPlus
-    mdiCloseThick = mdiCloseThick
+    mixins: [BaseMixin],
+    props: {
+        showDialog: { type: Boolean, required: true },
+    },
+    emits: ['update:showDialog'],
+    data() {
+        return {
+            mdiLayersPlus: mdiLayersPlus,
+            mdiCloseThick: mdiCloseThick,
 
-    @Prop({ required: true }) declare readonly showDialog: boolean
+            type: 'atLayer' as 'nextLayer' | 'atLayer',
+            layer: 0,
+            call: 'PAUSE' as 'PAUSE' | 'M600',
+        }
+    },
+    computed: {
+        items() {
+            return [
+                {
+                    title: this.$t('Panels.StatusPanel.PauseAtLayer.AtLayer'),
+                    value: 'atLayer',
+                    status: this.existsSetPauseAtLayer,
+                },
+                {
+                    title: this.$t('Panels.StatusPanel.PauseAtLayer.NextLayer'),
+                    value: 'nextLayer',
+                    status: this.existsSetPauseNextLayer,
+                },
+            ]
+        },
 
-    private type: 'nextLayer' | 'atLayer' = 'atLayer'
-    private layer: number = 0
-    private call: 'PAUSE' | 'M600' = 'PAUSE'
+        itemsFiltered() {
+            return this.items.filter((entry) => entry.status)
+        },
 
-    hideDialog() {
-        this.$emit('update:showDialog', false)
-    }
+        itemsCall() {
+            return [
+                {
+                    title: 'PAUSE',
+                    value: 'PAUSE',
+                },
+                {
+                    title: 'M600',
+                    value: 'M600',
+                },
+            ]
+        },
 
-    get items() {
-        return [
-            {
-                text: this.$t('Panels.StatusPanel.PauseAtLayer.AtLayer'),
-                value: 'atLayer',
-                status: this.existsSetPauseAtLayer,
-            },
-            {
-                text: this.$t('Panels.StatusPanel.PauseAtLayer.NextLayer'),
-                value: 'nextLayer',
-                status: this.existsSetPauseNextLayer,
-            },
-        ]
-    }
+        current_layer() {
+            return this.$store.state.printer.print_stats?.info?.current_layer ?? 0
+        },
 
-    get itemsFiltered() {
-        return this.items.filter((entry) => entry.status)
-    }
+        total_layer() {
+            return this.$store.state.printer.print_stats?.info?.total_layer ?? 0
+        },
 
-    get itemsCall() {
-        return [
-            {
-                text: 'PAUSE',
-                value: 'PAUSE',
-            },
-            {
-                text: 'M600',
-                value: 'M600',
-            },
-        ]
-    }
+        macros() {
+            return this.$store.getters['printer/getMacros'] ?? []
+        },
 
-    get current_layer() {
-        return this.$store.state.printer.print_stats?.info?.current_layer ?? 0
-    }
+        existsSetPauseAtLayer() {
+            return this.macros.findIndex((macro: PrinterStateMacro) => macro.name === 'SET_PAUSE_AT_LAYER') !== -1
+        },
 
-    get total_layer() {
-        return this.$store.state.printer.print_stats?.info?.total_layer ?? 0
-    }
+        existsSetPauseNextLayer() {
+            return this.macros.findIndex((macro: PrinterStateMacro) => macro.name === 'SET_PAUSE_NEXT_LAYER') !== -1
+        },
 
-    get macros() {
-        return this.$store.getters['printer/getMacros'] ?? []
-    }
+        macroSetPrintStatsInfo() {
+            return this.$store.state.printer['gcode_macro SET_PRINT_STATS_INFO'] ?? {}
+        },
 
-    get existsSetPauseAtLayer() {
-        return this.macros.findIndex((macro: PrinterStateMacro) => macro.name === 'SET_PAUSE_AT_LAYER') !== -1
-    }
+        macroSettingsPauseAtLayer() {
+            return this.macroSetPrintStatsInfo.pause_at_layer ?? {}
+        },
 
-    get existsSetPauseNextLayer() {
-        return this.macros.findIndex((macro: PrinterStateMacro) => macro.name === 'SET_PAUSE_NEXT_LAYER') !== -1
-    }
+        macroSettingsPauseAtLayerEnable() {
+            return this.macroSettingsPauseAtLayer.enable ?? false
+        },
 
-    get macroSetPrintStatsInfo() {
-        return this.$store.state.printer['gcode_macro SET_PRINT_STATS_INFO'] ?? {}
-    }
+        macroSettingsPauseAtLayerCall() {
+            return this.macroSettingsPauseAtLayer.call ?? 'PAUSE'
+        },
 
-    get macroSettingsPauseAtLayer() {
-        return this.macroSetPrintStatsInfo.pause_at_layer ?? {}
-    }
+        macroSettingsPauseAtLayerLayer() {
+            return this.macroSettingsPauseAtLayer.layer ?? 0
+        },
 
-    get macroSettingsPauseAtLayerEnable() {
-        return this.macroSettingsPauseAtLayer.enable ?? false
-    }
+        macroSettingsPauseNextLayer() {
+            return this.macroSetPrintStatsInfo.pause_next_layer ?? {}
+        },
 
-    get macroSettingsPauseAtLayerCall() {
-        return this.macroSettingsPauseAtLayer.call ?? 'PAUSE'
-    }
+        macroSettingsPauseNextLayerEnable() {
+            return this.macroSettingsPauseNextLayer.enable ?? false
+        },
 
-    get macroSettingsPauseAtLayerLayer() {
-        return this.macroSettingsPauseAtLayer.layer ?? 0
-    }
+        macroSettingsPauseNextLayerCall() {
+            return this.macroSettingsPauseNextLayer.call ?? 'PAUSE'
+        },
+    },
+    methods: {
+        hideDialog() {
+            this.$emit('update:showDialog', false)
+        },
 
-    get macroSettingsPauseNextLayer() {
-        return this.macroSetPrintStatsInfo.pause_next_layer ?? {}
-    }
+        sendCommand() {
+            if (this.type === 'atLayer') {
+                this.doSend(`SET_PAUSE_AT_LAYER ENABLE=1 LAYER=${this.layer} MACRO=${this.call}`)
+                this.hideDialog()
+                return
+            }
 
-    get macroSettingsPauseNextLayerEnable() {
-        return this.macroSettingsPauseNextLayer.enable ?? false
-    }
-
-    get macroSettingsPauseNextLayerCall() {
-        return this.macroSettingsPauseNextLayer.call ?? 'PAUSE'
-    }
-
-    sendCommand() {
-        if (this.type === 'atLayer') {
-            this.doSend(`SET_PAUSE_AT_LAYER ENABLE=1 LAYER=${this.layer} MACRO=${this.call}`)
+            this.doSend(`SET_PAUSE_NEXT_LAYER ENABLE=1 MACRO=${this.call}`)
             this.hideDialog()
-            return
-        }
+        },
 
-        this.doSend(`SET_PAUSE_NEXT_LAYER ENABLE=1 MACRO=${this.call}`)
-        this.hideDialog()
-    }
+        doSend(gcode: string) {
+            this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
+            this.$socket.emit('printer.gcode.script', { script: gcode })
+        },
+    },
+    watch: {
+        showDialog(newVal: boolean) {
+            if (newVal) {
+                this.layer = this.current_layer + 1
+                this.type = 'atLayer'
 
-    doSend(gcode: string) {
-        this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
-        this.$socket.emit('printer.gcode.script', { script: gcode })
-    }
+                if (!this.existsSetPauseAtLayer) this.type = 'nextLayer'
+            }
+        },
 
-    @Watch('showDialog')
-    showDialogChanged(newVal: boolean) {
-        if (newVal) {
-            this.layer = this.current_layer + 1
-            this.type = 'atLayer'
-
-            if (!this.existsSetPauseAtLayer) this.type = 'nextLayer'
-        }
-    }
-
-    @Watch('type')
-    typeChanged(newVal: string) {
-        if (newVal === 'atLayer') {
-            this.call = this.macroSettingsPauseAtLayerCall
-        } else if (newVal === 'nextLayer') {
-            this.call = this.macroSettingsPauseNextLayerCall
-        }
-    }
-}
+        type(newVal: string) {
+            if (newVal === 'atLayer') {
+                this.call = this.macroSettingsPauseAtLayerCall
+            } else if (newVal === 'nextLayer') {
+                this.call = this.macroSettingsPauseNextLayerCall
+            }
+        },
+    },
+})
 </script>

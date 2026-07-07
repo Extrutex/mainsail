@@ -4,7 +4,7 @@
         :loading="loading">
         <v-toolbar
             flat
-            dense
+            density="compact"
             :color="toolbarColor"
             :class="getToolbarClass"
             :height="panelToolbarHeight"
@@ -13,7 +13,7 @@
             <slot name="buttons-left" />
             <v-toolbar-title class="d-flex align-center">
                 <slot v-if="hasIconSlot" name="icon" />
-                <v-icon v-if="icon !== null && !hasIconSlot" left>{{ icon }}</v-icon>
+                <v-icon v-if="icon !== null && !hasIconSlot" start>{{ icon }}</v-icon>
                 <span v-if="title" class="subheading">{{ title }}</span>
             </v-toolbar-title>
             <slot name="buttons-title" />
@@ -36,56 +36,68 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
+import type { PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { panelToolbarHeight } from '@/store/variables'
 import { mdiChevronDown } from '@mdi/js'
 import { TranslateResult } from 'vue-i18n'
 
-@Component
-export default class Panel extends Mixins(BaseMixin) {
-    mdiChevronDown = mdiChevronDown
-    panelToolbarHeight = panelToolbarHeight
+export default defineComponent({
+    name: 'Panel',
+    mixins: [BaseMixin],
+    props: {
+        icon: { type: String as PropType<string | null>, default: null },
+        title: { type: String as PropType<string | TranslateResult>, required: true, default: '' },
+        collapsible: { type: Boolean, default: false },
+        cardClass: { type: String, required: true },
+        toolbarColor: { type: String, default: '' },
+        toolbarClass: { type: String, default: '' },
+        loading: { type: Boolean, default: false },
+        marginBottom: { type: Boolean, default: true },
+        hideButtonsOnCollapse: { type: Boolean, default: false },
+    },
+    data() {
+        return {
+            mdiChevronDown: mdiChevronDown,
+            panelToolbarHeight: panelToolbarHeight,
+        }
+    },
+    computed: {
+        expand: {
+            get(): boolean {
+                return this.$store.getters['gui/getPanelExpand'](this.cardClass, this.viewport)
+            },
+            set(newVal: boolean) {
+                this.$store.dispatch('gui/saveExpandPanel', {
+                    name: this.cardClass,
+                    value: newVal,
+                    viewport: this.viewport,
+                })
+            },
+        },
 
-    @Prop({ default: null }) declare readonly icon: string | null
-    @Prop({ required: true, default: '' }) declare readonly title: string | TranslateResult
-    @Prop({ default: false }) declare readonly collapsible: boolean
-    @Prop({ required: true }) declare readonly cardClass: string
-    @Prop({ default: '' }) declare readonly toolbarColor: string
-    @Prop({ default: '' }) declare readonly toolbarClass: string
-    @Prop({ default: false }) declare readonly loading: boolean
-    @Prop({ default: true }) declare readonly marginBottom: boolean
-    @Prop({ default: false }) declare readonly hideButtonsOnCollapse: boolean
+        hasIconSlot() {
+            return !!this.$slots.icon
+        },
 
-    get expand() {
-        return this.$store.getters['gui/getPanelExpand'](this.cardClass, this.viewport)
-    }
+        hasButtonsSlot() {
+            return !!this.$slots.buttons
+        },
 
-    set expand(newVal) {
-        this.$store.dispatch('gui/saveExpandPanel', { name: this.cardClass, value: newVal, viewport: this.viewport })
-    }
+        getToolbarClass() {
+            let output = this.toolbarClass
 
-    get hasIconSlot() {
-        return !!this.$slots.icon
-    }
+            if (this.collapsible) output += ' collapsible'
 
-    get hasButtonsSlot() {
-        return !!this.$slots.buttons
-    }
+            return output
+        },
 
-    get getToolbarClass() {
-        let output = this.toolbarClass
-
-        if (this.collapsible) output += ' collapsible'
-
-        return output
-    }
-
-    get additionalStyle() {
-        return this.$vuetify.theme.dark ? '' : 'border-bottom: 1px solid #A8A8A8'
-    }
-}
+        additionalStyle() {
+            return this.$vuetify.theme.current.dark ? '' : 'border-bottom: 1px solid #A8A8A8'
+        },
+    },
+})
 </script>
 
 <style scoped>
@@ -106,7 +118,7 @@ export default class Panel extends Mixins(BaseMixin) {
     overflow-y: hidden;
 }
 
-::v-deep .panel-toolbar .v-btn {
+:deep(.panel-toolbar .v-btn) {
     height: 100% !important;
     max-height: none;
 }

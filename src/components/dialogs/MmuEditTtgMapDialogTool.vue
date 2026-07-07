@@ -25,46 +25,49 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import MmuMixin, { TOOL_GATE_BYPASS, TOOL_GATE_UNKNOWN } from '@/components/mixins/mmu'
 
-@Component
-export default class MmuEditTtgMapDialogTool extends Mixins(BaseMixin, MmuMixin) {
-    @Prop({ required: true }) readonly gate!: number
-    @Prop({ required: true }) readonly tool!: number
-    @Prop({ default: false }) readonly isSelected!: boolean
-    @Prop({ default: false }) readonly isDisabled!: boolean
+export default defineComponent({
+    name: 'MmuEditTtgMapDialogTool',
+    mixins: [BaseMixin, MmuMixin],
+    props: {
+        gate: { type: Number, required: true },
+        tool: { type: Number, required: true },
+        isSelected: { type: Boolean, default: false },
+        isDisabled: { type: Boolean, default: false },
+    },
+    emits: ['select-tool'],
+    computed: {
+        title() {
+            if (this.tool === TOOL_GATE_BYPASS) return this.$t('Panels.MmuPanel.Bypass')
+            if (this.tool === TOOL_GATE_UNKNOWN) return `T?`
 
-    get title() {
-        if (this.tool === TOOL_GATE_BYPASS) return this.$t('Panels.MmuPanel.Bypass')
-        if (this.tool === TOOL_GATE_UNKNOWN) return `T?`
+            return `T${this.tool}`
+        },
+        endlessSpoolText() {
+            const currentGroup = this.endlessSpoolGroups[this.gate]
 
-        return `T${this.tool}`
-    }
+            const eSGates = this.endlessSpoolGroups
+                .map((_, i) => (this.gate + i) % this.endlessSpoolGroups.length)
+                .filter((idx) => idx !== this.gate && this.endlessSpoolGroups[idx] === currentGroup)
 
-    get endlessSpoolText() {
-        const currentGroup = this.endlessSpoolGroups[this.gate]
-
-        const eSGates = this.endlessSpoolGroups
-            .map((_, i) => (this.gate + i) % this.endlessSpoolGroups.length)
-            .filter((idx) => idx !== this.gate && this.endlessSpoolGroups[idx] === currentGroup)
-
-        return eSGates.join(', ') || this.$t('Panels.MmuPanel.TtgMapDialog.None')
-    }
-
-    get cardClasses() {
-        return {
-            'is-selected': this.isSelected,
-            'is-disabled': this.isDisabled,
-        }
-    }
-
-    selectTool() {
-        this.$emit('select-tool', this.tool)
-    }
-}
+            return eSGates.join(', ') || this.$t('Panels.MmuPanel.TtgMapDialog.None')
+        },
+        cardClasses() {
+            return {
+                'is-selected': this.isSelected,
+                'is-disabled': this.isDisabled,
+            }
+        },
+    },
+    methods: {
+        selectTool() {
+            this.$emit('select-tool', this.tool)
+        },
+    },
+})
 </script>
 
 <style scoped>

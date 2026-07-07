@@ -10,13 +10,17 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
+import type { PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { ServerStateEventPrompt } from '@/store/server/types'
 
-@Component({})
-export default class MacroPromptButton extends Mixins(BaseMixin) {
-    @Prop({ type: Array, required: true }) readonly children!: ServerStateEventPrompt[]
-    @Prop({ type: Number, required: true }) readonly groupIndex!: number
-}
+export default defineComponent({
+    name: 'MacroPromptButtonGroup',
+    mixins: [BaseMixin],
+    props: {
+        children: { type: Array as PropType<ServerStateEventPrompt[]>, required: true },
+        groupIndex: { type: Number, required: true },
+    },
+})
 </script>

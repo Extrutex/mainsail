@@ -1,39 +1,47 @@
 # Vue & TypeScript
 
-## Vue Class Components
+## Vue 3 Options API
 
-Use Vue Class Component with TypeScript decorators.
-Never use Vue 3 `<script setup>` or Options API.
+Use Vue 3 **Options API** with `defineComponent`.
+Never use `<script setup>` and never use the old class-component decorators
+(`vue-class-component` / `vue-property-decorator` were removed with the Vue 3 migration).
 
 See canonical example: [examples/VueComponentExample.vue](examples/VueComponentExample.vue)
 
-### Class Member Order
+### Option Order
 
-1. `@Prop` declarations
-2. Data fields (class properties)
-3. Getters (computed properties)
-4. `@Watch` decorators
-5. Lifecycle hooks (mounted, beforeDestroy)
-6. Methods
+1. `name`
+2. `components`
+3. `mixins`
+4. `props`
+5. `emits`
+6. `data()`
+7. `computed`
+8. `watch`
+9. Lifecycle hooks (`created`, `mounted`, `beforeUnmount`, …)
+10. `methods`
 
 ### Documentation
 
-- [vue-class-component](https://class-component.vuejs.org/)
-- [vue-property-decorator](https://github.com/kaorun343/vue-property-decorator)
+- [Vue 3 Options API](https://vuejs.org/guide/typescript/options-api.html)
+- [Vuetify 3](https://vuetifyjs.com/en/components/all/)
 
 ## TypeScript
 
-Use explicit types for props, return values, and complex objects.
+Use explicit types for props, computed return values, and complex objects.
+Computed properties MUST have explicit return types (required for cross-references).
 Use `@/` alias for imports (e.g., `import { foo } from '@/store/types'`).
 
-Define `type`, `required`, and `default` for all props.
+Define `type`, `required`, and `default` for all props. Use `PropType<T>` for complex prop types.
+
+Declare all emitted events in the `emits` option.
 
 ## Template Best Practices
 
 Extract complex logic into computed properties.
 Keep templates declarative - no inline filtering or complex expressions.
 
-## Cleanup in beforeDestroy
+## Cleanup in beforeUnmount
 
 Always clean up resources:
 

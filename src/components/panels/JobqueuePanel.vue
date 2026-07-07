@@ -9,9 +9,9 @@
                 tile
                 :disabled="!klipperReadyForGui"
                 @click="startJobqueue">
-                <v-tooltip top>
-                    <template #activator="{ on, attrs }">
-                        <v-icon v-bind="attrs" v-on="on">{{ mdiPlay }}</v-icon>
+                <v-tooltip location="top">
+                    <template #activator="{ props }">
+                        <v-icon v-bind="props">{{ mdiPlay }}</v-icon>
                     </template>
                     <span>{{ $t('JobQueue.Start') }}</span>
                 </v-tooltip>
@@ -23,9 +23,9 @@
                 icon
                 tile
                 @click="pauseJobqueue">
-                <v-tooltip top>
-                    <template #activator="{ on, attrs }">
-                        <v-icon v-bind="attrs" v-on="on">{{ mdiPause }}</v-icon>
+                <v-tooltip location="top">
+                    <template #activator="{ props }">
+                        <v-icon v-bind="props">{{ mdiPause }}</v-icon>
                     </template>
                     <span>{{ $t('JobQueue.Pause') }}</span>
                 </v-tooltip>
@@ -34,14 +34,17 @@
         <v-row v-if="jobs.length" class="mx-0 mt-0">
             <v-col>
                 <draggable
-                    v-model="joblist"
+                    :list="jobs"
+                    item-key="job_id"
                     handle=".handle"
                     class="jobqueue-list mb-3"
                     ghost-class="ghost"
                     group="jobs"
                     :force-fallback="true"
                     @end="updateOrder">
-                    <jobqueue-entry v-for="job in jobs" :key="job.job_id" :job="job" :show-handle="true" />
+                    <template #item="{ element }">
+                        <jobqueue-entry :job="element" :show-handle="true" />
+                    </template>
                 </draggable>
                 <jobqueue-entry-sum :jobs="jobs" />
             </v-col>
@@ -53,7 +56,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import Panel from '@/components/ui/Panel.vue'
 import { mdiPlay, mdiPause, mdiTrayFull } from '@mdi/js'
@@ -61,39 +64,44 @@ import JobqueueEntry from '@/components/panels/Status/JobqueueEntry.vue'
 import draggable from 'vuedraggable'
 import JobqueueEntrySum from '@/components/panels/Status/JobqueueEntrySum.vue'
 import { DraggableEndEvent } from '@/types/vuedraggable'
-@Component({
+
+export default defineComponent({
+    name: 'JobqueuePanel',
     components: { JobqueueEntrySum, draggable, JobqueueEntry, Panel },
+    mixins: [BaseMixin],
+    data() {
+        return {
+            mdiPlay: mdiPlay,
+            mdiPause: mdiPause,
+            mdiTrayFull: mdiTrayFull,
+        }
+    },
+    computed: {
+        jobs() {
+            return this.$store.getters['server/jobQueue/getJobs']
+        },
+
+        queueState() {
+            return this.$store.state.server.jobQueue.queue_state ?? ''
+        },
+    },
+    methods: {
+        startJobqueue() {
+            this.$store.dispatch('server/jobQueue/start')
+        },
+
+        pauseJobqueue() {
+            this.$store.dispatch('server/jobQueue/pause')
+        },
+
+        updateOrder(event: DraggableEndEvent) {
+            this.$store.dispatch('server/jobQueue/changePosition', {
+                newIndex: event.newIndex,
+                oldIndex: event.oldIndex,
+            })
+        },
+    },
 })
-export default class JobqueuePanel extends Mixins(BaseMixin) {
-    mdiPlay = mdiPlay
-    mdiPause = mdiPause
-    mdiTrayFull = mdiTrayFull
-
-    joblist = []
-
-    get jobs() {
-        return this.$store.getters['server/jobQueue/getJobs']
-    }
-
-    get queueState() {
-        return this.$store.state.server.jobQueue.queue_state ?? ''
-    }
-
-    startJobqueue() {
-        this.$store.dispatch('server/jobQueue/start')
-    }
-
-    pauseJobqueue() {
-        this.$store.dispatch('server/jobQueue/pause')
-    }
-
-    updateOrder(event: DraggableEndEvent) {
-        this.$store.dispatch('server/jobQueue/changePosition', {
-            newIndex: event.newIndex,
-            oldIndex: event.oldIndex,
-        })
-    }
-}
 </script>
 
 <style lang="scss">

@@ -10,27 +10,31 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
+import type { PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { FileStateGcodefile } from '@/store/files/types'
 import AfcMixin from '@/components/mixins/afc'
 import StartPrintDialogAfcTool from '@/components/dialogs/StartPrintDialogAfcTool.vue'
 
-@Component({
+export default defineComponent({
+    name: 'StartPrintDialogAfc',
     components: { StartPrintDialogAfcTool },
+    mixins: [BaseMixin, AfcMixin],
+    props: {
+        file: { type: Object as PropType<FileStateGcodefile>, required: true },
+    },
+    computed: {
+        usedTools() {
+            const filamentWeights = this.file.filament_weights ?? []
+
+            const usedTools: number[] = []
+            filamentWeights.forEach((weight, index) => {
+                if (weight > 0) usedTools.push(index)
+            })
+
+            return usedTools
+        },
+    },
 })
-export default class StartPrintDialogAfc extends Mixins(BaseMixin, AfcMixin) {
-    @Prop({ required: true }) declare readonly file: FileStateGcodefile
-
-    get usedTools() {
-        const filamentWeights = this.file.filament_weights ?? []
-
-        const usedTools: number[] = []
-        filamentWeights.forEach((weight, index) => {
-            if (weight > 0) usedTools.push(index)
-        })
-
-        return usedTools
-    }
-}
 </script>

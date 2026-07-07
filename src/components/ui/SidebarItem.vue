@@ -1,23 +1,14 @@
 <template>
     <div>
-        <v-tooltip right :open-delay="500" :disabled="navigationStyle !== 'iconsOnly'">
-            <template #activator="{ on, attrs }">
-                <v-list-item
-                    :router="to !== undefined"
-                    :to="to"
-                    :href="href"
-                    :target="target"
-                    :class="itemClass"
-                    v-bind="attrs"
-                    v-on="on">
-                    <v-list-item-icon class="my-3 mr-3 menu-item-icon">
-                        <v-icon>{{ icon }}</v-icon>
-                    </v-list-item-icon>
-                    <v-list-item-content>
-                        <v-list-item-title tile class="menu-item-title">
-                            {{ title }}
-                        </v-list-item-title>
-                    </v-list-item-content>
+        <v-tooltip location="end" :open-delay="500" :disabled="navigationStyle !== 'iconsOnly'">
+            <template #activator="{ props }">
+                <v-list-item :to="to" :href="href" :target="target" :class="itemClass" v-bind="props">
+                    <template #prepend>
+                        <v-icon class="my-3 mr-3 menu-item-icon">{{ icon }}</v-icon>
+                    </template>
+                    <v-list-item-title class="menu-item-title">
+                        {{ title }}
+                    </v-list-item-title>
                 </v-list-item>
             </template>
             <span>{{ title }}</span>
@@ -27,56 +18,60 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
+import type { PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { NaviPoint } from '@/components/mixins/navigation'
 
-@Component
-export default class SidebarItem extends Mixins(BaseMixin) {
-    @Prop({ type: Object, required: true }) item!: NaviPoint
+export default defineComponent({
+    name: 'SidebarItem',
+    mixins: [BaseMixin],
+    props: {
+        item: { type: Object as PropType<NaviPoint>, required: true },
+    },
+    computed: {
+        navigationStyle() {
+            return this.$store.state.gui.uiSettings.navigationStyle
+        },
 
-    get navigationStyle() {
-        return this.$store.state.gui.uiSettings.navigationStyle
-    }
+        icon() {
+            return this.item.icon
+        },
 
-    get icon() {
-        return this.item.icon
-    }
+        title() {
+            return this.item.title
+        },
 
-    get title() {
-        return this.item.title
-    }
+        to() {
+            return this.item.to ?? undefined
+        },
 
-    get to() {
-        return this.item.to ?? undefined
-    }
+        href() {
+            return this.item.href ?? undefined
+        },
 
-    get href() {
-        return this.item.href ?? undefined
-    }
+        target() {
+            return this.item.target ?? undefined
+        },
 
-    get target() {
-        return this.item.target ?? undefined
-    }
+        borderBottom() {
+            return this.item.to === '/allPrinters'
+        },
 
-    get borderBottom() {
-        return this.item.to === '/allPrinters'
-    }
+        isActive(): boolean {
+            if (this.item.target === '_blank' || !this.item.to) return false
 
-    get isActive(): boolean {
-        if (this.item.target === '_blank' || !this.item.to) return false
+            return this.$route.path === this.item.to
+        },
 
-        return this.$route.path === this.item.to
-    }
-
-    get itemClass() {
-        return {
-            'small-list-item': true,
-            'active-nav-item': this.isActive,
-        }
-    }
-}
+        itemClass() {
+            return {
+                'small-list-item': true,
+                'active-nav-item': this.isActive,
+            }
+        },
+    },
+})
 </script>
 
 <style scoped>
@@ -85,7 +80,7 @@ export default class SidebarItem extends Mixins(BaseMixin) {
 }
 
 .active-nav-item {
-    border-right: 4px solid var(--v-primary-base);
+    border-right: 4px solid rgb(var(--v-theme-primary));
 }
 
 .menu-item-icon {

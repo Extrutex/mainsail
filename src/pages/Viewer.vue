@@ -3,12 +3,14 @@
 </template>
 
 <script lang="ts">
+import { defineComponent } from 'vue'
 import Viewer from '@/components/gcodeviewer/Viewer.vue'
 import BaseMixin from '@/components/mixins/base'
-import { Component, Mixins } from 'vue-property-decorator'
 
-@Component({
+export default defineComponent({
+    name: 'PageGCodeViewer',
     components: { Viewer },
+    mixins: [BaseMixin],
 })
-export default class PageGCodeViewer extends Mixins(BaseMixin) {}
 </script>
+<style scoped></style>

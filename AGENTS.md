@@ -1,9 +1,9 @@
 # Mainsail AI Guidelines
 
-Mainsail is a Vue 2.7 + TypeScript web interface for Klipper 3D printer firmware, using Vuetify 2, Vuex 3, and Vite.
+Mainsail is a Vue 3 + TypeScript web interface for Klipper 3D printer firmware, using Vuetify 3, Vuex 4, and Vite.
 
-> **CRITICAL:** Use **Vue Class Components** with decorators (`@Component`, `@Prop`, `@Watch`).
-> Do NOT use Vue 3 `<script setup>` or Options API syntax.
+> **CRITICAL:** Use the Vue 3 **Options API** with `defineComponent`.
+> Do NOT use `<script setup>` and do NOT use class-component decorators (removed with the Vue 3 migration).
 
 ## Commands
 

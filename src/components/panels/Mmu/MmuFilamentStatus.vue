@@ -207,7 +207,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { capitalize } from '@/plugins/helpers'
 import MmuMixin, {
@@ -259,225 +259,231 @@ const POSITIONS = {
     NOZZLE_START: 371,
 } as const
 
-@Component({
+export default defineComponent({
+    name: 'MmuFilamentStatus',
     components: {
         MmuFilamentStatusTemperature,
         MmuFilamentStatusSensor,
         MmuFilamentStatusEncoder,
     },
-})
-export default class MmuFilamentStatus extends Mixins(BaseMixin, MmuMixin) {
-    ACTION_CUTTING_FILAMENT = ACTION_CUTTING_FILAMENT
-    ACTION_CUTTING_TIP = ACTION_CUTTING_TIP
-    ACTION_PURGING = ACTION_PURGING
+    mixins: [BaseMixin, MmuMixin],
+    data() {
+        return {
+            ACTION_CUTTING_FILAMENT: ACTION_CUTTING_FILAMENT,
+            ACTION_CUTTING_TIP: ACTION_CUTTING_TIP,
+            ACTION_PURGING: ACTION_PURGING,
+        }
+    },
+    computed: {
+        tipFormingClass() {
+            return this.mmuAction === ACTION_FORMING_TIP ? 'form-tip-effect' : ''
+        },
 
-    get tipFormingClass() {
-        return this.mmuAction === ACTION_FORMING_TIP ? 'form-tip-effect' : ''
-    }
+        filamentRectHeight() {
+            if (this.mmuGate === TOOL_GATE_BYPASS) {
+                if (this.mmuFilamentPos === FILAMENT_POS_EXTRUDER_ENTRY) return POSITIONS.BEFORE_TOOLHEAD
+                if (this.mmuFilamentPos === FILAMENT_POS_HOMED_TS) return POSITIONS.TOOLHEAD
+                if (this.mmuFilamentPos === FILAMENT_POS_IN_EXTRUDER) return POSITIONS.COOLING_TUBE
+                if (this.mmuFilamentPos === FILAMENT_POS_LOADED) return POSITIONS.NOZZLE_START
 
-    get filamentRectHeight() {
-        if (this.mmuGate === TOOL_GATE_BYPASS) {
+                if (this.toolheadSensor === true) return POSITIONS.TOOLHEAD
+                if (this.extruderSensor === true) return POSITIONS.EXTRUDER
+                if (this.mmuGearSensor === true) return POSITIONS.AFTER_GEAR
+                if (this.mmuPreGateSensor === true) return POSITIONS.AFTER_PRE_GATE
+
+                return POSITIONS.BEFORE_PRE_GATE
+            }
+
+            if (this.mmuFilamentPos === FILAMENT_POS_UNLOADED) {
+                if (this.mmuGearSensor === true) return POSITIONS.AFTER_GEAR
+                if (this.mmuPreGateSensor === true) return POSITIONS.AFTER_PRE_GATE
+
+                return POSITIONS.BEFORE_PRE_GATE
+            }
+
+            if (this.mmuFilamentPos === FILAMENT_POS_HOMED_GATE) {
+                if (this.configGateHomingEndstop === 'mmu_gear') return POSITIONS.GEAR
+                if (this.configGateHomingEndstop === 'mmu_gate') return POSITIONS.GATE
+                if (this.configGateHomingEndstop === 'extruder') return POSITIONS.EXTRUDER
+
+                return POSITIONS.AFTER_GATE
+            }
+
+            if (
+                [FILAMENT_POS_START_BOWDEN, FILAMENT_POS_IN_BOWDEN].includes(this.mmuFilamentPos) &&
+                this.bowdenProgress >= 0
+            ) {
+                const bowdenRange = this.endOfBowdenPos - POSITIONS.START_BOWDEN
+                return POSITIONS.START_BOWDEN + (bowdenRange * this.bowdenProgress) / 100
+            }
+
+            if (this.mmuFilamentPos === FILAMENT_POS_START_BOWDEN) return POSITIONS.START_BOWDEN
+            if (this.mmuFilamentPos === FILAMENT_POS_IN_BOWDEN) return POSITIONS.MID_BOWDEN
+            if (this.mmuFilamentPos === FILAMENT_POS_END_BOWDEN) return this.endOfBowdenPos
+            if (this.mmuFilamentPos === FILAMENT_POS_HOMED_ENTRY) return POSITIONS.EXTRUDER
+            if (this.mmuFilamentPos === FILAMENT_POS_HOMED_EXTRUDER) return POSITIONS.EXTRUDER_ENTRANCE
             if (this.mmuFilamentPos === FILAMENT_POS_EXTRUDER_ENTRY) return POSITIONS.BEFORE_TOOLHEAD
             if (this.mmuFilamentPos === FILAMENT_POS_HOMED_TS) return POSITIONS.TOOLHEAD
-            if (this.mmuFilamentPos === FILAMENT_POS_IN_EXTRUDER) return POSITIONS.COOLING_TUBE
+            if (this.mmuFilamentPos === FILAMENT_POS_IN_EXTRUDER) {
+                if (this.toolheadSensor === false) return POSITIONS.BEFORE_TOOLHEAD
+
+                return POSITIONS.COOLING_TUBE
+            }
+
             if (this.mmuFilamentPos === FILAMENT_POS_LOADED) return POSITIONS.NOZZLE_START
 
-            if (this.toolheadSensor === true) return POSITIONS.TOOLHEAD
-            if (this.extruderSensor === true) return POSITIONS.EXTRUDER
-            if (this.mmuGearSensor === true) return POSITIONS.AFTER_GEAR
-            if (this.mmuPreGateSensor === true) return POSITIONS.AFTER_PRE_GATE
+            return POSITIONS.UNKNOWN
+        },
 
-            return POSITIONS.BEFORE_PRE_GATE
-        }
+        endOfBowdenPos() {
+            if (typeof this.toolheadSensor === 'boolean' && !this.configExtruderForceHoming)
+                return POSITIONS.END_BOWDEN
 
-        if (this.mmuFilamentPos === FILAMENT_POS_UNLOADED) {
-            if (this.mmuGearSensor === true) return POSITIONS.AFTER_GEAR
-            if (this.mmuPreGateSensor === true) return POSITIONS.AFTER_PRE_GATE
+            const extruderHomingEndstops = ['none', 'collision', 'mmu_gear_touch', 'filament_compression']
+            if (extruderHomingEndstops.includes(this.configExtruderHomingEndstop)) return POSITIONS.EXTRUDER_ENTRANCE
 
-            return POSITIONS.BEFORE_PRE_GATE
-        }
+            if (this.configExtruderHomingEndstop === 'extruder') return POSITIONS.EXTRUDER
 
-        if (this.mmuFilamentPos === FILAMENT_POS_HOMED_GATE) {
-            if (this.configGateHomingEndstop === 'mmu_gear') return POSITIONS.GEAR
-            if (this.configGateHomingEndstop === 'mmu_gate') return POSITIONS.GATE
-            if (this.configGateHomingEndstop === 'extruder') return POSITIONS.EXTRUDER
+            return POSITIONS.END_BOWDEN
+        },
 
-            return POSITIONS.AFTER_GATE
-        }
+        bowdenProgress() {
+            return this.mmu?.bowden_progress ?? -1
+        },
 
-        if (
-            [FILAMENT_POS_START_BOWDEN, FILAMENT_POS_IN_BOWDEN].includes(this.mmuFilamentPos) &&
-            this.bowdenProgress >= 0
-        ) {
-            const bowdenRange = this.endOfBowdenPos - POSITIONS.START_BOWDEN
-            return POSITIONS.START_BOWDEN + (bowdenRange * this.bowdenProgress) / 100
-        }
+        toolheadSensor() {
+            return this.getMmuSensor('toolhead')
+        },
 
-        if (this.mmuFilamentPos === FILAMENT_POS_START_BOWDEN) return POSITIONS.START_BOWDEN
-        if (this.mmuFilamentPos === FILAMENT_POS_IN_BOWDEN) return POSITIONS.MID_BOWDEN
-        if (this.mmuFilamentPos === FILAMENT_POS_END_BOWDEN) return this.endOfBowdenPos
-        if (this.mmuFilamentPos === FILAMENT_POS_HOMED_ENTRY) return POSITIONS.EXTRUDER
-        if (this.mmuFilamentPos === FILAMENT_POS_HOMED_EXTRUDER) return POSITIONS.EXTRUDER_ENTRANCE
-        if (this.mmuFilamentPos === FILAMENT_POS_EXTRUDER_ENTRY) return POSITIONS.BEFORE_TOOLHEAD
-        if (this.mmuFilamentPos === FILAMENT_POS_HOMED_TS) return POSITIONS.TOOLHEAD
-        if (this.mmuFilamentPos === FILAMENT_POS_IN_EXTRUDER) {
-            if (this.toolheadSensor === false) return POSITIONS.BEFORE_TOOLHEAD
+        extruderSensor() {
+            return this.getMmuSensor('extruder')
+        },
 
-            return POSITIONS.COOLING_TUBE
-        }
+        mmuGearSensor() {
+            return this.getMmuSensor('mmu_gear')
+        },
 
-        if (this.mmuFilamentPos === FILAMENT_POS_LOADED) return POSITIONS.NOZZLE_START
+        mmuPreGateSensor() {
+            return this.getMmuSensor('mmu_pre_gate')
+        },
 
-        return POSITIONS.UNKNOWN
-    }
+        configExtruderForceHoming(): boolean {
+            return (this.$store.state.printer.configfile.config.mmu?.extruder_force_homing ?? 0) === 1
+        },
 
-    get endOfBowdenPos() {
-        if (typeof this.toolheadSensor === 'boolean' && !this.configExtruderForceHoming) return POSITIONS.END_BOWDEN
+        configExtruderHomingEndstop() {
+            return this.mmuSettings?.extruder_homing_endstop ?? 'none'
+        },
 
-        const extruderHomingEndstops = ['none', 'collision', 'mmu_gear_touch', 'filament_compression']
-        if (extruderHomingEndstops.includes(this.configExtruderHomingEndstop)) return POSITIONS.EXTRUDER_ENTRANCE
+        gateSensorName() {
+            const unit = this.getMmuMachineUnit(this.mmuUnit)
+            const multiGate = unit?.multi_gear ?? false
 
-        if (this.configExtruderHomingEndstop === 'extruder') return POSITIONS.EXTRUDER
+            return multiGate ? 'Hub (Gate)' : 'Gate'
+        },
 
-        return POSITIONS.END_BOWDEN
-    }
+        toolClass() {
+            return this.mmuTool === TOOL_GATE_BYPASS ? 'tool-bypass' : 'tool-text'
+        },
 
-    get bowdenProgress() {
-        return this.mmu?.bowden_progress ?? -1
-    }
+        toolText() {
+            if (this.mmuTool === TOOL_GATE_UNKNOWN) return 'T?'
 
-    get toolheadSensor() {
-        return this.getMmuSensor('toolhead')
-    }
+            return this.mmuTool === TOOL_GATE_BYPASS ? 'Bypass' : `T${this.mmuTool}`
+        },
 
-    get extruderSensor() {
-        return this.getMmuSensor('extruder')
-    }
+        homedToExtruderEntrance(): boolean {
+            return this.mmuFilamentPos === FILAMENT_POS_HOMED_EXTRUDER
+        },
 
-    get mmuGearSensor() {
-        return this.getMmuSensor('mmu_gear')
-    }
+        varsFilamentRemaining(): number {
+            return this.$store.state.printer.save_variables?.variables?.mmu_state_filament_remaining ?? 0
+        },
 
-    get mmuPreGateSensor() {
-        return this.getMmuSensor('mmu_pre_gate')
-    }
+        varsFilamentRemainingColor(): string {
+            const color = this.$store.state.printer.save_variables?.variables?.mmu_state_filament_remaining_color ?? ''
 
-    get configExtruderForceHoming(): boolean {
-        return (this.$store.state.printer.configfile.config.mmu?.extruder_force_homing ?? 0) === 1
-    }
+            return color ? this.formColorString(color) : color
+        },
 
-    get configExtruderHomingEndstop() {
-        return this.mmuSettings?.extruder_homing_endstop ?? 'none'
-    }
+        upperNozzleFull(): boolean {
+            return this.mmuFilamentPos === FILAMENT_POS_LOADED || !!this.varsFilamentRemaining
+        },
 
-    get gateSensorName() {
-        const unit = this.getMmuMachineUnit(this.mmuUnit)
-        const multiGate = unit?.multi_gear ?? false
+        lowerNozzleFull() {
+            return (
+                this.mmuFilamentPos === FILAMENT_POS_LOADED ||
+                !!this.varsFilamentRemaining ||
+                !!this.varsFilamentRemainingColor
+            )
+        },
 
-        return multiGate ? 'Hub (Gate)' : 'Gate'
-    }
+        upperNozzleColor() {
+            return this.varsFilamentRemaining ? this.varsFilamentRemainingColor : 'none'
+        },
 
-    get toolClass() {
-        return this.mmuTool === TOOL_GATE_BYPASS ? 'tool-bypass' : 'tool-text'
-    }
+        lowerNozzleColor() {
+            return this.varsFilamentRemainingColor || this.currentGateColor
+        },
 
-    get toolText() {
-        if (this.mmuTool === TOOL_GATE_UNKNOWN) return 'T?'
+        currentGateColor() {
+            let color = this.$store.state.printer.mmu?.gate_color[this.mmuGate] ?? ''
 
-        return this.mmuTool === TOOL_GATE_BYPASS ? 'Bypass' : `T${this.mmuTool}`
-    }
+            if (this.mmuGate === TOOL_GATE_BYPASS) {
+                // Assume active spoolman spool if available
+                color = this.$store.state.server.spoolman?.active_spool?.filament.color_hex ?? null
+            }
+            return this.formColorString(color)
+        },
 
-    get homedToExtruderEntrance(): boolean {
-        return this.mmuFilamentPos === FILAMENT_POS_HOMED_EXTRUDER
-    }
+        isGripped() {
+            return this.mmuGrip === 'Gripped' || this.mmuServo === 'Down'
+        },
 
-    get varsFilamentRemaining(): number {
-        return this.$store.state.printer.save_variables?.variables?.mmu_state_filament_remaining ?? 0
-    }
+        slicerToolMap() {
+            return this.mmu?.slicer_tool_map ?? undefined
+        },
 
-    get varsFilamentRemainingColor(): string {
-        const color = this.$store.state.printer.save_variables?.variables?.mmu_state_filament_remaining_color ?? ''
+        syncFeedbackPistonText() {
+            return (this.mmu?.sync_feedback_bias_modelled ?? 0.0).toFixed(2)
+        },
 
-        return color ? this.formColorString(color) : color
-    }
+        totalToolchanges() {
+            return this.slicerToolMap?.total_toolchanges ?? 0
+        },
 
-    get upperNozzleFull(): boolean {
-        return this.mmuFilamentPos === FILAMENT_POS_LOADED || !!this.varsFilamentRemaining
-    }
+        numToolchanges() {
+            return this.mmu?.num_toolchanges ?? 0
+        },
 
-    get lowerNozzleFull() {
-        return (
-            this.mmuFilamentPos === FILAMENT_POS_LOADED ||
-            !!this.varsFilamentRemaining ||
-            !!this.varsFilamentRemainingColor
-        )
-    }
+        statusText() {
+            if (['complete', 'error', 'cancelled', 'started'].includes(this.mmuPrintState)) {
+                return capitalize(this.mmuPrintState)
+            }
 
-    get upperNozzleColor() {
-        return this.varsFilamentRemaining ? this.varsFilamentRemainingColor : 'none'
-    }
+            if ([ACTION_LOADING, ACTION_UNLOADING].includes(this.mmuAction)) {
+                return `${this.mmuAction}: ${this.filamentPosition}mm`
+            }
 
-    get lowerNozzleColor() {
-        return this.varsFilamentRemainingColor || this.currentGateColor
-    }
+            if (this.mmuAction !== ACTION_IDLE) return this.mmuAction
 
-    get currentGateColor() {
-        let color = this.$store.state.printer.mmu?.gate_color[this.mmuGate] ?? ''
+            if (this.mmuPrintState === 'printing') {
+                let str = `Printing (${this.numToolchanges}`
+                if (this.totalToolchanges > 0) str += `/${this.totalToolchanges}`
+                str += ' swaps)'
+                return str
+            }
 
-        if (this.mmuGate === TOOL_GATE_BYPASS) {
-            // Assume active spoolman spool if available
-            color = this.$store.state.server.spoolman?.active_spool?.filament.color_hex ?? null
-        }
-        return this.formColorString(color)
-    }
+            const filament = this.mmu?.filament ?? 'Unknown'
 
-    get isGripped() {
-        return this.mmuGrip === 'Gripped' || this.mmuServo === 'Down'
-    }
+            return filament !== 'Unloaded' ? `Filament: ${this.filamentPosition}mm` : 'Filament: Unloaded'
+        },
 
-    get slicerToolMap() {
-        return this.mmu?.slicer_tool_map ?? undefined
-    }
-
-    get syncFeedbackPistonText() {
-        return (this.mmu?.sync_feedback_bias_modelled ?? 0.0).toFixed(2)
-    }
-
-    get totalToolchanges() {
-        return this.slicerToolMap?.total_toolchanges ?? 0
-    }
-
-    get numToolchanges() {
-        return this.mmu?.num_toolchanges ?? 0
-    }
-
-    get statusText() {
-        if (['complete', 'error', 'cancelled', 'started'].includes(this.mmuPrintState)) {
-            return capitalize(this.mmuPrintState)
-        }
-
-        if ([ACTION_LOADING, ACTION_UNLOADING].includes(this.mmuAction)) {
-            return `${this.mmuAction}: ${this.filamentPosition}mm`
-        }
-
-        if (this.mmuAction !== ACTION_IDLE) return this.mmuAction
-
-        if (this.mmuPrintState === 'printing') {
-            let str = `Printing (${this.numToolchanges}`
-            if (this.totalToolchanges > 0) str += `/${this.totalToolchanges}`
-            str += ' swaps)'
-            return str
-        }
-
-        const filament = this.mmu?.filament ?? 'Unknown'
-
-        return filament !== 'Unloaded' ? `Filament: ${this.filamentPosition}mm` : 'Filament: Unloaded'
-    }
-
-    get filamentPosition() {
-        return (this.mmu?.filament_position ?? 0).toFixed(1)
-    }
-}
+        filamentPosition() {
+            return (this.mmu?.filament_position ?? 0).toFixed(1)
+        },
+    },
+})
 </script>
 
 <style scoped>

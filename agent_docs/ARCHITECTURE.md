@@ -1,6 +1,6 @@
 # Architecture
 
-**Stack:** Vue 2.7, Vuetify 2, Vuex 3, TypeScript (strict), Vite
+**Stack:** Vue 3, Vuetify 3, Vuex 4, TypeScript (strict), Vite
 
 ## Project Structure
 

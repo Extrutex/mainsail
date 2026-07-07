@@ -2,6 +2,7 @@ import vue from '@vitejs/plugin-vue'
 import version from 'vite-plugin-package-version'
 import { defineConfig } from 'vite'
 
+import Components from 'unplugin-vue-components/vite'
 import { checker } from 'vite-plugin-checker'
 
 import path from 'path'
@@ -84,6 +85,9 @@ export default defineConfig({
                 root: path.resolve(__dirname),
                 buildMode: false,
             },
+        }),
+        Components({
+            dts: true, // enabled by default if `typescript` is installed
         }),
     ],
 

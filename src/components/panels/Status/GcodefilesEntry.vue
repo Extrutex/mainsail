@@ -12,16 +12,16 @@
             <small v-if="existsMetadata">{{ description }}</small>
         </td>
         <td>
-            <v-tooltip v-if="item.last_status" top>
-                <template #activator="{ on, attrs }">
-                    <span v-bind="attrs" v-on="on">
-                        <v-icon small :color="statusColor">{{ statusIcon }}</v-icon>
+            <v-tooltip v-if="item.last_status" location="top">
+                <template #activator="{ props }">
+                    <span v-bind="props">
+                        <v-icon size="small" :color="statusColor">{{ statusIcon }}</v-icon>
                     </span>
                 </template>
                 <span>{{ item.last_status.replace(/_/g, ' ') }}</span>
             </v-tooltip>
         </td>
-        <v-menu v-model="contextMenuShow" :position-x="contextMenuX" :position-y="contextMenuY" absolute offset-y>
+        <v-menu v-model="contextMenuShow" :target="[contextMenuX, contextMenuY]">
             <v-list>
                 <v-list-item :disabled="printerIsPrinting || !klipperReadyForGui" @click="showPrintDialog = true">
                     <v-icon class="mr-1">{{ mdiPlay }}</v-icon>
@@ -77,8 +77,8 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
+import type { PropType } from 'vue'
 import type { LongpressEvent } from '@/directives/longpress'
 import BaseMixin from '@/components/mixins/base'
 import ControlMixin from '@/components/mixins/control'
@@ -97,148 +97,155 @@ import {
 import Panel from '@/components/ui/Panel.vue'
 import AddBatchToQueueDialog from '@/components/dialogs/AddBatchToQueueDialog.vue'
 import ConfirmationDialog from '@/components/dialogs/ConfirmationDialog.vue'
+import GcodefilesRenameFileDialog from '@/components/dialogs/GcodefilesRenameFileDialog.vue'
 import { convertPrintStatusIcon, convertPrintStatusIconColor, escapePath, formatPrintTime } from '@/plugins/helpers'
 import GcodefilesThumbnail from '@/components/panels/Gcodefiles/GcodefilesThumbnail.vue'
 import { CLOSE_CONTEXT_MENU, EventBus } from '@/plugins/eventBus'
 
-@Component({
+export default defineComponent({
+    name: 'StatusPanelGcodefilesEntry',
     components: {
         GcodefilesThumbnail,
         Panel,
         StartPrintDialog,
         AddBatchToQueueDialog,
         ConfirmationDialog,
+        GcodefilesRenameFileDialog,
     },
-})
-export default class StatusPanelGcodefilesEntry extends Mixins(BaseMixin, ControlMixin) {
-    mdiPlay = mdiPlay
-    mdiPlaylistPlus = mdiPlaylistPlus
-    mdiFire = mdiFire
-    mdiVideo3d = mdiVideo3d
-    mdiCloudDownload = mdiCloudDownload
-    mdiFileDocumentEditOutline = mdiFileDocumentEditOutline
-    mdiRenameBox = mdiRenameBox
-    mdiDelete = mdiDelete
+    mixins: [BaseMixin, ControlMixin],
+    props: {
+        item: { type: Object as PropType<FileStateGcodefile>, required: true },
+        contentTdWidth: { type: Number, required: true },
+    },
+    data() {
+        return {
+            mdiPlay: mdiPlay,
+            mdiPlaylistPlus: mdiPlaylistPlus,
+            mdiFire: mdiFire,
+            mdiVideo3d: mdiVideo3d,
+            mdiCloudDownload: mdiCloudDownload,
+            mdiFileDocumentEditOutline: mdiFileDocumentEditOutline,
+            mdiRenameBox: mdiRenameBox,
+            mdiDelete: mdiDelete,
 
-    @Prop({ type: Object, required: true }) item!: FileStateGcodefile
-    @Prop({ type: Number, required: true }) contentTdWidth!: number
+            currentPath: '',
 
-    currentPath = ''
+            contextMenuShow: false,
+            contextMenuX: 0,
+            contextMenuY: 0,
 
-    contextMenuShow = false
-    contextMenuX = 0
-    contextMenuY = 0
+            showPrintDialog: false,
+            showAddBatchToQueueDialog: false,
+            showRenameFileDialog: false,
+            renameFileNewName: '',
 
-    showPrintDialog = false
-    showAddBatchToQueueDialog = false
-    showRenameFileDialog = false
-    renameFileNewName = ''
-
-    showDeleteDialog = false
-
-    get styleContentTdWidth() {
-        return `width: ${this.contentTdWidth}px;`
-    }
-
-    get existsMetadata() {
-        return this.item?.metadataPulled ?? false
-    }
-
-    get description() {
-        const output = []
-
-        let filament = '--'
-        if (this.item.filament_total || this.item.filament_weight_total) {
-            filament = ''
-            if (this.item.filament_total && this.item.filament_total > 1000)
-                filament += `${(this.item.filament_total / 1000).toFixed(2)} m`
-            else if (this.item.filament_total) filament += `${this.item.filament_total.toFixed(0)} mm`
-
-            if (this.item.filament_total && this.item.filament_weight_total) filament += ' / '
-
-            if (this.item.filament_weight_total) filament += this.item.filament_weight_total.toFixed(0) + ' g'
+            showDeleteDialog: false,
         }
-        output.push(`${this.$t('Panels.StatusPanel.Filament')}: ${filament}`)
+    },
+    computed: {
+        styleContentTdWidth() {
+            return `width: ${this.contentTdWidth}px;`
+        },
 
-        const printTime = this.item.estimated_time ? formatPrintTime(this.item.estimated_time) : '--'
-        output.push(`${this.$t('Panels.StatusPanel.PrintTime')}: ${printTime}`)
+        existsMetadata() {
+            return this.item?.metadataPulled ?? false
+        },
 
-        return output.join(', ')
-    }
+        description() {
+            const output = []
 
-    get statusIcon() {
-        return convertPrintStatusIcon(this.item.last_status ?? '')
-    }
+            let filament = '--'
+            if (this.item.filament_total || this.item.filament_weight_total) {
+                filament = ''
+                if (this.item.filament_total && this.item.filament_total > 1000)
+                    filament += `${(this.item.filament_total / 1000).toFixed(2)} m`
+                else if (this.item.filament_total) filament += `${this.item.filament_total.toFixed(0)} mm`
 
-    get statusColor() {
-        return convertPrintStatusIconColor(this.item.last_status ?? '')
-    }
+                if (this.item.filament_total && this.item.filament_weight_total) filament += ' / '
 
-    get filename() {
-        return this.item.filename.slice(this.item.filename.lastIndexOf('/') + 1)
-    }
+                if (this.item.filament_weight_total) filament += this.item.filament_weight_total.toFixed(0) + ' g'
+            }
+            output.push(`${this.$t('Panels.StatusPanel.Filament')}: ${filament}`)
 
-    showContextMenu(e: MouseEvent | LongpressEvent) {
-        e?.preventDefault()
-        EventBus.$emit(CLOSE_CONTEXT_MENU)
+            const printTime = this.item.estimated_time ? formatPrintTime(this.item.estimated_time) : '--'
+            output.push(`${this.$t('Panels.StatusPanel.PrintTime')}: ${printTime}`)
 
-        this.contextMenuX = e?.clientX || e?.pageX || window.screenX / 2
-        this.contextMenuY = e?.clientY || e?.pageY || window.screenY / 2
+            return output.join(', ')
+        },
 
-        this.contextMenuShow = true
-    }
+        statusIcon() {
+            return convertPrintStatusIcon(this.item.last_status ?? '')
+        },
 
-    closeContextMenu() {
-        this.contextMenuShow = false
-    }
+        statusColor() {
+            return convertPrintStatusIconColor(this.item.last_status ?? '')
+        },
 
-    addToQueue() {
-        this.$store.dispatch('server/jobQueue/addToQueue', [this.item.filename])
-    }
+        filename() {
+            return this.item.filename.slice(this.item.filename.lastIndexOf('/') + 1)
+        },
+    },
+    methods: {
+        showContextMenu(e: MouseEvent | LongpressEvent) {
+            e?.preventDefault()
+            EventBus.$emit(CLOSE_CONTEXT_MENU)
 
-    view3D() {
-        this.$router.push({ path: '/viewer', query: { filename: 'gcodes/' + this.item.filename } })
-    }
+            this.contextMenuX = e?.clientX || e?.pageX || window.screenX / 2
+            this.contextMenuY = e?.clientY || e?.pageY || window.screenY / 2
 
-    downloadFile() {
-        const href = this.apiUrl + '/server/files/gcodes/' + escapePath(this.item.filename)
+            this.contextMenuShow = true
+        },
 
-        window.open(href)
-    }
+        closeContextMenu() {
+            this.contextMenuShow = false
+        },
 
-    openRenameFileDialog() {
-        this.renameFileNewName = this.filename
-        this.showRenameFileDialog = true
-    }
+        addToQueue() {
+            this.$store.dispatch('server/jobQueue/addToQueue', [this.item.filename])
+        },
 
-    editFile() {
-        const pos = this.item.filename.lastIndexOf('/')
-        const path = pos > 0 ? this.item.filename.slice(0, pos + 1) : ''
-        const filename = pos > 0 ? this.item.filename.slice(pos + 1) : this.item.filename
+        view3D() {
+            this.$router.push({ path: '/viewer', query: { filename: 'gcodes/' + this.item.filename } })
+        },
 
-        this.$store.dispatch('editor/openFile', {
-            root: 'gcodes',
-            path,
-            filename,
-            size: this.item.size,
-            permissions: this.item.permissions,
-        })
-    }
+        downloadFile() {
+            const href = this.apiUrl + '/server/files/gcodes/' + escapePath(this.item.filename)
 
-    removeFile() {
-        this.$socket.emit(
-            'server.files.delete_file',
-            { path: 'gcodes/' + this.item.filename },
-            { action: 'files/getDeleteFile' }
-        )
-    }
+            window.open(href)
+        },
 
+        openRenameFileDialog() {
+            this.renameFileNewName = this.filename
+            this.showRenameFileDialog = true
+        },
+
+        editFile() {
+            const pos = this.item.filename.lastIndexOf('/')
+            const path = pos > 0 ? this.item.filename.slice(0, pos + 1) : ''
+            const filename = pos > 0 ? this.item.filename.slice(pos + 1) : this.item.filename
+
+            this.$store.dispatch('editor/openFile', {
+                root: 'gcodes',
+                path,
+                filename,
+                size: this.item.size,
+                permissions: this.item.permissions,
+            })
+        },
+
+        removeFile() {
+            this.$socket.emit(
+                'server.files.delete_file',
+                { path: 'gcodes/' + this.item.filename },
+                { action: 'files/getDeleteFile' }
+            )
+        },
+    },
     mounted() {
         EventBus.$on(CLOSE_CONTEXT_MENU, this.closeContextMenu)
-    }
-
-    beforeDestroy() {
+    },
+    beforeUnmount() {
         EventBus.$off(CLOSE_CONTEXT_MENU, this.closeContextMenu)
-    }
-}
+    },
+})
 </script>

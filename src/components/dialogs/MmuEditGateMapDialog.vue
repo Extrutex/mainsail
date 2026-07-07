@@ -6,7 +6,7 @@
             card-class="mmu-edit-ttg-map-dialog"
             :margin-bottom="false">
             <template #buttons>
-                <v-btn text tile @click="showResetConfirmationDialog = true">
+                <v-btn variant="text" tile @click="showResetConfirmationDialog = true">
                     {{ $t('Panels.MmuPanel.GateMapDialog.Reset') }}
                 </v-btn>
                 <v-btn icon tile @click="close">
@@ -55,53 +55,64 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, VModel } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import MmuMixin, { TOOL_GATE_UNKNOWN } from '@/components/mixins/mmu'
 import ConfirmationDialog from '@/components/dialogs/ConfirmationDialog.vue'
 import { mdiCloseThick, mdiDatabaseEdit } from '@mdi/js'
 
-@Component({
+export default defineComponent({
+    name: 'MmuEditGateMapDialog',
     components: { ConfirmationDialog },
-})
-export default class MmuEditGateMapDialog extends Mixins(BaseMixin, MmuMixin) {
-    TOOL_GATE_UNKNOWN = TOOL_GATE_UNKNOWN
+    mixins: [BaseMixin, MmuMixin],
+    props: {
+        modelValue: { type: Boolean, default: false },
+    },
+    emits: ['update:modelValue'],
+    data() {
+        return {
+            TOOL_GATE_UNKNOWN: TOOL_GATE_UNKNOWN,
 
-    mdiCloseThick = mdiCloseThick
-    mdiDatabaseEdit = mdiDatabaseEdit
+            mdiCloseThick: mdiCloseThick,
+            mdiDatabaseEdit: mdiDatabaseEdit,
 
-    @VModel({ type: Boolean }) showDialog!: boolean
-
-    showResetConfirmationDialog = false
-    selectedGate = TOOL_GATE_UNKNOWN
-
-    selectGate(gate: number) {
-        this.selectedGate = gate
-    }
-
-    handleEscapePress(event: KeyboardEvent) {
-        if (event.key === 'Escape' || event.code === 'Escape') {
-            this.selectedGate = TOOL_GATE_UNKNOWN
+            showResetConfirmationDialog: false,
+            selectedGate: TOOL_GATE_UNKNOWN,
         }
-    }
-
+    },
+    computed: {
+        showDialog: {
+            get(): boolean {
+                return this.modelValue
+            },
+            set(newVal: boolean) {
+                this.$emit('update:modelValue', newVal)
+            },
+        },
+    },
+    methods: {
+        selectGate(gate: number) {
+            this.selectedGate = gate
+        },
+        handleEscapePress(event: KeyboardEvent) {
+            if (event.key === 'Escape' || event.code === 'Escape') {
+                this.selectedGate = TOOL_GATE_UNKNOWN
+            }
+        },
+        executeResetGateMap() {
+            this.doSend('MMU_GATE_MAP RESET=1')
+        },
+        close() {
+            this.showDialog = false
+        },
+    },
     mounted() {
         document.addEventListener('keydown', this.handleEscapePress)
-    }
-
-    beforeDestroy() {
+    },
+    beforeUnmount() {
         document.removeEventListener('keydown', this.handleEscapePress)
-    }
-
-    executeResetGateMap() {
-        this.doSend('MMU_GATE_MAP RESET=1')
-    }
-
-    close() {
-        this.showDialog = false
-    }
-}
+    },
+})
 </script>
 
 <style scoped>

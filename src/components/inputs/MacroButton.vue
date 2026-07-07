@@ -1,33 +1,31 @@
 <template>
     <v-item-group class="d-inline-flex">
-        <v-tooltip :disabled="!hasDescription" top>
-            <template #activator="{ on, attrs }">
+        <v-tooltip :disabled="!hasDescription" location="top">
+            <template #activator="{ props }">
                 <v-btn
-                    small
+                    size="small"
                     :color="color"
                     :class="paramArray.length ? 'macroWithParameters' : ''"
                     :loading="loadings.includes('macro_' + macro.name)"
                     :disabled="disabled"
                     class="flex-grow-1"
-                    v-bind="attrs"
-                    v-on="on"
+                    v-bind="props"
                     @click="doSendMacro(macro.name)">
-                    <v-icon v-if="icon" small left>{{ icon }}</v-icon>
+                    <v-icon v-if="icon" size="small" start>{{ icon }}</v-icon>
                     {{ alias ? alias : macro.name.replace(/_/g, ' ') }}
                 </v-btn>
             </template>
             <span>{{ klipperMacro.description }}</span>
         </v-tooltip>
         <template v-if="paramArray.length">
-            <v-menu v-if="!isMobile" offset-y :close-on-content-click="false">
-                <template #activator="{ on, attrs }">
+            <v-menu v-if="!isMobile" location="bottom" :close-on-content-click="false">
+                <template #activator="{ props }">
                     <v-btn
                         :disabled="disabled"
                         :color="color"
-                        v-bind="attrs"
+                        v-bind="props"
                         class="minwidth-0 px-1 btnMacroMenu"
-                        small
-                        v-on="on">
+                        size="small">
                         <v-icon>{{ mdiMenuDown }}</v-icon>
                     </v-btn>
                 </template>
@@ -41,8 +39,8 @@
                                     :placeholder="params[name].default"
                                     :persistent-placeholder="true"
                                     hide-details
-                                    outlined
-                                    dense
+                                    variant="outlined"
+                                    density="compact"
                                     clearable
                                     :clear-icon="mdiRefresh"
                                     @keyup.enter="sendWithParams"></v-text-field>
@@ -63,14 +61,14 @@
                     :disabled="disabled"
                     :color="color"
                     class="minwidth-0 px-1 btnMacroMenu"
-                    small
+                    size="small"
                     @click="paramsDialog = true">
                     <v-icon>{{ mdiMenuDown }}</v-icon>
                 </v-btn>
                 <v-dialog v-model="paramsDialog">
                     <panel :title="macro.name" :card-class="`macro-params-mobile-${macro.name}`" :margin-bottom="false">
                         <template #buttons>
-                            <v-btn icon tile @click="paramsDialog = false">
+                            <v-btn icon rounded="0" @click="paramsDialog = false">
                                 <v-icon>{{ mdiCloseThick }}</v-icon>
                             </v-btn>
                         </template>
@@ -83,8 +81,8 @@
                                         :placeholder="params[name].default"
                                         :persistent-placeholder="true"
                                         hide-details
-                                        outlined
-                                        dense
+                                        variant="outlined"
+                                        density="compact"
                                         clearable
                                         :clear-icon="mdiRefresh"
                                         @keyup.enter="sendWithParams"></v-text-field>
@@ -104,8 +102,8 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, Prop, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
+import type { PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { GuiMacrosStateMacrogroupMacro } from '@/store/gui/macros/types'
 import { mdiCloseThick, mdiMenuDown, mdiRefresh } from '@mdi/js'
@@ -123,122 +121,122 @@ interface params {
     [key: string]: param
 }
 
-@Component({
+export default defineComponent({
+    name: 'MacroButton',
     components: { Panel },
-})
-export default class MacroButton extends Mixins(BaseMixin) {
-    DEFAULT_DESC = 'G-Code macro'
+    mixins: [BaseMixin],
+    props: {
+        macro: {
+            type: Object as PropType<GuiMacrosStateMacrogroupMacro | PrinterStateMacro>,
+            required: true,
+        },
+        color: { type: String, default: 'primary' },
+        alias: { type: String as PropType<string | TranslateResult>, default: null },
+        disabled: { type: Boolean, default: false },
+        icon: { type: String as PropType<string | null>, default: null },
+    },
+    data() {
+        return {
+            DEFAULT_DESC: 'G-Code macro',
 
-    /**
-     * Icons
-     */
-    mdiCloseThick = mdiCloseThick
-    mdiMenuDown = mdiMenuDown
-    mdiRefresh = mdiRefresh
+            /**
+             * Icons
+             */
+            mdiCloseThick: mdiCloseThick,
+            mdiMenuDown: mdiMenuDown,
+            mdiRefresh: mdiRefresh,
 
-    paramArray: string[] = []
-    params: params = {}
-    paramsDialog = false
+            paramArray: [] as string[],
+            params: {} as params,
+            paramsDialog: false,
+        }
+    },
+    computed: {
+        klipperMacro() {
+            return this.$store.getters['printer/getMacro'](this.macro.name)
+        },
 
-    @Prop({ required: true })
-    declare readonly macro: GuiMacrosStateMacrogroupMacro | PrinterStateMacro
+        isGcodeStyle() {
+            return this.macro.name.match(/[G|M]\d{1,3}/gm)
+        },
 
-    @Prop({ default: 'primary' })
-    declare readonly color: string
+        paramCols() {
+            if (this.isMobile) return 1
 
-    @Prop({ default: null })
-    declare readonly alias: string | TranslateResult
+            const cols = Math.ceil(this.paramArray.length / 5)
 
-    @Prop({ default: false })
-    declare readonly disabled: boolean
+            if (cols > 4) return 4
 
-    @Prop({ default: null })
-    declare readonly icon: string | null
+            return cols
+        },
 
-    get klipperMacro() {
-        return this.$store.getters['printer/getMacro'](this.macro.name)
-    }
+        paramCssCols() {
+            return 12 / this.paramCols
+        },
 
-    get isGcodeStyle() {
-        return this.macro.name.match(/[G|M]\d{1,3}/gm)
-    }
+        paramsOverlayWidth() {
+            return 200 * this.paramCols
+        },
 
-    get paramCols() {
-        if (this.isMobile) return 1
+        hasDescription(): boolean {
+            return this.klipperMacro.description && this.klipperMacro.description !== this.DEFAULT_DESC
+        },
+    },
+    watch: {
+        klipperMacro() {
+            this.refreshParams()
+        },
+    },
+    methods: {
+        refreshParams() {
+            this.paramArray.splice(0, this.paramArray.length)
+            this.params = {}
 
-        const cols = Math.ceil(this.paramArray.length / 5)
-
-        if (cols > 4) return 4
-
-        return cols
-    }
-
-    get paramCssCols() {
-        return 12 / this.paramCols
-    }
-
-    get paramsOverlayWidth() {
-        return 200 * this.paramCols
-    }
-
-    get hasDescription(): boolean {
-        return this.klipperMacro.description && this.klipperMacro.description !== this.DEFAULT_DESC
-    }
-
-    @Watch('klipperMacro')
-    klipperMacroChange() {
-        this.refreshParams()
-    }
-
-    refreshParams() {
-        this.paramArray.splice(0, this.paramArray.length)
-        this.params = {}
-
-        if (this.klipperMacro?.params !== null) {
-            Object.keys(this.klipperMacro.params).forEach((name: string) => {
-                if (!name.startsWith('_')) {
-                    this.paramArray.push(name)
-                    this.params[name] = {
-                        type: this.klipperMacro.params[name].type,
-                        default: this.klipperMacro.params[name].default,
-                        value: '',
+            if (this.klipperMacro?.params !== null) {
+                Object.keys(this.klipperMacro.params).forEach((name: string) => {
+                    if (!name.startsWith('_')) {
+                        this.paramArray.push(name)
+                        this.params[name] = {
+                            type: this.klipperMacro.params[name].type,
+                            default: this.klipperMacro.params[name].default,
+                            value: '',
+                        }
                     }
+                })
+            }
+        },
+
+        doSendMacro(gcode: string) {
+            this.$store.dispatch('server/addEvent', {
+                message: gcode,
+                type: 'command',
+            })
+            this.$socket.emit('printer.gcode.script', { script: gcode }, { loading: 'macro_' + gcode })
+        },
+
+        sendWithParams() {
+            const params: string[] = []
+            this.paramArray.forEach((paramname: string) => {
+                let value = this.params[paramname].value?.toString().trim()
+
+                if (this.params[paramname].value !== null && value !== '') {
+                    let tmp: string = paramname
+                    if (value?.includes(' ')) value = `"${value}"`
+
+                    tmp += this.isGcodeStyle ? value : `=${value}`
+
+                    params.push(tmp)
                 }
             })
-        }
-    }
 
-    doSendMacro(gcode: string) {
-        this.$store.dispatch('server/addEvent', {
-            message: gcode,
-            type: 'command',
-        })
-        this.$socket.emit('printer.gcode.script', { script: gcode }, { loading: 'macro_' + gcode })
-    }
-
-    sendWithParams() {
-        const params: string[] = []
-        this.paramArray.forEach((paramname: string) => {
-            let value = this.params[paramname].value?.toString().trim()
-
-            if (this.params[paramname].value !== null && value !== '') {
-                let tmp: string = paramname
-                if (value?.includes(' ')) value = `"${value}"`
-
-                tmp += this.isGcodeStyle ? value : `=${value}`
-
-                params.push(tmp)
-            }
-        })
-
-        const gcode = this.macro.name + ' ' + params.join(' ')
-        this.doSendMacro(gcode)
-    }
-
+            const gcode = this.macro.name + ' ' + params.join(' ')
+            this.doSendMacro(gcode)
+        },
+    },
     mounted() {
         this.refreshParams()
-    }
-}
+    },
+})
 </script>
 
 <style scoped>

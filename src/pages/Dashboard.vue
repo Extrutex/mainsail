@@ -12,7 +12,7 @@
             </v-col>
         </v-row>
         <v-row v-else-if="isTablet">
-            <v-col class="col-6">
+            <v-col cols="6">
                 <status-panel />
                 <template v-for="component in tabletLayout1">
                     <component
@@ -21,7 +21,7 @@
                         :panel-id="extractPanelId(component.name)"></component>
                 </template>
             </v-col>
-            <v-col class="col-6">
+            <v-col cols="6">
                 <template v-for="component in tabletLayout2">
                     <component
                         :is="extractPanelName(component.name)"
@@ -31,7 +31,7 @@
             </v-col>
         </v-row>
         <v-row v-else-if="isDesktop">
-            <v-col class="col-5">
+            <v-col cols="5">
                 <status-panel />
                 <template v-for="component in desktopLayout1">
                     <component
@@ -40,7 +40,7 @@
                         :panel-id="extractPanelId(component.name)"></component>
                 </template>
             </v-col>
-            <v-col class="col-7">
+            <v-col cols="7">
                 <template v-for="component in desktopLayout2">
                     <component
                         :is="extractPanelName(component.name)"
@@ -50,7 +50,7 @@
             </v-col>
         </v-row>
         <v-row v-else-if="isWidescreen">
-            <v-col class="col-3">
+            <v-col cols="3">
                 <status-panel />
                 <template v-for="component in widescreenLayout1">
                     <component
@@ -59,7 +59,7 @@
                         :panel-id="extractPanelId(component.name)"></component>
                 </template>
             </v-col>
-            <v-col class="col-5">
+            <v-col cols="5">
                 <template v-for="component in widescreenLayout2">
                     <component
                         :is="extractPanelName(component.name)"
@@ -67,7 +67,7 @@
                         :panel-id="extractPanelId(component.name)"></component>
                 </template>
             </v-col>
-            <v-col class="col-4">
+            <v-col cols="4">
                 <template v-for="component in widescreenLayout3">
                     <component
                         :is="extractPanelName(component.name)"
@@ -80,8 +80,7 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import AfcPanel from '@/components/panels/AfcPanel.vue'
 import ExtruderControlPanel from '@/components/panels/ExtruderControlPanel.vue'
 import DashboardMixin from '@/components/mixins/dashboard'
@@ -101,7 +100,9 @@ import ToolheadControlPanel from '@/components/panels/ToolheadControlPanel.vue'
 import TemperaturePanel from '@/components/panels/TemperaturePanel.vue'
 import WebcamPanel from '@/components/panels/WebcamPanel.vue'
 
-@Component({
+export default defineComponent({
+    name: 'PageDashboard',
+    mixins: [DashboardMixin],
     components: {
         AfcPanel,
         ExtruderControlPanel,
@@ -121,46 +122,47 @@ import WebcamPanel from '@/components/panels/WebcamPanel.vue'
         TemperaturePanel,
         WebcamPanel,
     },
+    computed: {
+        mobileLayout(): any[] {
+            return this.$store.getters['gui/getPanels']('mobile', 0, true)
+        },
+
+        tabletLayout1(): any[] {
+            return this.$store.getters['gui/getPanels']('tablet', 1, true)
+        },
+
+        tabletLayout2(): any[] {
+            return this.$store.getters['gui/getPanels']('tablet', 2, true)
+        },
+
+        desktopLayout1(): any[] {
+            return this.$store.getters['gui/getPanels']('desktop', 1, true)
+        },
+
+        desktopLayout2(): any[] {
+            return this.$store.getters['gui/getPanels']('desktop', 2, true)
+        },
+
+        widescreenLayout1(): any[] {
+            return this.$store.getters['gui/getPanels']('widescreen', 1, true)
+        },
+
+        widescreenLayout2(): any[] {
+            return this.$store.getters['gui/getPanels']('widescreen', 2, true)
+        },
+
+        widescreenLayout3(): any[] {
+            return this.$store.getters['gui/getPanels']('widescreen', 3, true)
+        },
+    },
+    methods: {
+        extractPanelName(name: string): string {
+            return name.split('_')[0] + '-panel'
+        },
+
+        extractPanelId(name: string): string | null {
+            return name.split('_')[1] ?? null
+        },
+    },
 })
-export default class PageDashboard extends Mixins(DashboardMixin) {
-    get mobileLayout() {
-        return this.$store.getters['gui/getPanels']('mobile', 0, true)
-    }
-
-    get tabletLayout1() {
-        return this.$store.getters['gui/getPanels']('tablet', 1, true)
-    }
-
-    get tabletLayout2() {
-        return this.$store.getters['gui/getPanels']('tablet', 2, true)
-    }
-
-    get desktopLayout1() {
-        return this.$store.getters['gui/getPanels']('desktop', 1, true)
-    }
-
-    get desktopLayout2() {
-        return this.$store.getters['gui/getPanels']('desktop', 2, true)
-    }
-
-    get widescreenLayout1() {
-        return this.$store.getters['gui/getPanels']('widescreen', 1, true)
-    }
-
-    get widescreenLayout2() {
-        return this.$store.getters['gui/getPanels']('widescreen', 2, true)
-    }
-
-    get widescreenLayout3() {
-        return this.$store.getters['gui/getPanels']('widescreen', 3, true)
-    }
-
-    extractPanelName(name: string) {
-        return name.split('_')[0] + '-panel'
-    }
-
-    extractPanelId(name: string) {
-        return name.split('_')[1] ?? null
-    }
-}
 </script>

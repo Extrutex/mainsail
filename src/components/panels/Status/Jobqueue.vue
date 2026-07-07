@@ -1,5 +1,5 @@
 <template>
-    <v-card class="filesJobqueue" flat>
+    <v-card class="filesJobqueue" variant="flat">
         <template v-if="jobs.length">
             <v-row class="mx-0 mt-0 pb-3">
                 <v-col class="jobqueue-list">
@@ -20,36 +20,40 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import JobqueueEntry from '@/components/panels/Status/JobqueueEntry.vue'
-@Component({
-    components: { JobqueueEntry },
+import JobqueueEntryRest from '@/components/panels/Status/JobqueueEntryRest.vue'
+
+export default defineComponent({
+    name: 'StatusPanelJobqueue',
+    components: { JobqueueEntry, JobqueueEntryRest },
+    mixins: [BaseMixin],
+    computed: {
+        jobs() {
+            return this.$store.getters['server/jobQueue/getJobs'] ?? []
+        },
+
+        maxLength() {
+            if (this.jobs.length > 5) return 4
+
+            return 5
+        },
+
+        jobsTable() {
+            return this.jobs.slice(0, this.maxLength)
+        },
+
+        jobsRest() {
+            return this.jobs.slice(this.maxLength)
+        },
+    },
+    methods: {
+        startJobqueue() {
+            this.$store.dispatch('server/jobQueue/start')
+        },
+    },
 })
-export default class StatusPanelJobqueue extends Mixins(BaseMixin) {
-    get jobs() {
-        return this.$store.getters['server/jobQueue/getJobs'] ?? []
-    }
-
-    get maxLength() {
-        if (this.jobs.length > 5) return 4
-
-        return 5
-    }
-
-    get jobsTable() {
-        return this.jobs.slice(0, this.maxLength)
-    }
-
-    get jobsRest() {
-        return this.jobs.slice(this.maxLength)
-    }
-
-    startJobqueue() {
-        this.$store.dispatch('server/jobQueue/start')
-    }
-}
 </script>
 
 <style scoped>

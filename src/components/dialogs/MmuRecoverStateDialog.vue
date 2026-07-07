@@ -21,9 +21,9 @@
                         v-model="localTool"
                         :items="toolsList"
                         :error-messages="toolErrorMessage"
-                        outlined
+                        variant="outlined"
                         :hide-details="toolErrorMessage.length === 0"
-                        dense />
+                        density="compact" />
                 </settings-row>
                 <v-divider class="my-2" />
                 <settings-row
@@ -33,9 +33,9 @@
                         v-model="localGate"
                         :items="gatesList"
                         :error-messages="gateErrorMessage"
-                        outlined
+                        variant="outlined"
                         :hide-details="gateErrorMessage.length === 0"
-                        dense />
+                        density="compact" />
                 </settings-row>
                 <v-divider class="my-2" />
                 <settings-row
@@ -45,16 +45,16 @@
                         v-model="localFilamentPos"
                         :items="posList"
                         :error-messages="posErrorMessage"
-                        outlined
+                        variant="outlined"
                         :hide-details="posErrorMessage.length === 0"
-                        dense />
+                        density="compact" />
                 </settings-row>
             </v-card-text>
 
             <v-card-actions>
                 <v-spacer />
-                <v-btn text @click="close">{{ $t('Buttons.Cancel') }}</v-btn>
-                <v-btn color="primary" :disabled="okDisabled" text @click="commit">
+                <v-btn variant="text" @click="close">{{ $t('Buttons.Cancel') }}</v-btn>
+                <v-btn color="primary" :disabled="okDisabled" variant="text" @click="commit">
                     {{ $t('Panels.MmuPanel.Ok') }}
                 </v-btn>
             </v-card-actions>
@@ -63,8 +63,7 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, VModel, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import MmuMixin, {
     FILAMENT_POS_LOADED,
@@ -76,148 +75,164 @@ import MmuMixin, {
 } from '@/components/mixins/mmu'
 import { mdiCloseThick, mdiCogRefresh } from '@mdi/js'
 
-@Component
-export default class MmuRecoverStateDialog extends Mixins(BaseMixin, MmuMixin) {
-    mdiCloseThick = mdiCloseThick
-    mdiCogRefresh = mdiCogRefresh
+export default defineComponent({
+    name: 'MmuRecoverStateDialog',
+    mixins: [BaseMixin, MmuMixin],
+    props: {
+        modelValue: { type: Boolean, default: false },
+    },
+    emits: ['update:modelValue'],
+    data() {
+        return {
+            mdiCloseThick: mdiCloseThick,
+            mdiCogRefresh: mdiCogRefresh,
 
-    @VModel({ type: Boolean }) showDialog!: boolean
-
-    localGate = GATE_UNKNOWN
-    localTool = TOOL_GATE_UNKNOWN
-    localFilamentPos = FILAMENT_POS_UNKNOWN
-
-    get toolsList() {
-        const tools = []
-
-        for (let i = 0; i < this.mmuNumGates; i++) {
-            tools.push({ text: `T${i}`, value: i })
+            localGate: GATE_UNKNOWN,
+            localTool: TOOL_GATE_UNKNOWN,
+            localFilamentPos: FILAMENT_POS_UNKNOWN,
         }
+    },
+    computed: {
+        showDialog: {
+            get(): boolean {
+                return this.modelValue
+            },
+            set(newVal: boolean) {
+                this.$emit('update:modelValue', newVal)
+            },
+        },
+        toolsList() {
+            const tools = []
 
-        if (this.mmuHasBypass) {
-            tools.push({ text: this.$t('Panels.MmuPanel.Bypass').toString(), value: TOOL_GATE_BYPASS })
-        }
-
-        return tools
-    }
-
-    get toolErrorMessage() {
-        const messages = []
-
-        if (this.localTool === TOOL_GATE_UNKNOWN) {
-            messages.push(this.$t('Panels.MmuPanel.MmuRecoverDialog.NoTool').toString())
-        }
-
-        if (this.localGate === TOOL_GATE_BYPASS && this.localTool !== TOOL_GATE_BYPASS) {
-            messages.push(this.$t('Panels.MmuPanel.MmuRecoverDialog.GateBypass').toString())
-        }
-
-        return messages
-    }
-
-    get gatesList() {
-        const list = []
-
-        for (let gate = 0; gate < this.mmuNumGates; gate++) {
-            list.push({ text: this.gateIndexText(gate), value: gate })
-        }
-
-        if (this.mmuHasBypass) {
-            list.push({ text: this.$t('Panels.MmuPanel.Bypass'), value: TOOL_GATE_BYPASS })
-        }
-
-        return list
-    }
-
-    get gateErrorMessage() {
-        const messages = []
-
-        if (this.localGate === TOOL_GATE_UNKNOWN) {
-            messages.push(this.$t('Panels.MmuPanel.MmuRecoverDialog.NoGate').toString())
-        }
-
-        if (this.localTool === TOOL_GATE_BYPASS && this.localGate !== TOOL_GATE_BYPASS) {
-            messages.push(this.$t('Panels.MmuPanel.MmuRecoverDialog.ToolBypass').toString())
-        }
-
-        if (this.localGate >= 0 && this.ttgMap[this.localGate] !== this.localTool) {
-            const msg = this.$t('Panels.MmuPanel.MmuRecoverDialog.Remap', { tool: `T${this.localTool}` }).toString()
-            messages.push(`${this.$t('Panels.MmuPanel.MmuRecoverDialog.WarningPrefix').toString()} ${msg}`)
-        }
-
-        return messages
-    }
-
-    get posList() {
-        return [
-            { text: this.$t('Panels.MmuPanel.MmuRecoverDialog.Unknown').toString(), value: FILAMENT_POS_UNKNOWN },
-            { text: this.$t('Panels.MmuPanel.MmuRecoverDialog.Unloaded').toString(), value: FILAMENT_POS_UNLOADED },
-            { text: this.$t('Panels.MmuPanel.MmuRecoverDialog.Loaded').toString(), value: FILAMENT_POS_LOADED },
-        ]
-    }
-
-    get posErrorMessage(): string {
-        if (this.localFilamentPos === FILAMENT_POS_UNKNOWN) {
-            return `${this.$t('Panels.MmuPanel.MmuRecoverDialog.WarningPrefix').toString()} ${this.$t('Panels.MmuPanel.MmuRecoverDialog.NoPosition').toString()}`
-        }
-        return ''
-    }
-
-    get okDisabled() {
-        const warningPrefix = this.$t('Panels.MmuPanel.MmuRecoverDialog.WarningPrefix').toString()
-        const messages = [...this.toolErrorMessage, ...this.gateErrorMessage, ...this.posErrorMessage]
-
-        return messages.filter((msg) => !msg.startsWith(warningPrefix)).length > 0
-    }
-
-    get numUnits(): number {
-        return this.$store.state.printer?.mmu_machine?.num_units ?? 1
-    }
-
-    gateIndexText(gateIndex: number) {
-        if (this.mmuNumUnits <= 1) return `${gateIndex}`
-
-        for (let i = 0; i < this.mmuNumUnits; i++) {
-            const unit = this.getMmuMachineUnit(i)
-            if (!unit) continue
-
-            if (i > 0 && gateIndex >= unit.first_gate && gateIndex < unit.first_gate + unit.num_gates) {
-                return `${gateIndex} (unit #${i + 1})`
+            for (let i = 0; i < this.mmuNumGates; i++) {
+                tools.push({ title: `T${i}`, value: i })
             }
-        }
 
-        return `${gateIndex}`
-    }
+            if (this.mmuHasBypass) {
+                tools.push({ title: this.$t('Panels.MmuPanel.Bypass').toString(), value: TOOL_GATE_BYPASS })
+            }
 
-    close() {
-        this.showDialog = false
-    }
+            return tools
+        },
+        toolErrorMessage() {
+            const messages = []
 
-    commit() {
-        const cmdParts = ['MMU_RECOVER']
+            if (this.localTool === TOOL_GATE_UNKNOWN) {
+                messages.push(this.$t('Panels.MmuPanel.MmuRecoverDialog.NoTool').toString())
+            }
 
-        cmdParts.push(`TOOL=${this.localTool}`)
-        cmdParts.push(`GATE=${this.localGate}`)
+            if (this.localGate === TOOL_GATE_BYPASS && this.localTool !== TOOL_GATE_BYPASS) {
+                messages.push(this.$t('Panels.MmuPanel.MmuRecoverDialog.GateBypass').toString())
+            }
 
-        if ([FILAMENT_POS_UNLOADED, FILAMENT_POS_LOADED].includes(this.localFilamentPos)) {
-            cmdParts.push(`LOADED=${this.localFilamentPos === FILAMENT_POS_LOADED ? 1 : 0}`)
-        }
+            return messages
+        },
+        gatesList() {
+            const list = []
 
-        this.doSend(cmdParts.join(' '))
-        this.close()
-    }
+            for (let gate = 0; gate < this.mmuNumGates; gate++) {
+                list.push({ title: this.gateIndexText(gate), value: gate })
+            }
 
-    @Watch('showDialog', { immediate: true })
-    onShowDialogChanged(newValue: boolean): void {
-        if (!newValue) return
+            if (this.mmuHasBypass) {
+                list.push({ title: this.$t('Panels.MmuPanel.Bypass'), value: TOOL_GATE_BYPASS })
+            }
 
-        this.localGate = this.mmuGate
-        this.localTool = this.mmuTool
-        this.localFilamentPos = this.mmuFilamentPos
+            return list
+        },
+        gateErrorMessage() {
+            const messages = []
 
-        if (![FILAMENT_POS_UNLOADED, FILAMENT_POS_LOADED].includes(this.localFilamentPos)) {
-            this.localFilamentPos = FILAMENT_POS_UNKNOWN
-        }
-    }
-}
+            if (this.localGate === TOOL_GATE_UNKNOWN) {
+                messages.push(this.$t('Panels.MmuPanel.MmuRecoverDialog.NoGate').toString())
+            }
+
+            if (this.localTool === TOOL_GATE_BYPASS && this.localGate !== TOOL_GATE_BYPASS) {
+                messages.push(this.$t('Panels.MmuPanel.MmuRecoverDialog.ToolBypass').toString())
+            }
+
+            if (this.localGate >= 0 && this.ttgMap[this.localGate] !== this.localTool) {
+                const msg = this.$t('Panels.MmuPanel.MmuRecoverDialog.Remap', {
+                    tool: `T${this.localTool}`,
+                }).toString()
+                messages.push(`${this.$t('Panels.MmuPanel.MmuRecoverDialog.WarningPrefix').toString()} ${msg}`)
+            }
+
+            return messages
+        },
+        posList() {
+            return [
+                { title: this.$t('Panels.MmuPanel.MmuRecoverDialog.Unknown').toString(), value: FILAMENT_POS_UNKNOWN },
+                {
+                    title: this.$t('Panels.MmuPanel.MmuRecoverDialog.Unloaded').toString(),
+                    value: FILAMENT_POS_UNLOADED,
+                },
+                { title: this.$t('Panels.MmuPanel.MmuRecoverDialog.Loaded').toString(), value: FILAMENT_POS_LOADED },
+            ]
+        },
+        posErrorMessage(): string {
+            if (this.localFilamentPos === FILAMENT_POS_UNKNOWN) {
+                return `${this.$t('Panels.MmuPanel.MmuRecoverDialog.WarningPrefix').toString()} ${this.$t('Panels.MmuPanel.MmuRecoverDialog.NoPosition').toString()}`
+            }
+            return ''
+        },
+        okDisabled() {
+            const warningPrefix = this.$t('Panels.MmuPanel.MmuRecoverDialog.WarningPrefix').toString()
+            const messages = [...this.toolErrorMessage, ...this.gateErrorMessage, ...this.posErrorMessage]
+
+            return messages.filter((msg) => !msg.startsWith(warningPrefix)).length > 0
+        },
+        numUnits(): number {
+            return this.$store.state.printer?.mmu_machine?.num_units ?? 1
+        },
+    },
+    methods: {
+        gateIndexText(gateIndex: number) {
+            if (this.mmuNumUnits <= 1) return `${gateIndex}`
+
+            for (let i = 0; i < this.mmuNumUnits; i++) {
+                const unit = this.getMmuMachineUnit(i)
+                if (!unit) continue
+
+                if (i > 0 && gateIndex >= unit.first_gate && gateIndex < unit.first_gate + unit.num_gates) {
+                    return `${gateIndex} (unit #${i + 1})`
+                }
+            }
+
+            return `${gateIndex}`
+        },
+        close() {
+            this.showDialog = false
+        },
+        commit() {
+            const cmdParts = ['MMU_RECOVER']
+
+            cmdParts.push(`TOOL=${this.localTool}`)
+            cmdParts.push(`GATE=${this.localGate}`)
+
+            if ([FILAMENT_POS_UNLOADED, FILAMENT_POS_LOADED].includes(this.localFilamentPos)) {
+                cmdParts.push(`LOADED=${this.localFilamentPos === FILAMENT_POS_LOADED ? 1 : 0}`)
+            }
+
+            this.doSend(cmdParts.join(' '))
+            this.close()
+        },
+    },
+    watch: {
+        showDialog: {
+            handler(newValue: boolean): void {
+                if (!newValue) return
+
+                this.localGate = this.mmuGate
+                this.localTool = this.mmuTool
+                this.localFilamentPos = this.mmuFilamentPos
+
+                if (![FILAMENT_POS_UNLOADED, FILAMENT_POS_LOADED].includes(this.localFilamentPos)) {
+                    this.localFilamentPos = FILAMENT_POS_UNKNOWN
+                }
+            },
+            immediate: true,
+        },
+    },
+})
 </script>

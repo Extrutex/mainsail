@@ -124,172 +124,175 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import Panel from '@/components/ui/Panel.vue'
 import { mdiRocketLaunch } from '@mdi/js'
+import { TranslateResult } from 'vue-i18n'
 
 const SPARKLINE_POINTS = 60
 const RING_RADIUS = 88
 
-@Component({
+export default defineComponent({
+    name: 'NextgenDashboardPanel',
     components: { Panel },
-})
-export default class NextgenDashboardPanel extends Mixins(BaseMixin) {
-    mdiRocketLaunch = mdiRocketLaunch
+    mixins: [BaseMixin],
+    data() {
+        return {
+            mdiRocketLaunch: mdiRocketLaunch,
+            speedHistory: [] as number[],
+            flowHistory: [] as number[],
+            historyTimer: null as number | null,
+        }
+    },
+    computed: {
+        ringCircumference(): number {
+            return 2 * Math.PI * RING_RADIUS
+        },
 
-    private speedHistory: number[] = []
-    private flowHistory: number[] = []
-    private historyTimer: number | null = null
+        printPercent(): number {
+            return Math.round((this.$store.getters['printer/getPrintPercent'] ?? 0) * 100)
+        },
 
-    get ringCircumference() {
-        return 2 * Math.PI * RING_RADIUS
-    }
+        displayPercent(): number {
+            return this.printerIsPrintingOnly ? this.printPercent : 0
+        },
 
-    get printPercent() {
-        return Math.round((this.$store.getters['printer/getPrintPercent'] ?? 0) * 100)
-    }
+        ringOffset(): number {
+            return this.ringCircumference * (1 - this.displayPercent / 100)
+        },
 
-    get displayPercent() {
-        return this.printerIsPrintingOnly ? this.printPercent : 0
-    }
+        printerStateOutput(): TranslateResult {
+            if (!this.klipperReadyForGui) return this.$t('Panels.NextgenDashboardPanel.Offline')
 
-    get ringOffset() {
-        return this.ringCircumference * (1 - this.displayPercent / 100)
-    }
+            return this.printer_state
+        },
 
-    get printerStateOutput() {
-        if (!this.klipperReadyForGui) return this.$t('Panels.NextgenDashboardPanel.Offline')
+        filename(): string {
+            return this.$store.state.printer.print_stats?.filename ?? ''
+        },
 
-        return this.printer_state
-    }
+        eta(): string {
+            return this.$store.getters['printer/getEstimatedTimeETAFormat']
+        },
 
-    get filename() {
-        return this.$store.state.printer.print_stats?.filename ?? ''
-    }
+        liveVelocity(): string | null {
+            const velocity = this.$store.state.printer.motion_report?.live_velocity ?? null
+            if (velocity === null) return null
 
-    get eta() {
-        return this.$store.getters['printer/getEstimatedTimeETAFormat']
-    }
+            return Math.abs(velocity).toFixed(0)
+        },
 
-    get liveVelocity() {
-        const velocity = this.$store.state.printer.motion_report?.live_velocity ?? null
-        if (velocity === null) return null
+        filamentDiameter(): number {
+            return this.$store.state.printer.configfile?.settings?.extruder?.filament_diameter ?? 1.75
+        },
 
-        return Math.abs(velocity).toFixed(0)
-    }
+        liveFlow(): string | null {
+            const extruderVelocity = this.$store.state.printer.motion_report?.live_extruder_velocity ?? null
+            if (extruderVelocity === null) return null
 
-    get filamentDiameter() {
-        return this.$store.state.printer.configfile?.settings?.extruder?.filament_diameter ?? 1.75
-    }
+            const filamentCrossSection = Math.pow(this.filamentDiameter / 2, 2) * Math.PI
 
-    get liveFlow() {
-        const extruderVelocity = this.$store.state.printer.motion_report?.live_extruder_velocity ?? null
-        if (extruderVelocity === null) return null
+            return Math.max(0, filamentCrossSection * extruderVelocity).toFixed(1)
+        },
 
-        const filamentCrossSection = Math.pow(this.filamentDiameter / 2, 2) * Math.PI
+        maxLayers(): number {
+            return this.$store.getters['printer/getPrintMaxLayers'] ?? 0
+        },
 
-        return Math.max(0, filamentCrossSection * extruderVelocity).toFixed(1)
-    }
+        currentLayer(): number {
+            return this.$store.getters['printer/getPrintCurrentLayer'] ?? 0
+        },
 
-    get maxLayers() {
-        return this.$store.getters['printer/getPrintMaxLayers'] ?? 0
-    }
+        layerPercent(): number {
+            if (this.maxLayers === 0) return 0
 
-    get currentLayer() {
-        return this.$store.getters['printer/getPrintCurrentLayer'] ?? 0
-    }
+            return Math.min(100, (this.currentLayer / this.maxLayers) * 100)
+        },
 
-    get layerPercent() {
-        if (this.maxLayers === 0) return 0
+        printTime(): number {
+            return this.$store.state.printer.print_stats?.print_duration ?? 0
+        },
 
-        return Math.min(100, (this.currentLayer / this.maxLayers) * 100)
-    }
+        formattedPrintTime(): string {
+            return this.formatDuration(this.printTime)
+        },
 
-    get printTime() {
-        return this.$store.state.printer.print_stats?.print_duration ?? 0
-    }
+        filamentUsed(): number {
+            return this.$store.state.printer.print_stats?.filament_used ?? 0
+        },
 
-    get formattedPrintTime() {
-        return this.formatDuration(this.printTime)
-    }
+        formattedFilamentUsed(): string {
+            if (this.filamentUsed >= 1000) return (this.filamentUsed / 1000).toFixed(2) + ' m'
 
-    get filamentUsed() {
-        return this.$store.state.printer.print_stats?.filament_used ?? 0
-    }
+            return this.filamentUsed.toFixed(0) + ' mm'
+        },
 
-    get formattedFilamentUsed() {
-        if (this.filamentUsed >= 1000) return (this.filamentUsed / 1000).toFixed(2) + ' m'
+        positionZ(): string {
+            const gcodePosition = this.$store.state.printer.gcode_move?.gcode_position ?? null
+            if (gcodePosition === null) return '--'
 
-        return this.filamentUsed.toFixed(0) + ' mm'
-    }
+            return gcodePosition[2].toFixed(2)
+        },
 
-    get positionZ() {
-        const gcodePosition = this.$store.state.printer.gcode_move?.gcode_position ?? null
-        if (gcodePosition === null) return '--'
+        speedSparklinePoints(): string {
+            return this.buildSparklinePoints(this.speedHistory)
+        },
 
-        return gcodePosition[2].toFixed(2)
-    }
+        flowSparklinePoints(): string {
+            return this.buildSparklinePoints(this.flowHistory)
+        },
+    },
+    methods: {
+        formatDuration(seconds: number): string {
+            if (seconds <= 0) return '--'
 
-    get speedSparklinePoints() {
-        return this.buildSparklinePoints(this.speedHistory)
-    }
+            const hours = Math.floor(seconds / 3600)
+            const minutes = Math.floor((seconds % 3600) / 60)
+            const secs = Math.floor(seconds % 60)
 
-    get flowSparklinePoints() {
-        return this.buildSparklinePoints(this.flowHistory)
-    }
+            if (hours > 0) return `${hours}h ${minutes}m`
+            if (minutes > 0) return `${minutes}m ${secs}s`
 
-    formatDuration(seconds: number) {
-        if (seconds <= 0) return '--'
+            return `${secs}s`
+        },
 
-        const hours = Math.floor(seconds / 3600)
-        const minutes = Math.floor((seconds % 3600) / 60)
-        const secs = Math.floor(seconds % 60)
+        buildSparklinePoints(history: number[]): string {
+            if (history.length < 2) return ''
 
-        if (hours > 0) return `${hours}h ${minutes}m`
-        if (minutes > 0) return `${minutes}m ${secs}s`
+            const max = Math.max(...history, 1)
+            const stepX = 100 / (SPARKLINE_POINTS - 1)
+            const offset = SPARKLINE_POINTS - history.length
 
-        return `${secs}s`
-    }
+            return history
+                .map((value, index) => {
+                    const x = ((offset + index) * stepX).toFixed(1)
+                    const y = (26 - (value / max) * 24).toFixed(1)
 
-    buildSparklinePoints(history: number[]) {
-        if (history.length < 2) return ''
+                    return `${x},${y}`
+                })
+                .join(' ')
+        },
 
-        const max = Math.max(...history, 1)
-        const stepX = 100 / (SPARKLINE_POINTS - 1)
-        const offset = SPARKLINE_POINTS - history.length
+        pushHistoryPoint() {
+            const speed = Math.abs(this.$store.state.printer.motion_report?.live_velocity ?? 0)
+            const extruderVelocity = Math.max(0, this.$store.state.printer.motion_report?.live_extruder_velocity ?? 0)
+            const filamentCrossSection = Math.pow(this.filamentDiameter / 2, 2) * Math.PI
 
-        return history
-            .map((value, index) => {
-                const x = ((offset + index) * stepX).toFixed(1)
-                const y = (26 - (value / max) * 24).toFixed(1)
+            this.speedHistory.push(speed)
+            this.flowHistory.push(filamentCrossSection * extruderVelocity)
 
-                return `${x},${y}`
-            })
-            .join(' ')
-    }
-
-    pushHistoryPoint() {
-        const speed = Math.abs(this.$store.state.printer.motion_report?.live_velocity ?? 0)
-        const extruderVelocity = Math.max(0, this.$store.state.printer.motion_report?.live_extruder_velocity ?? 0)
-        const filamentCrossSection = Math.pow(this.filamentDiameter / 2, 2) * Math.PI
-
-        this.speedHistory.push(speed)
-        this.flowHistory.push(filamentCrossSection * extruderVelocity)
-
-        if (this.speedHistory.length > SPARKLINE_POINTS) this.speedHistory.shift()
-        if (this.flowHistory.length > SPARKLINE_POINTS) this.flowHistory.shift()
-    }
-
+            if (this.speedHistory.length > SPARKLINE_POINTS) this.speedHistory.shift()
+            if (this.flowHistory.length > SPARKLINE_POINTS) this.flowHistory.shift()
+        },
+    },
     mounted() {
         this.historyTimer = window.setInterval(() => this.pushHistoryPoint(), 1000)
-    }
-
-    beforeDestroy() {
+    },
+    beforeUnmount() {
         if (this.historyTimer !== null) window.clearInterval(this.historyTimer)
-    }
-}
+    },
+})
 </script>
 
 <style scoped>

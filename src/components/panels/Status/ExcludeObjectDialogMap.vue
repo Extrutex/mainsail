@@ -74,8 +74,7 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, Prop, Ref } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { defaultPrimaryColor } from '@/store/variables'
 
@@ -94,168 +93,180 @@ interface PrintingObject {
     size: number
 }
 
-@Component
-export default class StatusPanelObjectsDialogMap extends Mixins(BaseMixin) {
-    @Prop({ required: false, default: '' }) readonly hoverName!: string
-    @Ref() readonly tooltipObjectMap!: HTMLDivElement | undefined
-
-    coordinationCrossColor = '#888'
-    stripesOffset = 50
-
-    get printing_objects(): PrintingObject[] {
-        const objects = this.$store.state.printer.exclude_object?.objects ?? []
-
-        return (
-            objects
-                .map((object: ExcludeObjectStateEntry) => {
-                    let total = 0
-                    const polygon = object.polygon ?? []
-
-                    for (let i = 0; i < polygon.length; i++) {
-                        const pointA = polygon[i]
-                        const pointB = i === polygon.length - 1 ? polygon[0] : polygon[i + 1]
-
-                        total += pointA[0] * pointB[1] - pointA[1] * pointB[0]
-                    }
-
-                    return {
-                        center: object.center,
-                        name: object.name,
-                        polygon: object.polygon,
-                        size: Math.abs(total),
-                    }
-                })
-                // sort all objects by size
-                .sort((a: PrintingObject, b: PrintingObject) => b.size - a.size)
-        )
-    }
-
-    get printing_objects_with_polygons(): PrintingObject[] {
-        return this.printing_objects.filter((object) => Array.isArray(object.polygon))
-    }
-
-    get current_object() {
-        return this.$store.state.printer.exclude_object?.current_object ?? null
-    }
-
-    get excluded_objects() {
-        return this.$store.state.printer.exclude_object?.excluded_objects ?? []
-    }
-
-    get viewBox() {
-        return (
-            this.convertX(this.stepperXmin) +
-            ' ' +
-            this.convertY(this.stepperYmax) +
-            ' ' +
-            this.absoluteX +
-            ' ' +
-            this.absoluteY
-        )
-    }
-
-    get toolhead() {
-        return this.$store.state.printer.toolhead ?? {}
-    }
-
-    get axis_minimum() {
-        return this.toolhead.axis_minimum ?? []
-    }
-
-    get axis_maximum() {
-        return this.toolhead.axis_maximum ?? []
-    }
-
-    get stepperXmin() {
-        return this.axis_minimum[0] ?? 0
-    }
-
-    get stepperXmax() {
-        return this.axis_maximum[0] ?? 200
-    }
-
-    get stepperYmin() {
-        return this.axis_minimum[1] ?? 0
-    }
-
-    get stepperYmax() {
-        return this.axis_maximum[1] ?? 200
-    }
-
-    get absoluteX() {
-        return Math.abs(this.stepperXmin) + Math.abs(this.stepperXmax)
-    }
-
-    get absoluteY() {
-        return Math.abs(this.stepperYmin) + Math.abs(this.stepperYmax)
-    }
-
-    get xStripes() {
-        const output = []
-        const minXstripe = Math.floor(this.stepperXmin / this.stripesOffset) * this.stripesOffset
-        const maxXstripe = Math.floor(this.stepperXmax / this.stripesOffset) * this.stripesOffset
-
-        for (let i = minXstripe; i <= maxXstripe; i = i + this.stripesOffset) {
-            output.push(i)
+export default defineComponent({
+    name: 'StatusPanelObjectsDialogMap',
+    mixins: [BaseMixin],
+    props: {
+        hoverName: { type: String, required: false, default: '' },
+    },
+    emits: ['update:name', 'update:bool'],
+    data() {
+        return {
+            coordinationCrossColor: '#888',
+            stripesOffset: 50,
         }
+    },
+    computed: {
+        tooltipObjectMap(): HTMLDivElement | undefined {
+            return this.$refs.tooltipObjectMap as HTMLDivElement | undefined
+        },
 
-        return output
-    }
+        printing_objects(): PrintingObject[] {
+            const objects = this.$store.state.printer.exclude_object?.objects ?? []
 
-    get yStripes() {
-        const output = []
-        const minYstripe = Math.floor(this.stepperYmin / this.stripesOffset) * this.stripesOffset
-        const maxYstripe = Math.floor(this.stepperYmax / this.stripesOffset) * this.stripesOffset
+            return (
+                objects
+                    .map((object: ExcludeObjectStateEntry) => {
+                        let total = 0
+                        const polygon = object.polygon ?? []
 
-        for (let i = minYstripe; i <= maxYstripe; i = i + this.stripesOffset) {
-            output.push(i)
-        }
+                        for (let i = 0; i < polygon.length; i++) {
+                            const pointA = polygon[i]
+                            const pointB = i === polygon.length - 1 ? polygon[0] : polygon[i + 1]
 
-        return output
-    }
+                            total += pointA[0] * pointB[1] - pointA[1] * pointB[0]
+                        }
 
-    get primaryColor() {
-        return this.$store.state.gui.theme?.primary ?? defaultPrimaryColor
-    }
+                        return {
+                            center: object.center,
+                            name: object.name,
+                            polygon: object.polygon,
+                            size: Math.abs(total),
+                        }
+                    })
+                    // sort all objects by size
+                    .sort((a: PrintingObject, b: PrintingObject) => b.size - a.size)
+            )
+        },
 
-    convertX(x: number) {
-        return x
-    }
+        printing_objects_with_polygons(): PrintingObject[] {
+            return this.printing_objects.filter((object) => Array.isArray(object.polygon))
+        },
 
-    convertY(y: number) {
-        return y * -1
-    }
+        current_object() {
+            return this.$store.state.printer.exclude_object?.current_object ?? null
+        },
 
-    showObjectTooltip(text: string) {
-        if (!this.tooltipObjectMap) return
+        excluded_objects() {
+            return this.$store.state.printer.exclude_object?.excluded_objects ?? []
+        },
 
-        this.tooltipObjectMap.innerHTML = text
-        this.tooltipObjectMap.style.display = 'block'
+        viewBox() {
+            return (
+                this.convertX(this.stepperXmin) +
+                ' ' +
+                this.convertY(this.stepperYmax) +
+                ' ' +
+                this.absoluteX +
+                ' ' +
+                this.absoluteY
+            )
+        },
 
-        window.addEventListener('mousemove', this.moveTooltip)
-    }
+        toolhead() {
+            return this.$store.state.printer.toolhead ?? {}
+        },
 
-    hideObjectTooltip() {
-        if (!this.tooltipObjectMap) return
+        axis_minimum() {
+            return this.toolhead.axis_minimum ?? []
+        },
 
-        this.tooltipObjectMap.style.display = 'none'
+        axis_maximum() {
+            return this.toolhead.axis_maximum ?? []
+        },
 
-        window.removeEventListener('mousemove', this.moveTooltip)
-    }
+        stepperXmin() {
+            return this.axis_minimum[0] ?? 0
+        },
 
-    moveTooltip(event: MouseEvent) {
-        if (!this.tooltipObjectMap) return
+        stepperXmax() {
+            return this.axis_maximum[0] ?? 200
+        },
 
-        const top = event.offsetY - this.tooltipObjectMap.clientHeight - 15
-        this.tooltipObjectMap.style.left = `${event.offsetX - 20}px`
-        this.tooltipObjectMap.style.top = `${top}px`
-    }
+        stepperYmin() {
+            return this.axis_minimum[1] ?? 0
+        },
 
-    openExcludeObjectDialog(name: string) {
-        this.$emit('update:name', name)
-        this.$emit('update:bool', true)
-    }
-}
+        stepperYmax() {
+            return this.axis_maximum[1] ?? 200
+        },
+
+        absoluteX() {
+            return Math.abs(this.stepperXmin) + Math.abs(this.stepperXmax)
+        },
+
+        absoluteY() {
+            return Math.abs(this.stepperYmin) + Math.abs(this.stepperYmax)
+        },
+
+        xStripes() {
+            const output = []
+            const minXstripe = Math.floor(this.stepperXmin / this.stripesOffset) * this.stripesOffset
+            const maxXstripe = Math.floor(this.stepperXmax / this.stripesOffset) * this.stripesOffset
+
+            for (let i = minXstripe; i <= maxXstripe; i = i + this.stripesOffset) {
+                output.push(i)
+            }
+
+            return output
+        },
+
+        yStripes() {
+            const output = []
+            const minYstripe = Math.floor(this.stepperYmin / this.stripesOffset) * this.stripesOffset
+            const maxYstripe = Math.floor(this.stepperYmax / this.stripesOffset) * this.stripesOffset
+
+            for (let i = minYstripe; i <= maxYstripe; i = i + this.stripesOffset) {
+                output.push(i)
+            }
+
+            return output
+        },
+
+        primaryColor() {
+            return this.$store.state.gui.theme?.primary ?? defaultPrimaryColor
+        },
+    },
+    methods: {
+        convertX(x: number) {
+            return x
+        },
+
+        convertY(y: number) {
+            return y * -1
+        },
+
+        showObjectTooltip(text: string) {
+            if (!this.tooltipObjectMap) return
+
+            this.tooltipObjectMap.innerHTML = text
+            this.tooltipObjectMap.style.display = 'block'
+
+            window.addEventListener('mousemove', this.moveTooltip)
+        },
+
+        hideObjectTooltip() {
+            if (!this.tooltipObjectMap) return
+
+            this.tooltipObjectMap.style.display = 'none'
+
+            window.removeEventListener('mousemove', this.moveTooltip)
+        },
+
+        moveTooltip(event: MouseEvent) {
+            if (!this.tooltipObjectMap) return
+
+            const top = event.offsetY - this.tooltipObjectMap.clientHeight - 15
+            this.tooltipObjectMap.style.left = `${event.offsetX - 20}px`
+            this.tooltipObjectMap.style.top = `${top}px`
+        },
+
+        openExcludeObjectDialog(name: string) {
+            this.$emit('update:name', name)
+            this.$emit('update:bool', true)
+        },
+    },
+})
 </script>
 
 <style scoped>
