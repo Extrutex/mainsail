@@ -12,6 +12,7 @@ import {
     mdiInformation,
     mdiLedStrip,
     mdiPrinter3dNozzle,
+    mdiRocketLaunch,
     mdiThermometerLines,
     mdiWebcam,
     mdiAdjust,
@@ -63,6 +64,8 @@ export default class DashboardMixin extends BaseMixin {
                 return mdiCodeTags
             case 'miscellaneous':
                 return mdiDipSwitch
+            case 'nextgen-dashboard':
+                return mdiRocketLaunch
             case 'led-effects':
                 return mdiLedStrip
             case 'temperature':

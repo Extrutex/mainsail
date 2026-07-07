@@ -116,6 +116,7 @@ export const allDashboardPanels = [
     'machine-settings',
     'miniconsole',
     'miscellaneous',
+    'nextgen-dashboard',
     'spoolman',
     'mmu',
     'temperature',
@@ -185,6 +186,13 @@ export const excludeKeys = [
  */
 export const themes: Theme[] = [
     { name: 'mainsail', displayName: 'Mainsail', colorLogo: defaultLogoColor },
+    {
+        name: 'nexus',
+        displayName: 'Nexus',
+        colorLogo: '#00E5FF',
+        colorPrimary: '#00B8D4',
+        css: true,
+    },
     {
         name: 'klipper',
         displayName: 'Klipper',

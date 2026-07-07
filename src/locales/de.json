@@ -938,6 +938,16 @@
             },
             "Unknown": "Unbekannt"
         },
+        "NextgenDashboardPanel": {
+            "Filament": "Filament",
+            "Flow": "Fluss",
+            "Headline": "Next-Gen Dashboard",
+            "Layer": "Schicht",
+            "Offline": "Offline",
+            "PrintTime": "Druckzeit",
+            "Speed": "Geschwindigkeit",
+            "ZHeight": "Z-Höhe"
+        },
         "PowerControlPanel": {
             "Error": "Fehler",
             "Off": "Aus",
