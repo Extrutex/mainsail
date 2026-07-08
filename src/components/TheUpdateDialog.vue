@@ -1,7 +1,7 @@
 <template>
     <v-dialog :value="application !== ''" persistent max-width="800" class="mx-0">
         <v-card :loading="!complete">
-            <template slot="progress">
+            <template #loader>
                 <v-progress-linear color="primary" indeterminate></v-progress-linear>
             </template>
             <v-toolbar flat density="compact">

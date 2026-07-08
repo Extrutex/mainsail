@@ -8,13 +8,13 @@
         :disabled="!bigThumbnailUrl">
         <template #activator="{ props }">
             <vue-load-image>
-                <img slot="image" :src="smallThumbnailUrl" width="32" height="32" :alt="item.filename" v-bind="props" />
-                <div slot="preloader">
+                <template #image><img :src="smallThumbnailUrl" width="32" height="32" :alt="item.filename" v-bind="props" /></template>
+                <template #preloader><div>
                     <v-progress-circular indeterminate color="primary" />
-                </div>
-                <div slot="error">
+                </div></template>
+                <template #error><div>
                     <v-icon>{{ mdiFile }}</v-icon>
-                </div>
+                </div></template>
             </vue-load-image>
         </template>
         <span>

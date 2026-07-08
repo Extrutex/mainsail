@@ -64,7 +64,7 @@ export default defineComponent({
             return this.getAfcLaneObject(this.name)
         },
 
-        set() {
+        settingsDistHub() {
             return this.afcSettingsLane.dist_hub || 0
         },
 

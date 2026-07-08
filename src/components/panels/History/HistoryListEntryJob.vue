@@ -16,19 +16,18 @@
                 <v-tooltip top>
                     <template #activator="{ props }">
                         <vue-load-image>
-                            <img
-                                slot="image"
+                            <template #image><img
                                 :alt="item.filename"
                                 :src="smallThumbnail"
                                 width="32"
                                 height="32"
-                                v-bind="props" />
-                            <div slot="preloader">
+                                v-bind="props" /></template>
+                            <template #preloader><div>
                                 <v-progress-circular indeterminate color="primary" />
-                            </div>
-                            <div slot="error">
+                            </div></template>
+                            <template #error><div>
                                 <v-icon>{{ mdiFile }}</v-icon>
-                            </div>
+                            </div></template>
                         </vue-load-image>
                     </template>
                     <span><img :alt="item.filename" :src="bigThumbnail" width="250" /></span>
@@ -36,13 +35,13 @@
             </template>
             <template v-else-if="smallThumbnail">
                 <vue-load-image>
-                    <img slot="image" :alt="item.filename" :src="smallThumbnail" width="32" height="32" />
-                    <div slot="preloader">
+                    <template #image><img :alt="item.filename" :src="smallThumbnail" width="32" height="32" /></template>
+                    <template #preloader><div>
                         <v-progress-circular indeterminate color="primary" />
-                    </div>
-                    <div slot="error">
+                    </div></template>
+                    <template #error><div>
                         <v-icon>{{ mdiFile }}</v-icon>
-                    </div>
+                    </div></template>
                 </vue-load-image>
             </template>
             <template v-else>

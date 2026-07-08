@@ -116,15 +116,15 @@ export default defineComponent({
             return this.getAfcExtruderSettings(this.name)
         },
 
-        set() {
+        settingsToolStn() {
             return this.afcSettingsExtruder.tool_stn || 0
         },
 
-        set() {
+        settingsToolStnUnload() {
             return this.afcSettingsExtruder.tool_stn_unload || 0
         },
 
-        set() {
+        settingsToolSensorAfterExtruder() {
             return this.afcSettingsExtruder.tool_sensor_after_extruder || 0
         },
 

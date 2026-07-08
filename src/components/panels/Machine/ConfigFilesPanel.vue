@@ -117,7 +117,7 @@
                     <div class="text-center">{{ $t('Machine.ConfigFilesPanel.Empty') }}</div>
                 </template>
 
-                <template v-if="currentPath !== ''" slot="body.prepend">
+                <template v-if="currentPath !== ''" #body.prepend>
                     <tr
                         class="file-list-cursor"
                         @click="clickRowGoBack"
