@@ -5,7 +5,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import MmuMixin, {
     MmuTtgMap_START_X,
@@ -14,29 +14,33 @@ import MmuMixin, {
     TOOL_GATE_UNKNOWN,
 } from '@/components/mixins/mmu'
 
-@Component
-export default class MmuTtgMapTool extends Mixins(BaseMixin, MmuMixin) {
-    @Prop({ required: true }) readonly tool!: number
-    @Prop({ default: TOOL_GATE_UNKNOWN }) readonly selectedTool!: number
+export default defineComponent({
+    name: 'MmuTtgMapTool',
+    mixins: [BaseMixin, MmuMixin],
+    props: {
+        tool: { type: Number, required: true },
+        selectedTool: { type: Number, default: TOOL_GATE_UNKNOWN },
+    },
+    computed: {
+        name() {
+            return `T${this.tool}`
+        },
 
-    get name() {
-        return `T${this.tool}`
-    }
+        positionX() {
+            return MmuTtgMap_START_X + 14
+        },
 
-    get positionX() {
-        return MmuTtgMap_START_X + 14
-    }
+        positionY() {
+            return this.tool * MmuTtgMap_VERTICAL_SPACING + MmuTtgMap_START_Y + 8
+        },
 
-    get positionY() {
-        return this.tool * MmuTtgMap_VERTICAL_SPACING + MmuTtgMap_START_Y + 8
-    }
+        fill() {
+            return this.tool === this.selectedTool ? 'var(--v-primary-lighten1, #2CA9BC)' : 'currentColor'
+        },
 
-    get fill() {
-        return this.tool === this.selectedTool ? 'var(--v-primary-lighten1, #2CA9BC)' : 'currentColor'
-    }
-
-    get fontWeight() {
-        return this.tool === this.selectedTool ? 'bold' : 'inherit'
-    }
-}
+        fontWeight() {
+            return this.tool === this.selectedTool ? 'bold' : 'inherit'
+        },
+    },
+})
 </script>

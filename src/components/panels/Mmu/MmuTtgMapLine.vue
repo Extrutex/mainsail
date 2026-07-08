@@ -9,7 +9,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import MmuMixin, {
     MmuTtgMap_LEADER,
@@ -20,48 +20,52 @@ import MmuMixin, {
     TOOL_GATE_UNKNOWN,
 } from '@/components/mixins/mmu'
 
-@Component
-export default class MmuTtgMapLine extends Mixins(BaseMixin, MmuMixin) {
-    @Prop({ required: true }) readonly tool!: number
-    @Prop({ default: TOOL_GATE_UNKNOWN }) readonly selectedTool!: number
+export default defineComponent({
+    name: 'MmuTtgMapLine',
+    mixins: [BaseMixin, MmuMixin],
+    props: {
+        tool: { type: Number, required: true },
+        selectedTool: { type: Number, default: TOOL_GATE_UNKNOWN },
+    },
+    computed: {
+        gate() {
+            return this.ttgMap[this.tool] ?? TOOL_GATE_UNKNOWN
+        },
 
-    get gate() {
-        return this.ttgMap[this.tool] ?? TOOL_GATE_UNKNOWN
-    }
+        pathClass() {
+            if (this.tool === this.selectedTool) {
+                return 'stroke-selected-color'
+            }
 
-    get pathClass() {
-        if (this.tool === this.selectedTool) {
-            return 'stroke-selected-color'
-        }
+            return 'stroke-regular-color'
+        },
 
-        return 'stroke-regular-color'
-    }
+        strokeWidth() {
+            if (this.tool === this.selectedTool) {
+                return 4
+            }
 
-    get strokeWidth() {
-        if (this.tool === this.selectedTool) {
-            return 4
-        }
+            return 2
+        },
 
-        return 2
-    }
+        path() {
+            const xOffset = 28 // offset between tool number and line start
+            const yOffset = 4 // to center the line vertically
 
-    get path() {
-        const xOffset = 28 // offset between tool number and line start
-        const yOffset = 4 // to center the line vertically
+            const x1 = MmuTtgMap_START_X + xOffset
+            const y1 = MmuTtgMap_START_Y + this.tool * MmuTtgMap_VERTICAL_SPACING + yOffset
+            const tX = x1 + MmuTtgMap_LEADER
+            const gX = tX + MmuTtgMap_MAP_SPACE
 
-        const x1 = MmuTtgMap_START_X + xOffset
-        const y1 = MmuTtgMap_START_Y + this.tool * MmuTtgMap_VERTICAL_SPACING + yOffset
-        const tX = x1 + MmuTtgMap_LEADER
-        const gX = tX + MmuTtgMap_MAP_SPACE
-
-        return (
-            `M ${x1} ${y1} ` +
-            `L ${tX} ${y1} ` +
-            `L ${gX - MmuTtgMap_LEADER} ${MmuTtgMap_START_Y + this.gate * MmuTtgMap_VERTICAL_SPACING + yOffset} ` +
-            `L ${gX} ${MmuTtgMap_START_Y + this.gate * MmuTtgMap_VERTICAL_SPACING + yOffset}`
-        )
-    }
-}
+            return (
+                `M ${x1} ${y1} ` +
+                `L ${tX} ${y1} ` +
+                `L ${gX - MmuTtgMap_LEADER} ${MmuTtgMap_START_Y + this.gate * MmuTtgMap_VERTICAL_SPACING + yOffset} ` +
+                `L ${gX} ${MmuTtgMap_START_Y + this.gate * MmuTtgMap_VERTICAL_SPACING + yOffset}`
+            )
+        },
+    },
+})
 </script>
 
 <style scoped>

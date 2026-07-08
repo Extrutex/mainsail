@@ -8,7 +8,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
+import type { PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import MmuMixin, {
     MmuTtgMap_GROUP_SPACING,
@@ -16,50 +17,54 @@ import MmuMixin, {
     MmuTtgMap_VERTICAL_SPACING,
 } from '@/components/mixins/mmu'
 
-@Component
-export default class MmuTtgMapLine extends Mixins(BaseMixin, MmuMixin) {
-    @Prop({ required: true }) readonly groupNumber!: number
-    @Prop({ required: true }) readonly group!: number[]
-    @Prop({ required: true }) readonly index!: number
-    @Prop({ required: true }) readonly gateX!: number
-    @Prop({ required: true }) readonly groupX!: number
-    @Prop({ default: -1 }) readonly currentGroup!: number
+export default defineComponent({
+    name: 'MmuTtgMapGroup',
+    mixins: [BaseMixin, MmuMixin],
+    props: {
+        groupNumber: { type: Number, required: true },
+        group: { type: Array as PropType<number[]>, required: true },
+        index: { type: Number, required: true },
+        gateX: { type: Number, required: true },
+        groupX: { type: Number, required: true },
+        currentGroup: { type: Number, default: -1 },
+    },
+    computed: {
+        textPositionX() {
+            return this.groupX + this.index * MmuTtgMap_GROUP_SPACING
+        },
 
-    get textPositionX() {
-        return this.groupX + this.index * MmuTtgMap_GROUP_SPACING
-    }
+        textPositionY() {
+            return MmuTtgMap_START_Y + this.mmuNumGates * MmuTtgMap_VERTICAL_SPACING + 2
+        },
 
-    get textPositionY() {
-        return MmuTtgMap_START_Y + this.mmuNumGates * MmuTtgMap_VERTICAL_SPACING + 2
-    }
+        path() {
+            const tick = 5 // length of the horizontal tick
+            const y1 = MmuTtgMap_START_Y + 4 // small offset to align with gate lines
 
-    get path() {
-        const tick = 5 // length of the horizontal tick
-        const y1 = MmuTtgMap_START_Y + 4 // small offset to align with gate lines
+            const paths: string[] = []
+            let y0: number | null = null
 
-        const paths: string[] = []
-        let y0: number | null = null
+            this.group.forEach((gate) => {
+                const y = y1 + gate * MmuTtgMap_VERTICAL_SPACING
+                paths.push(`M ${this.textPositionX + tick} ${y} L ${this.textPositionX} ${y}`)
+                if (y0 !== null) {
+                    paths.push(`M ${this.textPositionX + tick} ${y0} L ${this.textPositionX + tick} ${y}`)
+                }
+                y0 = y
+            })
 
-        this.group.forEach((gate) => {
-            const y = y1 + gate * MmuTtgMap_VERTICAL_SPACING
-            paths.push(`M ${this.textPositionX + tick} ${y} L ${this.textPositionX} ${y}`)
-            if (y0 !== null) {
-                paths.push(`M ${this.textPositionX + tick} ${y0} L ${this.textPositionX + tick} ${y}`)
-            }
-            y0 = y
-        })
+            return paths.join(' ')
+        },
 
-        return paths.join(' ')
-    }
+        groupChar() {
+            return String.fromCharCode(this.groupNumber + 65)
+        },
 
-    get groupChar() {
-        return String.fromCharCode(this.groupNumber + 65)
-    }
-
-    get elementClass() {
-        return this.groupNumber === this.currentGroup ? 'selected' : 'regular'
-    }
-}
+        elementClass() {
+            return this.groupNumber === this.currentGroup ? 'selected' : 'regular'
+        },
+    },
+})
 </script>
 
 <style scoped>

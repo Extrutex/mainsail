@@ -1,5 +1,5 @@
 <template>
-    <v-dialog :value="showDialog" width="400" persistent :fullscreen="isMobile">
+    <v-dialog :model-value="showDialog" width="400" persistent :fullscreen="isMobile">
         <panel
             :title="$t('ScrewsTiltAdjust.Headline')"
             :icon="mdiArrowCollapseDown"
@@ -15,7 +15,9 @@
             <v-card-text v-if="error">
                 <v-row>
                     <v-col>
-                        <v-alert border="left" text type="error">{{ $t('ScrewsTiltAdjust.ErrorText') }}</v-alert>
+                        <v-alert border="start" variant="tonal" type="error">
+                            {{ $t('ScrewsTiltAdjust.ErrorText') }}
+                        </v-alert>
                     </v-col>
                 </v-row>
             </v-card-text>
@@ -30,10 +32,10 @@
             </v-card-text>
             <v-card-actions>
                 <v-spacer />
-                <v-btn text @click="retryScrewsTiltAdjust">
+                <v-btn variant="text" @click="retryScrewsTiltAdjust">
                     {{ $t('ScrewsTiltAdjust.Retry') }}
                 </v-btn>
-                <v-btn color="primary" text @click="clearScrewsTiltAdjust">
+                <v-btn color="primary" variant="text" @click="clearScrewsTiltAdjust">
                     {{ $t('ScrewsTiltAdjust.Accept') }}
                 </v-btn>
             </v-card-actions>
@@ -42,7 +44,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import Panel from '@/components/ui/Panel.vue'
 import Responsive from '@/components/ui/Responsive.vue'
@@ -51,59 +53,60 @@ import { mdiArrowCollapseDown, mdiCloseThick } from '@mdi/js'
 import ControlMixin from '@/components/mixins/control'
 import TheScrewsTiltAdjustDialogEntry from '@/components/dialogs/TheScrewsTiltAdjustDialogEntry.vue'
 import { ServerStateEvent } from '@/store/server/types'
-@Component({
+
+export default defineComponent({
+    name: 'TheScrewsTiltAdjustDialog',
     components: { TheScrewsTiltAdjustDialogEntry, Panel, Responsive, SettingsRow },
+    mixins: [BaseMixin, ControlMixin],
+    data() {
+        return {
+            mdiArrowCollapseDown: mdiArrowCollapseDown,
+            mdiCloseThick: mdiCloseThick,
+        }
+    },
+    computed: {
+        state() {
+            return this.$store.state.printer.screws_tilt_adjust ?? {}
+        },
+        error() {
+            return this.$store.state.printer.screws_tilt_adjust?.error ?? false
+        },
+        max_deviation() {
+            return this.$store.state.printer.screws_tilt_adjust?.max_deviation ?? null
+        },
+        results() {
+            return this.$store.state.printer.screws_tilt_adjust?.results ?? {}
+        },
+        showDialog() {
+            // don't display the dialog, if the user disabled it in the UI settings
+            if (!this.boolScrewsTiltAdjustDialog) return false
+
+            // don't display the dialog, if the user add the MAX_DEVIATION attribute to the SCREWS_TILT_CALCULATE command
+            if (this.max_deviation !== null) return false
+
+            return this.error || Object.keys(this.results).length
+        },
+        boolScrewsTiltAdjustDialog() {
+            return this.$store.state.gui.uiSettings.boolScrewsTiltAdjustDialog ?? true
+        },
+    },
+    methods: {
+        clearScrewsTiltAdjust() {
+            this.$store.dispatch('printer/clearScrewsTiltAdjust')
+        },
+        async retryScrewsTiltAdjust() {
+            const entries = [...(this.$store.state.server.events ?? [])]
+            const lastCommand = entries
+                .reverse()
+                .find(
+                    (entry: ServerStateEvent) =>
+                        entry.type === 'command' && entry.message.startsWith('SCREWS_TILT_CALCULATE')
+                )
+
+            await this.$store.dispatch('printer/clearScrewsTiltAdjust')
+
+            this.doSend(lastCommand?.message ?? 'SCREWS_TILT_CALCULATE')
+        },
+    },
 })
-export default class TheScrewsTiltAdjustDialog extends Mixins(BaseMixin, ControlMixin) {
-    mdiArrowCollapseDown = mdiArrowCollapseDown
-    mdiCloseThick = mdiCloseThick
-
-    get state() {
-        return this.$store.state.printer.screws_tilt_adjust ?? {}
-    }
-
-    get error() {
-        return this.$store.state.printer.screws_tilt_adjust?.error ?? false
-    }
-
-    get max_deviation() {
-        return this.$store.state.printer.screws_tilt_adjust?.max_deviation ?? null
-    }
-
-    get results() {
-        return this.$store.state.printer.screws_tilt_adjust?.results ?? {}
-    }
-
-    get showDialog() {
-        // don't display the dialog, if the user disabled it in the UI settings
-        if (!this.boolScrewsTiltAdjustDialog) return false
-
-        // don't display the dialog, if the user add the MAX_DEVIATION attribute to the SCREWS_TILT_CALCULATE command
-        if (this.max_deviation !== null) return false
-
-        return this.error || Object.keys(this.results).length
-    }
-
-    get boolScrewsTiltAdjustDialog() {
-        return this.$store.state.gui.uiSettings.boolScrewsTiltAdjustDialog ?? true
-    }
-
-    clearScrewsTiltAdjust() {
-        this.$store.dispatch('printer/clearScrewsTiltAdjust')
-    }
-
-    async retryScrewsTiltAdjust() {
-        const entries = [...(this.$store.state.server.events ?? [])]
-        const lastCommand = entries
-            .reverse()
-            .find(
-                (entry: ServerStateEvent) =>
-                    entry.type === 'command' && entry.message.startsWith('SCREWS_TILT_CALCULATE')
-            )
-
-        await this.$store.dispatch('printer/clearScrewsTiltAdjust')
-
-        this.doSend(lastCommand?.message ?? 'SCREWS_TILT_CALCULATE')
-    }
-}
 </script>

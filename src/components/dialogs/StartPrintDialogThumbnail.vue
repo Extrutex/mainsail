@@ -9,61 +9,59 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
+import type { PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { FileStateGcodefile } from '@/store/files/types'
 import { defaultBigThumbnailBackground, thumbnailBigMin } from '@/store/variables'
 import { escapePath } from '@/plugins/helpers'
 
-@Component
-export default class StartPrintDialogThumbnail extends Mixins(BaseMixin) {
-    @Prop({ required: true }) readonly file!: FileStateGcodefile
-    @Prop({ required: true, default: '' }) readonly currentPath!: string
+export default defineComponent({
+    name: 'StartPrintDialogThumbnail',
+    mixins: [BaseMixin],
+    props: {
+        file: { type: Object as PropType<FileStateGcodefile>, required: true },
+        currentPath: { type: String, required: true, default: '' },
+    },
+    computed: {
+        bigThumbnailBackground() {
+            return this.$store.state.gui.uiSettings.bigThumbnailBackground ?? defaultBigThumbnailBackground
+        },
+        bigThumbnailStyle() {
+            if (defaultBigThumbnailBackground.toLowerCase() === this.bigThumbnailBackground.toLowerCase()) {
+                return {}
+            }
 
-    get bigThumbnailBackground() {
-        return this.$store.state.gui.uiSettings.bigThumbnailBackground ?? defaultBigThumbnailBackground
-    }
+            return { backgroundColor: this.bigThumbnailBackground }
+        },
+        thumbnails() {
+            return this.file.thumbnails ?? []
+        },
+        bigThumbnail() {
+            return this.thumbnails.find((thumbnail) => thumbnail.width >= thumbnailBigMin)
+        },
+        currentPathWithoutSlash() {
+            if (this.currentPath.startsWith('/')) return this.currentPath.substring(1)
 
-    get bigThumbnailStyle() {
-        if (defaultBigThumbnailBackground.toLowerCase() === this.bigThumbnailBackground.toLowerCase()) {
-            return {}
-        }
+            return this.currentPath
+        },
+        fileTimestamp() {
+            return typeof this.file.modified.getTime === 'function' ? this.file.modified.getTime() : 0
+        },
+        bigThumbnailUrl() {
+            if (this.bigThumbnail === undefined || !('relative_path' in this.bigThumbnail)) return null
+            const baseArray = [this.apiUrl, 'server/files/gcodes']
+            if (this.currentPathWithoutSlash) baseArray.push(escapePath(this.currentPathWithoutSlash))
+            baseArray.push(escapePath(this.bigThumbnail.relative_path))
+            const baseUrl = baseArray.join('/')
 
-        return { backgroundColor: this.bigThumbnailBackground }
-    }
-
-    get thumbnails() {
-        return this.file.thumbnails ?? []
-    }
-
-    get bigThumbnail() {
-        return this.thumbnails.find((thumbnail) => thumbnail.width >= thumbnailBigMin)
-    }
-
-    get currentPathWithoutSlash() {
-        if (this.currentPath.startsWith('/')) return this.currentPath.substring(1)
-
-        return this.currentPath
-    }
-
-    get fileTimestamp() {
-        return typeof this.file.modified.getTime === 'function' ? this.file.modified.getTime() : 0
-    }
-
-    get bigThumbnailUrl() {
-        if (this.bigThumbnail === undefined || !('relative_path' in this.bigThumbnail)) return null
-        const baseArray = [this.apiUrl, 'server/files/gcodes']
-        if (this.currentPathWithoutSlash) baseArray.push(escapePath(this.currentPathWithoutSlash))
-        baseArray.push(escapePath(this.bigThumbnail.relative_path))
-        const baseUrl = baseArray.join('/')
-
-        return `${baseUrl}?timestamp=${this.fileTimestamp}`
-    }
-
-    get maxThumbnailWidth() {
-        return this.bigThumbnail?.width ?? 400
-    }
-}
+            return `${baseUrl}?timestamp=${this.fileTimestamp}`
+        },
+        maxThumbnailWidth() {
+            return this.bigThumbnail?.width ?? 400
+        },
+    },
+})
 </script>
 
 <style scoped>

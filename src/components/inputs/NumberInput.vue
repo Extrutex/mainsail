@@ -13,23 +13,23 @@
             :dec="dec"
             hide-spin-buttons
             hide-details="auto"
-            outlined
-            dense
+            variant="outlined"
+            density="compact"
             class="d-flex align-top"
             @blur="value = target.toString()"
             @focus="$event.target.select()"
             @keydown="checkInvalidChars">
-            <template v-if="defaultValue !== null" #append>
+            <template v-if="defaultValue !== null" #append-inner>
                 <v-icon @click="resetToDefault">{{ value !== defaultValue.toString() ? mdiRestart : '' }}</v-icon>
             </template>
-            <template v-if="hasSpinner" #append-outer>
+            <template v-if="hasSpinner" #append>
                 <div class="_spin_button_group">
                     <v-btn
                         :disabled="(value >= max && max !== null) || error || disabled"
                         class="mt-n3"
                         icon
-                        plain
-                        small
+                        variant="plain"
+                        size="small"
                         @click="incrementValue">
                         <v-icon>{{ mdiChevronUp }}</v-icon>
                     </v-btn>
@@ -37,8 +37,8 @@
                         :disabled="value <= min || error || disabled"
                         class="mb-n3"
                         icon
-                        plain
-                        small
+                        variant="plain"
+                        size="small"
                         @click="decrementValue">
                         <v-icon>{{ mdiChevronDown }}</v-icon>
                     </v-btn>
@@ -49,116 +49,124 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, Prop, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
+import type { PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { mdiChevronDown, mdiChevronUp, mdiRestart } from '@mdi/js'
 import { TranslateResult } from 'vue-i18n'
 
-@Component
-export default class NumberInput extends Mixins(BaseMixin) {
-    mdiRestart = mdiRestart
-    mdiChevronUp = mdiChevronUp
-    mdiChevronDown = mdiChevronDown
+export default defineComponent({
+    name: 'NumberInput',
+    mixins: [BaseMixin],
+    props: {
+        // input field name and identifier
+        label: { type: String as PropType<TranslateResult | string>, required: true },
+        param: { type: String, required: true },
+        // props defining incoming data
+        target: { type: Number, required: true },
+        defaultValue: { type: Number, required: false, default: null },
+        // props for internal processing
+        min: { type: Number, required: true },
+        max: { type: Number as PropType<number | null>, default: null },
+        dec: { type: Number, required: true },
+        step: { type: Number, required: false, default: 1 },
+        unit: { type: String, required: false },
+        // spinner related props
+        hasSpinner: { type: Boolean, required: false, default: false },
+        spinnerFactor: { type: Number, required: false, default: 1 },
+        // props for general internal behaviour
+        disabled: { type: Boolean, required: false, default: false },
+        outputErrorMsg: { type: Boolean, required: false, default: false },
+    },
+    emits: ['submit'],
+    data() {
+        return {
+            mdiRestart: mdiRestart,
+            mdiChevronUp: mdiChevronUp,
+            mdiChevronDown: mdiChevronDown,
 
-    private value: string = '0'
-    private error: boolean = false
-    private invalidChars: string[] = ['e', 'E', '+']
+            value: '0',
+            error: false,
+            invalidChars: ['e', 'E', '+'] as string[],
+        }
+    },
+    computed: {
+        // this function only parse this.value, to escape an empty input
+        inputValue(): number {
+            if (this.value.toString() === '') return 0
 
-    // input field name and identifier
-    @Prop({ required: true }) declare readonly label: TranslateResult | string
-    @Prop({ type: String, required: true }) declare readonly param: string
-    // props defining incoming data
-    @Prop({ type: Number, required: true }) declare readonly target: number
-    @Prop({ type: Number, required: false, default: null }) declare readonly defaultValue: number
-    // props for internal processing
-    @Prop({ type: Number, required: true }) declare readonly min: number
-    @Prop({ default: null }) declare readonly max: number | null
-    @Prop({ type: Number, required: true }) declare readonly dec: number
-    @Prop({ type: Number, required: false, default: 1 }) declare readonly step: number
-    @Prop({ type: String, required: false }) declare readonly unit: string
-    // spinner related props
-    @Prop({ type: Boolean, required: false, default: false }) declare readonly hasSpinner: boolean
-    @Prop({ type: Number, required: false, default: 1 }) declare readonly spinnerFactor: number
-    // props for general internal behaviour
-    @Prop({ type: Boolean, required: false, default: false }) declare readonly disabled: boolean
-    @Prop({ type: Boolean, required: false, default: false }) declare readonly outputErrorMsg: boolean
+            return parseFloat(this.value.replace(',', '.'))
+        },
 
+        invalidInput(): boolean {
+            return this.inputErrors.length > 0
+        },
+
+        inputErrors() {
+            if (!this.outputErrorMsg) return []
+
+            const errors = []
+            if (this.max === null && this.inputValue < this.min) {
+                // "Must be grater or equal than {min}!"
+                errors.push(this.$t('App.NumberInput.GreaterOrEqualError', { min: this.min }))
+            }
+            if (this.max !== null && (this.inputValue > this.max! || this.inputValue < this.min)) {
+                // "Must be between {min} and {max}!"
+                errors.push(this.$t('App.NumberInput.MustBeBetweenError', { min: this.min, max: this.max }))
+            }
+
+            return errors
+        },
+    },
+    watch: {
+        target(): void {
+            this.value = this.target.toString()
+        },
+    },
     created(): void {
         this.value = this.target.toString()
-    }
+    },
+    methods: {
+        incrementValue(): void {
+            if (this.inputValue + this.step * this.spinnerFactor < this.max! || this.max === null) {
+                this.value = (
+                    Math.round((this.inputValue + this.step * this.spinnerFactor) * 10 ** this.dec) /
+                    10 ** this.dec
+                ).toString()
+            } else this.value = this.max.toString()
 
-    @Watch('target')
-    updateTarget(): void {
-        this.value = this.target.toString()
-    }
+            this.submit()
+        },
 
-    incrementValue(): void {
-        if (this.inputValue + this.step * this.spinnerFactor < this.max! || this.max === null) {
-            this.value = (
-                Math.round((this.inputValue + this.step * this.spinnerFactor) * 10 ** this.dec) /
-                10 ** this.dec
-            ).toString()
-        } else this.value = this.max.toString()
+        decrementValue(): void {
+            if (this.inputValue - this.step * this.spinnerFactor > this.min) {
+                this.value = (
+                    Math.round((this.inputValue - this.step * this.spinnerFactor) * 10 ** this.dec) /
+                    10 ** this.dec
+                ).toString()
+            } else this.value = this.min.toString()
 
-        this.submit()
-    }
+            this.submit()
+        },
 
-    decrementValue(): void {
-        if (this.inputValue - this.step * this.spinnerFactor > this.min) {
-            this.value = (
-                Math.round((this.inputValue - this.step * this.spinnerFactor) * 10 ** this.dec) /
-                10 ** this.dec
-            ).toString()
-        } else this.value = this.min.toString()
+        resetToDefault(): void {
+            this.value = this.defaultValue?.toString()
+            this.submit()
+        },
 
-        this.submit()
-    }
+        submit(): void {
+            if (this.invalidInput) return
+            this.$emit('submit', { name: this.param, value: this.inputValue })
+        },
 
-    resetToDefault(): void {
-        this.value = this.defaultValue?.toString()
-        this.submit()
-    }
-
-    submit(): void {
-        if (this.invalidInput) return
-        this.$emit('submit', { name: this.param, value: this.inputValue })
-    }
-
-    // input validation //
-    checkInvalidChars(event: KeyboardEvent): void {
-        // add '-' to invalid characters if no negative input is allowed
-        if (this.min >= 0) this.invalidChars.push('-')
-        if (this.invalidChars.includes(event.key)) event.preventDefault()
-    }
-
-    // this function only parse this.value, to escape an empty input
-    get inputValue(): number {
-        if (this.value.toString() === '') return 0
-
-        return parseFloat(this.value.replace(',', '.'))
-    }
-
-    get invalidInput(): boolean {
-        return this.inputErrors.length > 0
-    }
-
-    get inputErrors() {
-        if (!this.outputErrorMsg) return []
-
-        const errors = []
-        if (this.max === null && this.inputValue < this.min) {
-            // "Must be grater or equal than {min}!"
-            errors.push(this.$t('App.NumberInput.GreaterOrEqualError', { min: this.min }))
-        }
-        if (this.max !== null && (this.inputValue > this.max! || this.inputValue < this.min)) {
-            // "Must be between {min} and {max}!"
-            errors.push(this.$t('App.NumberInput.MustBeBetweenError', { min: this.min, max: this.max }))
-        }
-
-        return errors
-    }
-}
+        // input validation //
+        checkInvalidChars(event: KeyboardEvent): void {
+            // add '-' to invalid characters if no negative input is allowed
+            if (this.min >= 0) this.invalidChars.push('-')
+            if (this.invalidChars.includes(event.key)) event.preventDefault()
+        },
+    },
+})
 </script>
 
 <style scoped>

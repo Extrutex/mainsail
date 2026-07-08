@@ -7,18 +7,18 @@
         card-class="extruder-control-panel">
         <!-- PANEL-HEADER 3-DOT-MENU -->
         <template #buttons>
-            <v-menu v-if="showFilamentMacros" :offset-y="true" :close-on-content-click="false" left>
-                <template #activator="{ on, attrs }">
-                    <v-btn icon tile v-bind="attrs" v-on="on">
+            <v-menu v-if="showFilamentMacros" location="bottom end" :close-on-content-click="false">
+                <template #activator="{ props }">
+                    <v-btn icon tile v-bind="props">
                         <v-icon>{{ mdiDotsVertical }}</v-icon>
                     </v-btn>
                 </template>
-                <v-list dense>
+                <v-list density="compact">
                     <!-- FILAMENT UNLOAD -->
                     <v-list-item v-if="unloadFilamentMacro">
-                        <v-tooltip top :disabled="canExecuteUnloadMacro" color="secondary">
-                            <template #activator="{ on }">
-                                <div v-on="on">
+                        <v-tooltip location="top" :disabled="canExecuteUnloadMacro" color="secondary">
+                            <template #activator="{ props }">
+                                <div v-bind="props">
                                     <macro-button
                                         :macro="unloadFilamentMacro"
                                         :alias="$t('Panels.ExtruderControlPanel.UnloadFilament')"
@@ -34,9 +34,9 @@
                     </v-list-item>
                     <!-- FILAMENT LOAD -->
                     <v-list-item v-if="loadFilamentMacro">
-                        <v-tooltip top :disabled="canExecuteLoadMacro" color="secondary">
-                            <template #activator="{ on }">
-                                <div v-on="on">
+                        <v-tooltip location="top" :disabled="canExecuteLoadMacro" color="secondary">
+                            <template #activator="{ props }">
+                                <div v-bind="props">
                                     <macro-button
                                         :macro="loadFilamentMacro"
                                         :alias="$t('Panels.ExtruderControlPanel.LoadFilament')"
@@ -52,9 +52,9 @@
                     </v-list-item>
                     <!-- FILAMENT PURGE -->
                     <v-list-item v-if="purgeFilamentMacro">
-                        <v-tooltip top :disabled="canExecutePurgeMacro" color="secondary">
-                            <template #activator="{ on }">
-                                <div v-on="on">
+                        <v-tooltip location="top" :disabled="canExecutePurgeMacro" color="secondary">
+                            <template #activator="{ props }">
+                                <div v-bind="props">
                                     <macro-button
                                         :macro="purgeFilamentMacro"
                                         :alias="$t('Panels.ExtruderControlPanel.PurgeFilament')"
@@ -113,111 +113,117 @@
 </template>
 
 <script lang="ts">
+import { defineComponent } from 'vue'
 import { mdiPrinter3dNozzle, mdiDotsVertical } from '@mdi/js'
-import { Component, Mixins } from 'vue-property-decorator'
 import { PrinterStateMacro } from '@/store/printer/types'
 import BaseMixin from '@/components/mixins/base'
 import ControlMixin from '@/components/mixins/control'
 import ExtruderMixin from '@/components/mixins/extruder'
 
-@Component
-export default class ExtruderControlPanel extends Mixins(BaseMixin, ControlMixin, ExtruderMixin) {
-    mdiPrinter3dNozzle = mdiPrinter3dNozzle
-    mdiDotsVertical = mdiDotsVertical
+export default defineComponent({
+    name: 'ExtruderControlPanel',
+    mixins: [BaseMixin, ControlMixin, ExtruderMixin],
+    data() {
+        return {
+            mdiPrinter3dNozzle: mdiPrinter3dNozzle,
+            mdiDotsVertical: mdiDotsVertical,
 
-    private heatWaitGcodes = ['printer.extruder.can_extrude', 'TEMPERATURE_WAIT', 'M109']
+            heatWaitGcodes: ['printer.extruder.can_extrude', 'TEMPERATURE_WAIT', 'M109'],
+        }
+    },
+    computed: {
+        showPanel(): boolean {
+            return this.klipperReadyForGui && this.extruders.length > 0
+        },
 
-    get showPanel(): boolean {
-        return this.klipperReadyForGui && this.extruders.length > 0
-    }
+        macros() {
+            return this.$store.getters['printer/getMacros']
+        },
 
-    get macros() {
-        return this.$store.getters['printer/getMacros']
-    }
+        loadFilamentMacro(): PrinterStateMacro | undefined {
+            const macros = ['LOAD_FILAMENT', 'FILAMENT_LOAD']
 
-    get loadFilamentMacro(): PrinterStateMacro | undefined {
-        const macros = ['LOAD_FILAMENT', 'FILAMENT_LOAD']
+            return this.macros.find((macro: PrinterStateMacro) => macros.includes(macro.name.toUpperCase()))
+        },
 
-        return this.macros.find((macro: PrinterStateMacro) => macros.includes(macro.name.toUpperCase()))
-    }
+        unloadFilamentMacro(): PrinterStateMacro | undefined {
+            const macros = ['UNLOAD_FILAMENT', 'FILAMENT_UNLOAD']
 
-    get unloadFilamentMacro(): PrinterStateMacro | undefined {
-        const macros = ['UNLOAD_FILAMENT', 'FILAMENT_UNLOAD']
+            return this.macros.find((macro: PrinterStateMacro) => macros.includes(macro.name.toUpperCase()))
+        },
 
-        return this.macros.find((macro: PrinterStateMacro) => macros.includes(macro.name.toUpperCase()))
-    }
+        purgeFilamentMacro(): PrinterStateMacro | undefined {
+            const macros = ['PURGE_FILAMENT', 'FILAMENT_PURGE']
 
-    get purgeFilamentMacro(): PrinterStateMacro | undefined {
-        const macros = ['PURGE_FILAMENT', 'FILAMENT_PURGE']
+            return this.macros.find((macro: PrinterStateMacro) => macros.includes(macro.name.toUpperCase()))
+        },
 
-        return this.macros.find((macro: PrinterStateMacro) => macros.includes(macro.name.toUpperCase()))
-    }
+        cleanNozzleMacro(): PrinterStateMacro | undefined {
+            const macros = ['CLEAN_NOZZLE', 'NOZZLE_CLEAN', 'WIPE_NOZZLE', 'NOZZLE_WIPE']
 
-    get cleanNozzleMacro(): PrinterStateMacro | undefined {
-        const macros = ['CLEAN_NOZZLE', 'NOZZLE_CLEAN', 'WIPE_NOZZLE', 'NOZZLE_WIPE']
+            return this.macros.find((macro: PrinterStateMacro) => macros.includes(macro.name.toUpperCase()))
+        },
 
-        return this.macros.find((macro: PrinterStateMacro) => macros.includes(macro.name.toUpperCase()))
-    }
+        /**
+         * test if the load and unload macro include specific keywords. if true, we allow
+         * execution of that macro even if at the current time extrudePossible === false
+         */
+        canExecuteLoadMacro(): boolean {
+            if (this.extrudePossible) return true
 
-    /**
-     * test if the load and unload macro include specific keywords. if true, we allow
-     * execution of that macro even if at the current time extrudePossible === false
-     */
-    get canExecuteLoadMacro(): boolean {
-        if (this.extrudePossible) return true
+            return this.heatWaitGcodes.some((gcode) => this.loadFilamentMacro?.prop.gcode.includes(gcode))
+        },
 
-        return this.heatWaitGcodes.some((gcode) => this.loadFilamentMacro?.prop.gcode.includes(gcode))
-    }
+        canExecuteUnloadMacro(): boolean {
+            if (this.extrudePossible) return true
 
-    get canExecuteUnloadMacro(): boolean {
-        if (this.extrudePossible) return true
+            return this.heatWaitGcodes.some((gcode) => this.unloadFilamentMacro?.prop.gcode.includes(gcode))
+        },
 
-        return this.heatWaitGcodes.some((gcode) => this.unloadFilamentMacro?.prop.gcode.includes(gcode))
-    }
+        canExecutePurgeMacro(): boolean {
+            if (this.extrudePossible) return true
 
-    get canExecutePurgeMacro(): boolean {
-        if (this.extrudePossible) return true
+            return this.heatWaitGcodes.some((gcode) => this.purgeFilamentMacro?.prop.gcode.includes(gcode))
+        },
 
-        return this.heatWaitGcodes.some((gcode) => this.purgeFilamentMacro?.prop.gcode.includes(gcode))
-    }
+        showFilamentMacros(): boolean {
+            return (
+                this.loadFilamentMacro !== undefined ||
+                this.unloadFilamentMacro !== undefined ||
+                this.purgeFilamentMacro !== undefined ||
+                this.cleanNozzleMacro !== undefined
+            )
+        },
 
-    get showFilamentMacros(): boolean {
-        return (
-            this.loadFilamentMacro !== undefined ||
-            this.unloadFilamentMacro !== undefined ||
-            this.purgeFilamentMacro !== undefined ||
-            this.cleanNozzleMacro !== undefined
-        )
-    }
+        showTools(): boolean {
+            if (this.toolchangeMacros.length < 1) return false
 
-    get showTools(): boolean {
-        if (this.toolchangeMacros.length < 1) return false
+            return this.$store.state.gui.view.extruder.showTools ?? true
+        },
 
-        return this.$store.state.gui.view.extruder.showTools ?? true
-    }
+        showExtrusionFactor(): boolean {
+            return this.$store.state.gui.view.extruder.showExtrusionFactor ?? true
+        },
 
-    get showExtrusionFactor(): boolean {
-        return this.$store.state.gui.view.extruder.showExtrusionFactor ?? true
-    }
+        extruderSteppers() {
+            return Object.keys(this.$store.state.printer)
+                .filter((e) => e.startsWith('extruder_stepper '))
+                .sort((a, b) => a.localeCompare(b))
+        },
 
-    get extruderSteppers() {
-        return Object.keys(this.$store.state.printer)
-            .filter((e) => e.startsWith('extruder_stepper '))
-            .sort((a, b) => a.localeCompare(b))
-    }
+        showPressureAdvance(): boolean {
+            return this.$store.state.gui.view.extruder.showPressureAdvance ?? true
+        },
 
-    get showPressureAdvance(): boolean {
-        return this.$store.state.gui.view.extruder.showPressureAdvance ?? true
-    }
+        showFirmwareRetraction(): boolean {
+            if (!this.existsFirmwareRetraction) return false
 
-    get showFirmwareRetraction(): boolean {
-        if (!this.existsFirmwareRetraction) return false
+            return this.$store.state.gui.view.extruder.showFirmwareRetraction ?? true
+        },
 
-        return this.$store.state.gui.view.extruder.showFirmwareRetraction ?? true
-    }
-
-    get showExtruderControl(): boolean {
-        return this.$store.state.gui.view.extruder.showExtruderControl ?? true
-    }
-}
+        showExtruderControl(): boolean {
+            return this.$store.state.gui.view.extruder.showExtruderControl ?? true
+        },
+    },
+})
 </script>

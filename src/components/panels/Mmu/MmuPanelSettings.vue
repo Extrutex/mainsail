@@ -48,69 +48,82 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import MmuMixin from '@/components/mixins/mmu'
 import { mdiCog } from '@mdi/js'
 
-@Component
-export default class MmuPanelSettings extends Mixins(BaseMixin, MmuMixin) {
-    mdiCog = mdiCog
+export default defineComponent({
+    name: 'MmuPanelSettings',
+    mixins: [BaseMixin, MmuMixin],
+    data() {
+        return {
+            mdiCog: mdiCog,
+        }
+    },
+    computed: {
+        showClogDetection: {
+            get(): boolean {
+                return this.$store.state.gui.view.mmu.showClogDetection
+            },
+            set(newVal: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.mmu.showClogDetection', value: newVal })
+            },
+        },
 
-    get showClogDetection(): boolean {
-        return this.$store.state.gui.view.mmu.showClogDetection
-    }
+        showTtgMap: {
+            get(): boolean {
+                return this.$store.state.gui.view.mmu.showTtgMap
+            },
+            set(newVal: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.mmu.showTtgMap', value: newVal })
+            },
+        },
 
-    set showClogDetection(newVal: boolean) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.mmu.showClogDetection', value: newVal })
-    }
+        showDetails: {
+            get(): boolean {
+                return this.$store.state.gui.view.mmu.showDetails
+            },
+            set(newVal: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.mmu.showDetails', value: newVal })
+            },
+        },
 
-    get showTtgMap(): boolean {
-        return this.$store.state.gui.view.mmu.showTtgMap
-    }
+        largeFilamentStatus: {
+            get(): boolean {
+                return this.$store.state.gui.view.mmu.largeFilamentStatus
+            },
+            set(newVal: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.mmu.largeFilamentStatus', value: newVal })
+            },
+        },
 
-    set showTtgMap(newVal: boolean) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.mmu.showTtgMap', value: newVal })
-    }
+        showLogos: {
+            get(): boolean {
+                return this.$store.state.gui.view.mmu.showLogos
+            },
+            set(newVal: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.mmu.showLogos', value: newVal })
+            },
+        },
 
-    get showDetails(): boolean {
-        return this.$store.state.gui.view.mmu.showDetails
-    }
+        showName: {
+            get(): boolean {
+                return this.$store.state.gui.view.mmu.showName
+            },
+            set(newVal: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.mmu.showName', value: newVal })
+            },
+        },
 
-    set showDetails(newVal: boolean) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.mmu.showDetails', value: newVal })
-    }
-
-    get largeFilamentStatus(): boolean {
-        return this.$store.state.gui.view.mmu.largeFilamentStatus
-    }
-
-    set largeFilamentStatus(newVal: boolean) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.mmu.largeFilamentStatus', value: newVal })
-    }
-
-    get showLogos(): boolean {
-        return this.$store.state.gui.view.mmu.showLogos
-    }
-
-    set showLogos(newVal: boolean) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.mmu.showLogos', value: newVal })
-    }
-
-    set showName(newVal: boolean) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.mmu.showName', value: newVal })
-    }
-
-    get showName(): boolean {
-        return this.$store.state.gui.view.mmu.showName
-    }
-
-    get showUnavailableSpoolColor(): boolean {
-        return this.$store.state.gui.view.mmu.showUnavailableSpoolColor
-    }
-
-    set showUnavailableSpoolColor(newVal: boolean) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.mmu.showUnavailableSpoolColor', value: newVal })
-    }
-}
+        showUnavailableSpoolColor: {
+            get(): boolean {
+                return this.$store.state.gui.view.mmu.showUnavailableSpoolColor
+            },
+            set(newVal: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.mmu.showUnavailableSpoolColor', value: newVal })
+            },
+        },
+    },
+})
 </script>

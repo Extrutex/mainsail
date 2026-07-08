@@ -8,16 +8,16 @@
         :hide-buttons-on-collapse="true">
         <template #buttons>
             <v-btn icon tile @click="clearConsole">
-                <v-icon small>{{ mdiTrashCan }}</v-icon>
+                <v-icon size="small">{{ mdiTrashCan }}</v-icon>
             </v-btn>
             <command-help-modal :in-toolbar="true" @onCommand="commandClick($event)" />
             <v-menu
-                :offset-y="true"
+                location="bottom"
                 :close-on-content-click="false"
                 :title="$t('Panels.MiniconsolePanel.SetupConsole')">
-                <template #activator="{ on, attrs }">
-                    <v-btn icon tile v-bind="attrs" v-on="on">
-                        <v-icon small>{{ mdiCog }}</v-icon>
+                <template #activator="{ props }">
+                    <v-btn icon tile v-bind="props">
+                        <v-icon size="small">{{ mdiCog }}</v-icon>
                     </v-btn>
                 </template>
                 <v-list>
@@ -48,7 +48,7 @@
                             class="mt-0"
                             hide-details
                             :label="filter.name"
-                            @change="toggleFilter(index, filter)" />
+                            @update:model-value="toggleFilter(index, filter)" />
                     </v-list-item>
                     <v-list-item class="minHeight36">
                         <v-checkbox
@@ -67,7 +67,7 @@
             <v-card-text :class="(consoleDirection === 'table' ? 'order-2' : 'order-1') + ' pa-0'">
                 <v-row>
                     <v-col>
-                        <overlay-scrollbars
+                        <overlay-scrollbars-component
                             ref="miniConsoleScroll"
                             :style="'height: ' + consoleHeight + 'px;'"
                             :options="{}">
@@ -77,7 +77,7 @@
                                 :is-mini="true"
                                 @command-click="commandClick" />
                             <v-divider />
-                        </overlay-scrollbars>
+                        </overlay-scrollbars-component>
                     </v-col>
                 </v-row>
             </v-card-text>
@@ -86,7 +86,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Ref, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import ConsoleTable from '@/components/console/ConsoleTable.vue'
 import Panel from '@/components/ui/Panel.vue'
@@ -96,70 +96,76 @@ import ConsoleMixin from '@/components/mixins/console'
 import ConsoleTextarea from '@/components/inputs/ConsoleTextarea.vue'
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-vue'
 
-@Component({
+export default defineComponent({
+    name: 'MiniconsolePanel',
     components: {
         Panel,
         ConsoleTable,
         CommandHelpModal,
+        OverlayScrollbarsComponent,
     },
-})
-export default class MiniconsolePanel extends Mixins(BaseMixin, ConsoleMixin) {
-    mdiTrashCan = mdiTrashCan
-    mdiConsoleLine = mdiConsoleLine
-    mdiCog = mdiCog
-
-    @Ref() readonly miniConsoleScroll?: OverlayScrollbarsComponent
-    @Ref() readonly gcodeCommandField!: typeof ConsoleTextarea
-
-    get consoleHeight() {
-        return this.$store.state.gui.console.height ?? 300
-    }
-
-    get events() {
-        return this.$store.getters['server/getConsoleEvents'](this.consoleDirection === 'table', 250)
-    }
-
-    @Watch('events')
-    eventsChanged() {
-        if (this.consoleDirection === 'shell' && this.autoscroll) {
-            setTimeout(() => {
-                this.scrollToBottom()
-            }, 50)
+    mixins: [BaseMixin, ConsoleMixin],
+    data() {
+        return {
+            mdiTrashCan: mdiTrashCan,
+            mdiConsoleLine: mdiConsoleLine,
+            mdiCog: mdiCog,
         }
-    }
+    },
+    computed: {
+        consoleHeight() {
+            return this.$store.state.gui.console.height ?? 300
+        },
 
-    @Watch('autoscroll')
-    autoscrollChanged(newVal: boolean) {
-        if (newVal) this.scrollToBottom()
-    }
+        events() {
+            return this.$store.getters['server/getConsoleEvents'](this.consoleDirection === 'table', 250)
+        },
+    },
+    watch: {
+        events() {
+            if (this.consoleDirection === 'shell' && this.autoscroll) {
+                setTimeout(() => {
+                    this.scrollToBottom()
+                }, 50)
+            }
+        },
 
-    commandClick(msg: string): void {
-        this.gcodeCommandField.setGcode(msg)
-    }
+        autoscroll(newVal: boolean) {
+            if (newVal) this.scrollToBottom()
+        },
+    },
+    methods: {
+        commandClick(msg: string): void {
+            const gcodeCommandField = this.$refs.gcodeCommandField as InstanceType<typeof ConsoleTextarea>
+            gcodeCommandField.setGcode(msg)
+        },
 
+        scrollToBottom() {
+            this.$nextTick(() => {
+                this.scrollTo(100)
+            })
+        },
+
+        scrollToTop() {
+            this.$nextTick(() => {
+                this.scrollTo(0)
+            })
+        },
+
+        scrollTo(position: number) {
+            const miniConsoleScroll = this.$refs.miniConsoleScroll as InstanceType<
+                typeof OverlayScrollbarsComponent
+            > | null
+            if (!miniConsoleScroll) return
+
+            const viewport = miniConsoleScroll.osInstance()?.elements().viewport
+            viewport?.scrollTo({ top: ((viewport.scrollHeight - viewport.clientHeight) * position) / 100 })
+        },
+    },
     mounted() {
         if (this.consoleDirection === 'shell') this.scrollToBottom()
-    }
-
-    scrollToBottom() {
-        this.$nextTick(() => {
-            this.scrollTo(100)
-        })
-    }
-
-    scrollToTop() {
-        this.$nextTick(() => {
-            this.scrollTo(0)
-        })
-    }
-
-    scrollTo(position: number) {
-        if (!this.miniConsoleScroll) return
-
-        const instance = this.miniConsoleScroll.osInstance()
-        instance?.scroll({ y: `${position}%` })
-    }
-}
+    },
+})
 </script>
 
 <style scoped>

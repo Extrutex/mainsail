@@ -14,7 +14,8 @@
     </div>
 </template>
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
+import type { PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import MmuMixin, { MmuMachineUnit } from '@/components/mixins/mmu'
 import {
@@ -36,132 +37,137 @@ import { additionalSensors } from '@/store/variables'
 
 const squareLogoVendors = ['3MS', 'AngryBeaver', 'EMU', 'ERCF', 'KMS']
 
-@Component
-export default class MmuUnitFooter extends Mixins(BaseMixin, MmuMixin) {
-    @Prop({ required: true }) readonly unitIndex!: number
-    @Prop({ required: true }) readonly mmuMachineUnit!: MmuMachineUnit
+export default defineComponent({
+    name: 'MmuUnitFooter',
+    mixins: [BaseMixin, MmuMixin],
+    props: {
+        unitIndex: { type: Number, required: true },
+        mmuMachineUnit: { type: Object as PropType<MmuMachineUnit>, required: true },
+    },
+    computed: {
+        unitDisplayName(): string {
+            const name = this.mmuMachineUnit?.name
 
-    get unitDisplayName(): string {
-        const name = this.mmuMachineUnit?.name
+            return `#${this.unitIndex + 1} ${name}`
+        },
 
-        return `#${this.unitIndex + 1} ${name}`
-    }
+        showLogos(): boolean {
+            return this.$store.state.gui.view.mmu.showLogos ?? true
+        },
 
-    get showLogos(): boolean {
-        return this.$store.state.gui.view.mmu.showLogos ?? true
-    }
+        showName(): boolean {
+            return this.$store.state.gui.view.mmu.showName ?? true
+        },
 
-    get showName(): boolean {
-        return this.$store.state.gui.view.mmu.showName ?? true
-    }
+        unitClimateSensorName() {
+            const name = this.mmuMachineUnit?.environment_sensor?.replace(/^"(.*)"$/, '$1') ?? undefined
+            if (!name) return undefined
 
-    get unitClimateSensorName() {
-        const name = this.mmuMachineUnit?.environment_sensor?.replace(/^"(.*)"$/, '$1') ?? undefined
-        if (!name) return undefined
+            const parts = name.split(' ')
+            if (parts.length !== 2) return undefined
 
-        const parts = name.split(' ')
-        if (parts.length !== 2) return undefined
+            return parts[1]
+        },
 
-        return parts[1]
-    }
+        unitClimateSensor() {
+            if (!this.unitClimateSensorName) return undefined
 
-    get unitClimateSensor() {
-        if (!this.unitClimateSensorName) return undefined
+            for (const key of additionalSensors) {
+                const objectName: string = `${key} ${this.unitClimateSensorName}`
+                if (!(objectName in this.$store.state.printer)) continue
 
-        for (const key of additionalSensors) {
-            const objectName: string = `${key} ${this.unitClimateSensorName}`
-            if (!(objectName in this.$store.state.printer)) continue
+                return this.$store.state.printer[objectName]
+            }
 
-            return this.$store.state.printer[objectName]
-        }
+            return undefined
+        },
 
-        return undefined
-    }
+        unitClimateInfo() {
+            if (!this.unitClimateSensor) return undefined
 
-    get unitClimateInfo() {
-        if (!this.unitClimateSensor) return undefined
+            const values: string[] = []
 
-        const values: string[] = []
+            if ('temperature' in this.unitClimateSensor && this.unitClimateSensor.temperature !== null) {
+                values.push(`${this.unitClimateSensor.temperature.toFixed(0)}°C`)
+            }
 
-        if ('temperature' in this.unitClimateSensor && this.unitClimateSensor.temperature !== null) {
-            values.push(`${this.unitClimateSensor.temperature.toFixed(0)}°C`)
-        }
+            if ('humidity' in this.unitClimateSensor && this.unitClimateSensor.humidity !== null) {
+                values.push(`${this.unitClimateSensor.humidity.toFixed(0)}%`)
+            }
 
-        if ('humidity' in this.unitClimateSensor && this.unitClimateSensor.humidity !== null) {
-            values.push(`${this.unitClimateSensor.humidity.toFixed(0)}%`)
-        }
+            return values.length > 0 ? values.join(' / ') : undefined
+        },
 
-        return values.length > 0 ? values.join(' / ') : undefined
-    }
+        mmuVendor() {
+            return this.mmuMachineUnit?.vendor ?? 'Unknown'
+        },
 
-    get mmuVendor() {
-        return this.mmuMachineUnit?.vendor ?? 'Unknown'
-    }
+        logoHeight() {
+            if (squareLogoVendors.includes(this.mmuVendor)) return this.spoolWidth - 16
 
-    get logoHeight() {
-        if (squareLogoVendors.includes(this.mmuVendor)) return this.spoolWidth - 16
+            return this.spoolWidth - 8
+        },
 
-        return this.spoolWidth - 8
-    }
+        logoClasses() {
+            if (squareLogoVendors.includes(this.mmuVendor)) return ['my-1']
 
-    get logoClasses() {
-        if (squareLogoVendors.includes(this.mmuVendor)) return ['my-1']
+            return []
+        },
 
-        return []
-    }
+        logo() {
+            const baseIcon = this.getBaseIcon(this.mmuVendor)
+            const themeVariants = mmuThemeIcons[this.mmuVendor]
 
-    get logo() {
-        const baseIcon = this.getBaseIcon(this.mmuVendor)
-        const themeVariants = mmuThemeIcons[this.mmuVendor]
+            if (!themeVariants) return baseIcon
 
-        if (!themeVariants) return baseIcon
+            const isDark = this.$vuetify.theme.current.dark
+            const themeIcon = isDark ? themeVariants.dark : themeVariants.light
 
-        const isDark = this.$vuetify.theme.dark
-        const themeIcon = isDark ? themeVariants.dark : themeVariants.light
+            return themeIcon ?? baseIcon
+        },
+    },
+    methods: {
+        getBaseIcon(vendor: string) {
+            switch (vendor) {
+                case '3MS':
+                    return mmuIcon3MS
 
-        return themeIcon ?? baseIcon
-    }
+                case 'AngryBeaver':
+                    return mmuIconAngryBeaver
 
-    private getBaseIcon(vendor: string) {
-        switch (vendor) {
-            case '3MS':
-                return mmuIcon3MS
+                case 'BoxTurtle':
+                    return mmuIconBoxTurtle
 
-            case 'AngryBeaver':
-                return mmuIconAngryBeaver
+                case 'EMU':
+                    return mmuIconEmu
 
-            case 'BoxTurtle':
-                return mmuIconBoxTurtle
+                case 'ERCF':
+                    return mmuIconErcf
 
-            case 'EMU':
-                return mmuIconEmu
+                case 'KMS':
+                    return mmuIconKms
 
-            case 'ERCF':
-                return mmuIconErcf
+                case 'MMX':
+                    return mmuIconMmx
 
-            case 'KMS':
-                return mmuIconKms
+                case 'NightOwl':
+                    return mmuIconNightOwl
 
-            case 'MMX':
-                return mmuIconMmx
+                case 'QuattroBox':
+                    return mmuIconQuattroBox
 
-            case 'NightOwl':
-                return mmuIconNightOwl
+                case 'Tradrack':
+                    return mmuIconTradrack
 
-            case 'QuattroBox':
-                return mmuIconQuattroBox
+                case 'VVD':
+                    return mmuIconVvd
 
-            case 'Tradrack':
-                return mmuIconTradrack
-
-            case 'VVD':
-                return mmuIconVvd
-
-            default:
-                return mmuIconHappyHare
-        }
-    }
-}
+                default:
+                    return mmuIconHappyHare
+            }
+        },
+    },
+})
 </script>
 
 <style scoped>

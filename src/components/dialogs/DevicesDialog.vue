@@ -9,10 +9,10 @@
             style="overflow: hidden"
             :height="isMobile ? 0 : 548">
             <template #buttons>
-                <v-menu :left="true" :offset-y="true" :close-on-content-click="false" attach="#devices-dialog">
-                    <template #activator="{ on, attrs }">
-                        <v-btn icon tile v-bind="attrs" v-on="on">
-                            <v-icon small>{{ mdiCog }}</v-icon>
+                <v-menu location="bottom end" :close-on-content-click="false" attach="#devices-dialog">
+                    <template #activator="{ props }">
+                        <v-btn icon tile v-bind="props">
+                            <v-icon size="small">{{ mdiCog }}</v-icon>
                         </v-btn>
                     </template>
                     <v-list>
@@ -30,82 +30,102 @@
                 </v-btn>
             </template>
             <v-tabs v-model="tab" fixed-tabs>
-                <v-tab v-for="tab in tabs" :key="tab.tab">{{ tab.title }}</v-tab>
+                <v-tab v-for="tab in tabs" :key="tab.tab" :value="tab.tab">{{ tab.title }}</v-tab>
             </v-tabs>
-            <overlay-scrollbars style="max-height: 400px; overflow-x: hidden">
-                <v-tabs-items v-model="tab">
-                    <v-tab-item v-for="canInterface in canInterfaces" :key="canInterface">
+            <overlay-scrollbars-component style="max-height: 400px; overflow-x: hidden">
+                <v-tabs-window v-model="tab">
+                    <v-tabs-window-item
+                        v-for="canInterface in canInterfaces"
+                        :key="canInterface"
+                        :value="canInterface">
                         <devices-dialog-can :hide-system-entries="hideSystemEntries" :name="canInterface" />
-                    </v-tab-item>
-                    <v-tab-item key="serial">
+                    </v-tabs-window-item>
+                    <v-tabs-window-item key="serial" value="serial">
                         <devices-dialog-serial :hide-system-entries="hideSystemEntries" />
-                    </v-tab-item>
-                    <v-tab-item key="usb">
+                    </v-tabs-window-item>
+                    <v-tabs-window-item key="usb" value="usb">
                         <devices-dialog-usb :hide-system-entries="hideSystemEntries" />
-                    </v-tab-item>
-                    <v-tab-item key="video">
+                    </v-tabs-window-item>
+                    <v-tabs-window-item key="video" value="video">
                         <devices-dialog-video :hide-system-entries="hideSystemEntries" />
-                    </v-tab-item>
-                </v-tabs-items>
-            </overlay-scrollbars>
+                    </v-tabs-window-item>
+                </v-tabs-window>
+            </overlay-scrollbars-component>
         </panel>
     </v-dialog>
 </template>
 
 <script lang="ts">
-import { Component, Mixins, VModel } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
+import { OverlayScrollbarsComponent } from 'overlayscrollbars-vue'
 import BaseMixin from '@/components/mixins/base'
 import Panel from '@/components/ui/Panel.vue'
 
 import { mdiCog, mdiCloseThick, mdiUsb } from '@mdi/js'
 
-@Component({
-    components: { Panel },
-})
-export default class DevicesDialog extends Mixins(BaseMixin) {
-    mdiCog = mdiCog
-    mdiUsb = mdiUsb
-    mdiCloseThick = mdiCloseThick
-
-    tab = 'serial'
-    hideSystemEntries = true
-
-    @VModel({ type: Boolean }) showDialog!: boolean
-
-    get tabs() {
-        const output: { tab: string; title: string }[] = [
-            {
-                tab: 'serial',
-                title: 'Serial',
+export default defineComponent({
+    name: 'DevicesDialog',
+    components: { Panel, OverlayScrollbarsComponent },
+    mixins: [BaseMixin],
+    props: {
+        modelValue: { type: Boolean, default: false },
+    },
+    emits: ['update:modelValue'],
+    data() {
+        return {
+            mdiCog: mdiCog,
+            mdiUsb: mdiUsb,
+            mdiCloseThick: mdiCloseThick,
+            tab: 'serial',
+            hideSystemEntries: true,
+        }
+    },
+    computed: {
+        showDialog: {
+            get(): boolean {
+                return this.modelValue
             },
-            {
-                tab: 'usb',
-                title: 'USB',
+            set(newVal: boolean) {
+                this.$emit('update:modelValue', newVal)
             },
-            {
-                tab: 'video',
-                title: 'Video',
-            },
-        ]
+        },
 
-        this.canInterfaces.forEach((name) => {
-            output.push({
-                tab: name,
-                title: name.toUpperCase(),
+        tabs() {
+            const output: { tab: string; title: string }[] = [
+                {
+                    tab: 'serial',
+                    title: 'Serial',
+                },
+                {
+                    tab: 'usb',
+                    title: 'USB',
+                },
+                {
+                    tab: 'video',
+                    title: 'Video',
+                },
+            ]
+
+            this.canInterfaces.forEach((name) => {
+                output.push({
+                    tab: name,
+                    title: name.toUpperCase(),
+                })
             })
-        })
 
-        return output.sort((a, b) => a.title.localeCompare(b.title))
-    }
+            return output.sort((a, b) => a.title.localeCompare(b.title))
+        },
 
-    get canInterfaces() {
-        return Object.keys(this.$store.state.server.system_info?.canbus ?? {})
-    }
-
-    closePrompt() {
-        this.showDialog = false
-    }
-}
+        canInterfaces(): string[] {
+            return Object.keys(this.$store.state.server.system_info?.canbus ?? {})
+        },
+    },
+    methods: {
+        closePrompt() {
+            this.showDialog = false
+        },
+    },
+})
 </script>
 
 <style scoped></style>

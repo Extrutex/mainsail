@@ -1,5 +1,5 @@
 <template>
-    <v-dialog :value="showDialog" width="400" persistent :fullscreen="isMobile">
+    <v-dialog :model-value="showDialog" width="400" persistent :fullscreen="isMobile">
         <panel
             :title="$t('ManualProbe.Headline').toString()"
             :icon="mdiArrowCollapseDown"
@@ -25,24 +25,24 @@
                 <v-row>
                     <v-col class="text-left">
                         <v-btn class="" color="primary" @click="sendTestZ('--')">
-                            <v-icon small>{{ mdiMinusThick }}</v-icon>
-                            <v-icon small>{{ mdiMinusThick }}</v-icon>
+                            <v-icon size="small">{{ mdiMinusThick }}</v-icon>
+                            <v-icon size="small">{{ mdiMinusThick }}</v-icon>
                         </v-btn>
                     </v-col>
                     <v-col class="text-left">
                         <v-btn class="" color="primary" @click="sendTestZ('-')">
-                            <v-icon small>{{ mdiMinusThick }}</v-icon>
+                            <v-icon size="small">{{ mdiMinusThick }}</v-icon>
                         </v-btn>
                     </v-col>
                     <v-col class="text-right">
                         <v-btn class="" color="primary" @click="sendTestZ('+')">
-                            <v-icon small>{{ mdiPlusThick }}</v-icon>
+                            <v-icon size="small">{{ mdiPlusThick }}</v-icon>
                         </v-btn>
                     </v-col>
                     <v-col class="text-right">
                         <v-btn class="" color="primary" @click="sendTestZ('++')">
-                            <v-icon small>{{ mdiPlusThick }}</v-icon>
-                            <v-icon small>{{ mdiPlusThick }}</v-icon>
+                            <v-icon size="small">{{ mdiPlusThick }}</v-icon>
+                            <v-icon size="small">{{ mdiPlusThick }}</v-icon>
                         </v-btn>
                     </v-col>
                 </v-row>
@@ -53,10 +53,10 @@
                         <v-btn
                             v-for="(offset, index) in offsetsZ"
                             :key="`offsetsUp-${index}`"
-                            small
+                            size="small"
                             class="_btn-qs flex-grow-1 px-1"
                             @click="sendTestZ(offset.toString())">
-                            <v-icon v-if="index === 0" left small class="mr-1 ml-n1">
+                            <v-icon v-if="index === 0" start size="small" class="mr-1 ml-n1">
                                 {{ mdiArrowExpandUp }}
                             </v-icon>
                             <span>&plus;{{ offset }}</span>
@@ -66,10 +66,10 @@
                         <v-btn
                             v-for="(offset, index) in offsetsZ"
                             :key="`offsetsDown-${index}`"
-                            small
+                            size="small"
                             class="_btn-qs flex-grow-1 px-1"
                             @click="sendTestZ((offset * -1).toString())">
-                            <v-icon v-if="index === 0" left small class="mr-1 ml-n1">
+                            <v-icon v-if="index === 0" start size="small" class="mr-1 ml-n1">
                                 {{ mdiArrowCollapseDown }}
                             </v-icon>
                             <span>&minus;{{ offset }}</span>
@@ -79,10 +79,10 @@
             </sub-panel>
             <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn text :loading="loadingAbort" @click="sendAbort">
+                <v-btn variant="text" :loading="loadingAbort" @click="sendAbort">
                     {{ $t('ManualProbe.Abort') }}
                 </v-btn>
-                <v-btn color="primary" text :loading="loadingAccept" @click="sendAccept">
+                <v-btn color="primary" variant="text" :loading="loadingAccept" @click="sendAccept">
                     {{ $t('ManualProbe.Accept') }}
                 </v-btn>
             </v-card-actions>
@@ -91,7 +91,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import Panel from '@/components/ui/Panel.vue'
 import Responsive from '@/components/ui/Responsive.vue'
@@ -106,79 +106,77 @@ import {
     mdiChevronTripleRight,
     mdiCloseThick,
 } from '@mdi/js'
-@Component({
+
+export default defineComponent({
+    name: 'TheManualProbeDialog',
     components: { Panel, Responsive },
+    mixins: [BaseMixin],
+    data() {
+        return {
+            mdiArrowCollapseDown: mdiArrowCollapseDown,
+            mdiArrowExpandUp: mdiArrowExpandUp,
+            mdiInformation: mdiInformation,
+            mdiPlusThick: mdiPlusThick,
+            mdiMinusThick: mdiMinusThick,
+            mdiChevronTripleLeft: mdiChevronTripleLeft,
+            mdiChevronTripleRight: mdiChevronTripleRight,
+            mdiCloseThick: mdiCloseThick,
+        }
+    },
+    computed: {
+        showDialog() {
+            if (!this.boolManualProbeDialog) return false
+
+            return this.$store.state.printer.manual_probe?.is_active ?? false
+        },
+        boolManualProbeDialog() {
+            return this.$store.state.gui.uiSettings.boolManualProbeDialog ?? true
+        },
+        offsetsZ() {
+            const offsets = [1, 0.1, 0.05, 0.01, 0.005]
+
+            return offsets.sort()
+        },
+        z_position() {
+            return (this.$store.state.printer.manual_probe?.z_position ?? 0).toFixed(3)
+        },
+        z_position_lower() {
+            const value = this.$store.state.printer.manual_probe?.z_position_lower ?? null
+            if (value === null) return '??????'
+
+            return value.toFixed(3)
+        },
+        z_position_upper() {
+            const value = this.$store.state.printer.manual_probe?.z_position_upper ?? null
+            if (value === null) return '??????'
+
+            return value.toFixed(3)
+        },
+        loadingAbort() {
+            return this.loadings.includes('manualProbeAbort')
+        },
+        loadingAccept() {
+            return this.loadings.includes('manualProbeAccept')
+        },
+    },
+    methods: {
+        sendTestZ(offset: string) {
+            const gcode = `TESTZ Z=${offset}`
+            this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
+            this.$socket.emit('printer.gcode.script', { script: gcode })
+        },
+        sendAbort() {
+            const gcode = `ABORT`
+            this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
+            this.$socket.emit('printer.gcode.script', { script: gcode }, { loading: 'manualProbeAbort' })
+        },
+        sendAccept() {
+            const gcode = `ACCEPT`
+            this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
+            this.$socket.emit('printer.gcode.script', { script: gcode }, { loading: 'manualProbeAccept' })
+        },
+    },
 })
-export default class TheManualProbeDialog extends Mixins(BaseMixin) {
-    mdiArrowCollapseDown = mdiArrowCollapseDown
-    mdiArrowExpandUp = mdiArrowExpandUp
-    mdiInformation = mdiInformation
-    mdiPlusThick = mdiPlusThick
-    mdiMinusThick = mdiMinusThick
-    mdiChevronTripleLeft = mdiChevronTripleLeft
-    mdiChevronTripleRight = mdiChevronTripleRight
-    mdiCloseThick = mdiCloseThick
-
-    get showDialog() {
-        if (!this.boolManualProbeDialog) return false
-
-        return this.$store.state.printer.manual_probe?.is_active ?? false
-    }
-
-    get boolManualProbeDialog() {
-        return this.$store.state.gui.uiSettings.boolManualProbeDialog ?? true
-    }
-
-    get offsetsZ() {
-        const offsets = [1, 0.1, 0.05, 0.01, 0.005]
-
-        return offsets.sort()
-    }
-
-    get z_position() {
-        return (this.$store.state.printer.manual_probe?.z_position ?? 0).toFixed(3)
-    }
-
-    get z_position_lower() {
-        const value = this.$store.state.printer.manual_probe?.z_position_lower ?? null
-        if (value === null) return '??????'
-
-        return value.toFixed(3)
-    }
-
-    get z_position_upper() {
-        const value = this.$store.state.printer.manual_probe?.z_position_upper ?? null
-        if (value === null) return '??????'
-
-        return value.toFixed(3)
-    }
-
-    get loadingAbort() {
-        return this.loadings.includes('manualProbeAbort')
-    }
-
-    get loadingAccept() {
-        return this.loadings.includes('manualProbeAccept')
-    }
-
-    sendTestZ(offset: string) {
-        const gcode = `TESTZ Z=${offset}`
-        this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
-        this.$socket.emit('printer.gcode.script', { script: gcode })
-    }
-
-    sendAbort() {
-        const gcode = `ABORT`
-        this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
-        this.$socket.emit('printer.gcode.script', { script: gcode }, { loading: 'manualProbeAbort' })
-    }
-
-    sendAccept() {
-        const gcode = `ACCEPT`
-        this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
-        this.$socket.emit('printer.gcode.script', { script: gcode }, { loading: 'manualProbeAccept' })
-    }
-}
 </script>
 
 <style scoped>

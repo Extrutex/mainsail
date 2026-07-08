@@ -49,7 +49,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
+import type { PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import MmuMixin, {
     GATE_UNKNOWN,
@@ -64,91 +65,95 @@ import MmuMixin, {
 import MmuTtgMapGate from '@/components/panels/Mmu/MmuTtgMapGate.vue'
 import MmuTtgMapGroup from '@/components/panels/Mmu/MmuTtgMapGroup.vue'
 
-@Component({
+export default defineComponent({
+    name: 'MmuTtgMap',
     components: { MmuTtgMapGroup, MmuTtgMapGate },
+    mixins: [BaseMixin, MmuMixin],
+    props: {
+        selectedTool: { type: Number, default: TOOL_GATE_UNKNOWN },
+        selectedGate: { type: Number, default: GATE_UNKNOWN },
+        filteredTtgMap: { type: Array as PropType<{ tool: number; gate: number }[] | null>, default: null },
+    },
+    emits: ['click'],
+    computed: {
+        gateX() {
+            return MmuTtgMap_START_X + MmuTtgMap_LEADER + MmuTtgMap_MAP_SPACE + MmuTtgMap_LEADER + 40
+        },
+
+        groupX() {
+            const xOffset = 10 // extra space between gates and groups
+
+            return this.gateX + xOffset
+        },
+
+        width() {
+            return this.groupX + Object.keys(this.printGroups).length * MmuTtgMap_GROUP_SPACING // Single gate groups aren't displayed
+        },
+
+        height() {
+            return MmuTtgMap_START_Y + this.mmuNumGates * MmuTtgMap_VERTICAL_SPACING + 6
+        },
+
+        viewbox() {
+            return `0 0 ${this.width} ${this.height}`
+        },
+
+        toolsArray() {
+            const array = []
+
+            for (let tool = 0; tool < this.mmuNumGates; tool++) {
+                if (tool === this.selectedTool) continue
+                if (this.filteredTtgMap !== null && !this.filteredTtgMap?.some((map) => map.tool === tool)) continue
+
+                array.push(tool)
+            }
+
+            // add selected tool at the end, because of the svg layering (last drawn is on top)
+            if (this.selectedTool >= 0) array.push(this.selectedTool)
+
+            return array
+        },
+
+        groups() {
+            return this.mmu?.endless_spool_groups ?? []
+        },
+
+        currentGroup() {
+            if (this.selectedGate !== GATE_UNKNOWN) {
+                return this.groups[this.selectedGate]
+            }
+
+            if (this.selectedTool !== TOOL_GATE_UNKNOWN) {
+                const gate = this.ttgMap[this.selectedTool]
+                if (gate !== GATE_UNKNOWN) {
+                    return this.groups[gate]
+                }
+            }
+
+            return -1
+        },
+
+        printGroups() {
+            if (this.filteredTtgMap !== null && this.filteredTtgMap?.length !== this.mmuNumGates) return []
+
+            const groups: { [key: number]: number[] } = {}
+            this.groups.forEach((group, index) => {
+                if (!groups[group]) {
+                    groups[group] = []
+                }
+
+                groups[group].push(index)
+            })
+
+            // remove single gate groups
+            Object.keys(groups).forEach((key) => {
+                if (groups[+key].length > 1) return
+
+                delete groups[+key]
+            })
+
+            return groups
+        },
+    },
 })
-export default class MmuTtgMap extends Mixins(BaseMixin, MmuMixin) {
-    @Prop({ default: TOOL_GATE_UNKNOWN }) readonly selectedTool!: number
-    @Prop({ default: GATE_UNKNOWN }) readonly selectedGate!: number
-    @Prop({ default: null }) readonly filteredTtgMap!: { tool: number; gate: number }[] | null
-
-    get gateX() {
-        return MmuTtgMap_START_X + MmuTtgMap_LEADER + MmuTtgMap_MAP_SPACE + MmuTtgMap_LEADER + 40
-    }
-
-    get groupX() {
-        const xOffset = 10 // extra space between gates and groups
-
-        return this.gateX + xOffset
-    }
-
-    get width() {
-        return this.groupX + Object.keys(this.printGroups).length * MmuTtgMap_GROUP_SPACING // Single gate groups aren't displayed
-    }
-
-    get height() {
-        return MmuTtgMap_START_Y + this.mmuNumGates * MmuTtgMap_VERTICAL_SPACING + 6
-    }
-
-    get viewbox() {
-        return `0 0 ${this.width} ${this.height}`
-    }
-
-    get toolsArray() {
-        const array = []
-
-        for (let tool = 0; tool < this.mmuNumGates; tool++) {
-            if (tool === this.selectedTool) continue
-            if (this.filteredTtgMap !== null && !this.filteredTtgMap?.some((map) => map.tool === tool)) continue
-
-            array.push(tool)
-        }
-
-        // add selected tool at the end, because of the svg layering (last drawn is on top)
-        if (this.selectedTool >= 0) array.push(this.selectedTool)
-
-        return array
-    }
-
-    get groups() {
-        return this.mmu?.endless_spool_groups ?? []
-    }
-
-    get currentGroup() {
-        if (this.selectedGate !== GATE_UNKNOWN) {
-            return this.groups[this.selectedGate]
-        }
-
-        if (this.selectedTool !== TOOL_GATE_UNKNOWN) {
-            const gate = this.ttgMap[this.selectedTool]
-            if (gate !== GATE_UNKNOWN) {
-                return this.groups[gate]
-            }
-        }
-
-        return -1
-    }
-
-    get printGroups() {
-        if (this.filteredTtgMap !== null && this.filteredTtgMap?.length !== this.mmuNumGates) return []
-
-        const groups: { [key: number]: number[] } = {}
-        this.groups.forEach((group, index) => {
-            if (!groups[group]) {
-                groups[group] = []
-            }
-
-            groups[group].push(index)
-        })
-
-        // remove single gate groups
-        Object.keys(groups).forEach((key) => {
-            if (groups[+key].length > 1) return
-
-            delete groups[+key]
-        })
-
-        return groups
-    }
-}
 </script>

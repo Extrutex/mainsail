@@ -1,50 +1,62 @@
 <template>
-    <v-text-field :class="cssClassName" readonly dense outlined hide-details :label="label" :value="value">
-        <template #append>
+    <v-text-field
+        :class="cssClassName"
+        readonly
+        density="compact"
+        variant="outlined"
+        hide-details
+        :label="label"
+        :model-value="value">
+        <template #append-inner>
             <v-icon @click="copy">{{ mdiContentCopy }}</v-icon>
             <v-tooltip
                 v-model="isShowTooltip"
                 open-on-click
                 :open-on-hover="false"
                 :attach="'.' + cssClassName"
-                :position-x="50"
-                :position-y="0">
+                :target="[50, 0]">
                 <span>{{ $t('App.TextfieldWithCopy.Copied') }}</span>
             </v-tooltip>
         </template>
     </v-text-field>
 </template>
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { mdiContentCopy } from '@mdi/js'
 import { copyToClipboard } from '@/plugins/helpers'
 import { v4 as uuidv4 } from 'uuid'
 
-@Component
-export default class TextfieldWithCopy extends Mixins(BaseMixin) {
-    mdiContentCopy = mdiContentCopy
+export default defineComponent({
+    name: 'TextfieldWithCopy',
+    mixins: [BaseMixin],
+    props: {
+        label: { type: String, required: true },
+        value: { type: String, required: true },
+    },
+    data() {
+        return {
+            mdiContentCopy: mdiContentCopy,
 
-    @Prop({ type: String, required: true }) label!: string
-    @Prop({ type: String, required: true }) value!: string
-
-    isShowTooltip = false
-    cssClassName = ''
-
+            isShowTooltip: false,
+            cssClassName: '',
+        }
+    },
     mounted() {
         this.cssClassName = `textfield-with-copy-${uuidv4()}`
-    }
+    },
+    methods: {
+        copy() {
+            copyToClipboard(this.value)
 
-    copy() {
-        copyToClipboard(this.value)
-
-        this.isShowTooltip = true
-        setTimeout(() => (this.isShowTooltip = false), 2000)
-    }
-}
+            this.isShowTooltip = true
+            setTimeout(() => (this.isShowTooltip = false), 2000)
+        },
+    },
+})
 </script>
 <style scoped>
-::v-deep .v-tooltip__content {
+:deep(.v-overlay__content) {
     top: 4px !important;
     left: auto !important;
     right: 46px;

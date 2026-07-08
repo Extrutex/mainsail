@@ -24,43 +24,52 @@
     </div>
 </template>
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import MmuMixin, { TOOL_GATE_BYPASS } from '@/components/mixins/mmu'
 
-@Component
-export default class MmuUnit extends Mixins(BaseMixin, MmuMixin) {
-    TOOL_GATE_BYPASS = TOOL_GATE_BYPASS
+export default defineComponent({
+    name: 'MmuUnit',
+    mixins: [BaseMixin, MmuMixin],
+    props: {
+        selectedGate: { type: Number, required: true },
+        unitIndex: { type: Number, required: true },
+        showDetails: { type: Boolean, default: false },
+        showContextMenu: { type: Boolean, default: false },
+        hideBypass: { type: Boolean, default: false },
+        unhighlightSpools: { type: Boolean, default: false },
+    },
+    emits: ['select-gate'],
+    data() {
+        return {
+            TOOL_GATE_BYPASS: TOOL_GATE_BYPASS,
+        }
+    },
+    computed: {
+        mmuMachineUnit() {
+            return this.getMmuMachineUnit(this.unitIndex)
+        },
 
-    @Prop({ required: true }) readonly selectedGate!: number
-    @Prop({ required: true }) readonly unitIndex!: number
-    @Prop({ default: false }) readonly showDetails!: boolean
-    @Prop({ default: false }) readonly showContextMenu!: boolean
-    @Prop({ default: false }) readonly hideBypass!: boolean
-    @Prop({ default: false }) readonly unhighlightSpools!: boolean
+        numGates() {
+            return this.mmuMachineUnit?.num_gates ?? 0
+        },
 
-    get mmuMachineUnit() {
-        return this.getMmuMachineUnit(this.unitIndex)
-    }
+        firstGateNumber() {
+            return this.mmuMachineUnit?.first_gate ?? 0
+        },
 
-    get numGates() {
-        return this.mmuMachineUnit?.num_gates ?? 0
-    }
+        hasBypass() {
+            if (this.hideBypass) return false
 
-    get firstGateNumber() {
-        return this.mmuMachineUnit?.first_gate ?? 0
-    }
-
-    get hasBypass() {
-        if (this.hideBypass) return false
-
-        return this.mmuMachineUnit?.has_bypass ?? true
-    }
-
-    selectGate(gateIndex: number) {
-        this.$emit('select-gate', gateIndex)
-    }
-}
+            return this.mmuMachineUnit?.has_bypass ?? true
+        },
+    },
+    methods: {
+        selectGate(gateIndex: number) {
+            this.$emit('select-gate', gateIndex)
+        },
+    },
+})
 </script>
 
 <style scoped>

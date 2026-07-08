@@ -1,5 +1,5 @@
 <template>
-    <v-dialog :value="showDialog" width="400" persistent :fullscreen="isMobile">
+    <v-dialog :model-value="showDialog" width="400" persistent :fullscreen="isMobile">
         <panel
             :title="$t('BedScrews.Headline').toString()"
             :icon="mdiArrowCollapseDown"
@@ -18,8 +18,8 @@
                         <v-text-field
                             v-model="currentScrewName"
                             :label="$t('BedScrews.ScrewName')"
-                            outlined
-                            dense
+                            variant="outlined"
+                            density="compact"
                             clearable
                             hide-details></v-text-field>
                     </v-col>
@@ -29,8 +29,8 @@
                         <v-text-field
                             v-model="currentScrewOutput"
                             :label="$t('BedScrews.ScrewIndex')"
-                            outlined
-                            dense
+                            variant="outlined"
+                            density="compact"
                             clearable
                             hide-details></v-text-field>
                     </v-col>
@@ -38,8 +38,8 @@
                         <v-text-field
                             v-model="acceptedScrewOutput"
                             :label="$t('BedScrews.ScrewAccepted')"
-                            outlined
-                            dense
+                            variant="outlined"
+                            density="compact"
                             clearable
                             hide-details></v-text-field>
                     </v-col>
@@ -52,13 +52,13 @@
             </v-card-text>
             <v-card-actions>
                 <v-spacer></v-spacer>
-                <v-btn text :loading="loadingAbort" @click="sendAbort">
+                <v-btn variant="text" :loading="loadingAbort" @click="sendAbort">
                     {{ $t('BedScrews.Abort') }}
                 </v-btn>
-                <v-btn color="primary" text :loading="loadingAdjusted" @click="sendAdjusted">
+                <v-btn color="primary" variant="text" :loading="loadingAdjusted" @click="sendAdjusted">
                     {{ $t('BedScrews.Adjusted') }}
                 </v-btn>
-                <v-btn color="primary" text :loading="loadingAccept" @click="sendAccept">
+                <v-btn color="primary" variant="text" :loading="loadingAccept" @click="sendAccept">
                     {{ $t('BedScrews.Accept') }}
                 </v-btn>
             </v-card-actions>
@@ -67,110 +67,104 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import Panel from '@/components/ui/Panel.vue'
 import Responsive from '@/components/ui/Responsive.vue'
 
 import { mdiArrowCollapseDown, mdiInformation, mdiCloseThick } from '@mdi/js'
 import ControlMixin from '@/components/mixins/control'
-@Component({
+
+export default defineComponent({
+    name: 'TheBedScrewsDialog',
     components: { Panel, Responsive },
+    mixins: [BaseMixin, ControlMixin],
+    data() {
+        return {
+            mdiArrowCollapseDown: mdiArrowCollapseDown,
+            mdiInformation: mdiInformation,
+            mdiCloseThick: mdiCloseThick,
+        }
+    },
+    computed: {
+        showDialog() {
+            if (!this.boolBedScrewsDialog) return false
+
+            const is_active = this.$store.state.printer.bed_screws?.is_active ?? false
+
+            return is_active && this.homedAxes.includes('xyz')
+        },
+        boolBedScrewsDialog() {
+            return this.$store.state.gui.uiSettings.boolBedScrewsDialog ?? true
+        },
+        config() {
+            return this.$store.state.printer.configfile?.settings?.bed_screws ?? {}
+        },
+        bed_screws_state() {
+            return this.$store.state.printer.bed_screws?.state
+        },
+        current_screw() {
+            return this.$store.state.printer.bed_screws?.current_screw
+        },
+        accepted_screws() {
+            return this.$store.state.printer.bed_screws?.accepted_screws
+        },
+        loadingAbort() {
+            return this.loadings.includes('bedScrewsAbort')
+        },
+        loadingAccept() {
+            return this.loadings.includes('bedScrewsAccept')
+        },
+        loadingAdjusted() {
+            return this.loadings.includes('bedScrewsAdjusted')
+        },
+        screwNames() {
+            const configKeys = Object.keys(this.config)
+            const screwNameKeys = configKeys.filter(
+                (name: string) => name.startsWith('screw') && name.endsWith('_name')
+            )
+
+            const output: string[] = []
+            screwNameKeys?.forEach((fullName: string) => {
+                const index = fullName.indexOf('_')
+                const number = parseInt(fullName.slice(5, index))
+
+                output[number - 1] = this.config[`screw${number}_name`] ?? ''
+            })
+
+            return output
+        },
+        countScrews() {
+            return this.screwNames.length
+        },
+        currentScrewName() {
+            return this.screwNames[this.current_screw] ?? 'UNKNOWN'
+        },
+        currentScrewOutput() {
+            return this.$t('BedScrews.ScrewOutput', { current: this.current_screw, max: this.countScrews })
+        },
+        acceptedScrewOutput() {
+            return this.$t('BedScrews.ScrewOutput', { current: this.accepted_screws, max: this.countScrews })
+        },
+    },
+    methods: {
+        sendAbort() {
+            const gcode = `ABORT`
+            this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
+            this.$socket.emit('printer.gcode.script', { script: gcode }, { loading: 'manualProbeAbort' })
+        },
+        sendAccept() {
+            const gcode = `ACCEPT`
+            this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
+            this.$socket.emit('printer.gcode.script', { script: gcode }, { loading: 'manualProbeAccept' })
+        },
+        sendAdjusted() {
+            const gcode = `ADJUSTED`
+            this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
+            this.$socket.emit('printer.gcode.script', { script: gcode }, { loading: 'manualProbeAccept' })
+        },
+    },
 })
-export default class TheBedScrewsDialog extends Mixins(BaseMixin, ControlMixin) {
-    mdiArrowCollapseDown = mdiArrowCollapseDown
-    mdiInformation = mdiInformation
-    mdiCloseThick = mdiCloseThick
-
-    get showDialog() {
-        if (!this.boolBedScrewsDialog) return false
-
-        const is_active = this.$store.state.printer.bed_screws?.is_active ?? false
-
-        return is_active && this.homedAxes.includes('xyz')
-    }
-
-    get boolBedScrewsDialog() {
-        return this.$store.state.gui.uiSettings.boolBedScrewsDialog ?? true
-    }
-
-    get config() {
-        return this.$store.state.printer.configfile?.settings?.bed_screws ?? {}
-    }
-
-    get bed_screws_state() {
-        return this.$store.state.printer.bed_screws?.state
-    }
-
-    get current_screw() {
-        return this.$store.state.printer.bed_screws?.current_screw
-    }
-
-    get accepted_screws() {
-        return this.$store.state.printer.bed_screws?.accepted_screws
-    }
-
-    get loadingAbort() {
-        return this.loadings.includes('bedScrewsAbort')
-    }
-
-    get loadingAccept() {
-        return this.loadings.includes('bedScrewsAccept')
-    }
-
-    get loadingAdjusted() {
-        return this.loadings.includes('bedScrewsAdjusted')
-    }
-
-    get screwNames() {
-        const configKeys = Object.keys(this.config)
-        const screwNameKeys = configKeys.filter((name: string) => name.startsWith('screw') && name.endsWith('_name'))
-
-        const output: string[] = []
-        screwNameKeys?.forEach((fullName: string) => {
-            const index = fullName.indexOf('_')
-            const number = parseInt(fullName.slice(5, index))
-
-            output[number - 1] = this.config[`screw${number}_name`] ?? ''
-        })
-
-        return output
-    }
-
-    get countScrews() {
-        return this.screwNames.length
-    }
-
-    get currentScrewName() {
-        return this.screwNames[this.current_screw] ?? 'UNKNOWN'
-    }
-
-    get currentScrewOutput() {
-        return this.$t('BedScrews.ScrewOutput', { current: this.current_screw, max: this.countScrews })
-    }
-
-    get acceptedScrewOutput() {
-        return this.$t('BedScrews.ScrewOutput', { current: this.accepted_screws, max: this.countScrews })
-    }
-
-    sendAbort() {
-        const gcode = `ABORT`
-        this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
-        this.$socket.emit('printer.gcode.script', { script: gcode }, { loading: 'manualProbeAbort' })
-    }
-
-    sendAccept() {
-        const gcode = `ACCEPT`
-        this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
-        this.$socket.emit('printer.gcode.script', { script: gcode }, { loading: 'manualProbeAccept' })
-    }
-
-    sendAdjusted() {
-        const gcode = `ADJUSTED`
-        this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
-        this.$socket.emit('printer.gcode.script', { script: gcode }, { loading: 'manualProbeAccept' })
-    }
-}
 </script>
 
 <style scoped></style>

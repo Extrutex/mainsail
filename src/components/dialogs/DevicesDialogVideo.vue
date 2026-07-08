@@ -18,67 +18,75 @@
             </v-col>
         </v-row>
         <v-row v-else-if="loaded" class="mt-0">
-            <v-col class="col-8 mx-auto">
-                <p class="text-center text--disabled mb-0">{{ $t('DevicesDialog.NoDeviceFound') }}</p>
+            <v-col cols="8" class="mx-auto">
+                <p class="text-center text-disabled mb-0">{{ $t('DevicesDialog.NoDeviceFound') }}</p>
             </v-col>
         </v-row>
         <v-row v-else class="mt-0">
-            <v-col class="col-8 mx-auto">
-                <p class="text-center text--disabled mb-0">{{ $t('DevicesDialog.ClickRefresh') }}</p>
+            <v-col cols="8" class="mx-auto">
+                <p class="text-center text-disabled mb-0">{{ $t('DevicesDialog.ClickRefresh') }}</p>
             </v-col>
         </v-row>
     </v-card-text>
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import type { RPCResult } from '@/types/moonraker'
 import type { LibcameraDevice, V4l2Device } from '@/types/moonraker/MachineRPC'
 
-@Component
-export default class DevicesDialogVideo extends Mixins(BaseMixin) {
-    v4l2Devices: V4l2Device[] = []
-    libcameraDevices: LibcameraDevice[] = []
-    loading = false
-    loaded = false
-
-    @Prop({ type: Boolean, default: false }) hideSystemEntries!: boolean
-
-    get filteredLibcameraDevices() {
-        if (this.hideSystemEntries) {
-            return this.libcameraDevices.filter((device) => !device.libcamera_id.includes('usb@'))
+export default defineComponent({
+    name: 'DevicesDialogVideo',
+    mixins: [BaseMixin],
+    props: {
+        hideSystemEntries: { type: Boolean, default: false },
+    },
+    data() {
+        return {
+            v4l2Devices: [] as V4l2Device[],
+            libcameraDevices: [] as LibcameraDevice[],
+            loading: false,
+            loaded: false,
         }
-
-        return this.libcameraDevices
-    }
-
-    get filteredV4l2Devices() {
-        return this.v4l2Devices.filter((device) => {
+    },
+    computed: {
+        filteredLibcameraDevices(): LibcameraDevice[] {
             if (this.hideSystemEntries) {
-                if (this.libcameraDevices.length === 0 && device.hardware_bus.endsWith('csi')) return true
-
-                return !device.hardware_bus.startsWith('platform:')
+                return this.libcameraDevices.filter((device) => !device.libcamera_id.includes('usb@'))
             }
 
-            return true
-        })
-    }
+            return this.libcameraDevices
+        },
 
-    async refresh() {
-        this.loading = true
+        filteredV4l2Devices(): V4l2Device[] {
+            return this.v4l2Devices.filter((device) => {
+                if (this.hideSystemEntries) {
+                    if (this.libcameraDevices.length === 0 && device.hardware_bus.endsWith('csi')) return true
 
-        const result = await fetch(this.apiUrl + '/machine/peripherals/video')
-            .then((res) => res.json())
-            .then((res: { result?: RPCResult<'machine.peripherals.video'> }) => res.result)
+                    return !device.hardware_bus.startsWith('platform:')
+                }
 
-        this.v4l2Devices = result?.v4l2_devices ?? []
-        this.libcameraDevices = result?.libcamera_devices ?? []
+                return true
+            })
+        },
+    },
+    methods: {
+        async refresh() {
+            this.loading = true
 
-        this.loading = false
-        this.loaded = true
-    }
-}
+            const result = await fetch(this.apiUrl + '/machine/peripherals/video')
+                .then((res) => res.json())
+                .then((res: { result?: RPCResult<'machine.peripherals.video'> }) => res.result)
+
+            this.v4l2Devices = result?.v4l2_devices ?? []
+            this.libcameraDevices = result?.libcamera_devices ?? []
+
+            this.loading = false
+            this.loaded = true
+        },
+    },
+})
 </script>
 
 <style scoped></style>

@@ -1,10 +1,8 @@
 <template>
-    <v-card outlined class="mt-3 w-100">
-        <v-list-item three-line>
-            <v-list-item-content>
-                <div class="text-overline mb-2 d-flex flex-row">Libcamera</div>
-                <v-list-item-title class="text-h5 mb-0">{{ device.model }}</v-list-item-title>
-            </v-list-item-content>
+    <v-card variant="outlined" class="mt-3 w-100">
+        <v-list-item lines="three">
+            <div class="text-overline mb-2 d-flex flex-row">Libcamera</div>
+            <v-list-item-title class="text-h5 mb-0">{{ device.model }}</v-list-item-title>
         </v-list-item>
         <v-card-text>
             <v-row class="mb-1">
@@ -33,29 +31,33 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
+import type { PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { sortResolutions } from '@/plugins/helpers'
 import TextfieldWithCopy from '@/components/inputs/TextfieldWithCopy.vue'
 import type { LibcameraDevice } from '@/types/moonraker/MachineRPC'
 
-@Component({
+export default defineComponent({
+    name: 'DevicesDialogVideoDeviceLibcamera',
     components: { TextfieldWithCopy },
+    mixins: [BaseMixin],
+    props: {
+        device: { type: Object as PropType<LibcameraDevice>, required: true },
+    },
+    computed: {
+        identicalResolutions(): boolean {
+            const resolutions = this.device.modes.map((mode) => mode.resolutions.sort(sortResolutions).join(','))
+            return resolutions.every((resolution) => resolution === resolutions[0])
+        },
+
+        resolutions(): string {
+            return this.device.modes[0].resolutions.join(', ')
+        },
+
+        formats(): string {
+            return this.device.modes.map((mode) => mode.format).join(', ')
+        },
+    },
 })
-export default class DevicesDialogVideoDeviceLibcamera extends Mixins(BaseMixin) {
-    @Prop({ type: Object, required: true }) device!: LibcameraDevice
-
-    get identicalResolutions() {
-        const resolutions = this.device.modes.map((mode) => mode.resolutions.sort(sortResolutions).join(','))
-        return resolutions.every((resolution) => resolution === resolutions[0])
-    }
-
-    get resolutions() {
-        return this.device.modes[0].resolutions.join(', ')
-    }
-
-    get formats() {
-        return this.device.modes.map((mode) => mode.format).join(', ')
-    }
-}
 </script>

@@ -1,5 +1,5 @@
 <template>
-    <v-card outlined class="mt-3 w-100">
+    <v-card variant="outlined" class="mt-3 w-100">
         <v-card-text>
             <v-row>
                 <v-col>
@@ -18,15 +18,18 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
+import type { PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import TextfieldWithCopy from '@/components/inputs/TextfieldWithCopy.vue'
 import type { CanDevice } from '@/types/moonraker/MachineRPC'
 
-@Component({
+export default defineComponent({
+    name: 'DevicesDialogCanDevice',
     components: { TextfieldWithCopy },
+    mixins: [BaseMixin],
+    props: {
+        device: { type: Object as PropType<CanDevice>, required: true },
+    },
 })
-export default class DevicesDialogCanDevice extends Mixins(BaseMixin) {
-    @Prop({ type: Object, required: true }) device!: CanDevice
-}
 </script>

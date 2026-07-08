@@ -13,7 +13,7 @@
             <template #default="{ el }">
                 <v-card-text class="pt-5">
                     <v-row>
-                        <v-col :class="{ 'col-12': el.is.small, 'col-6': el.is.medium }">
+                        <v-col :cols="el.is.small ? 12 : 6">
                             <number-input
                                 :label="$t('Panels.MachineSettingsPanel.MotionSettings.Velocity')"
                                 param="VELOCITY"
@@ -29,7 +29,7 @@
                                 unit="mm/s"
                                 @submit="sendCmd" />
                         </v-col>
-                        <v-col :class="{ 'col-12': el.is.small, 'col-6': el.is.medium }">
+                        <v-col :cols="el.is.small ? 12 : 6">
                             <number-input
                                 :label="$t('Panels.MachineSettingsPanel.MotionSettings.SquareCornerVelocity')"
                                 param="SQUARE_CORNER_VELOCITY"
@@ -46,7 +46,7 @@
                         </v-col>
                     </v-row>
                     <v-row>
-                        <v-col :class="{ 'col-12': el.is.small, 'col-6': el.is.medium }">
+                        <v-col :cols="el.is.small ? 12 : 6">
                             <number-input
                                 :label="$t('Panels.MachineSettingsPanel.MotionSettings.Acceleration')"
                                 param="ACCEL"
@@ -62,7 +62,7 @@
                                 unit="mm/s²"
                                 @submit="sendCmd" />
                         </v-col>
-                        <v-col :class="{ 'col-12': el.is.small, 'col-6': el.is.medium }">
+                        <v-col :cols="el.is.small ? 12 : 6">
                             <number-input
                                 v-if="minimumCruiseRatio === null"
                                 :label="$t('Panels.MachineSettingsPanel.MotionSettings.MaxAccelToDecel')"
@@ -102,92 +102,97 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import Panel from '@/components/ui/Panel.vue'
 import { mdiEngine } from '@mdi/js'
-import { Debounce } from 'vue-debounce-decorator'
+import { debounce } from '@/plugins/helpers'
 import NumberInput from '@/components/inputs/NumberInput.vue'
 import Responsive from '@/components/ui/Responsive.vue'
 
-@Component({
+export default defineComponent({
+    name: 'MachineSettingsPanel',
     components: {
         NumberInput,
         Panel,
         Responsive,
     },
+    mixins: [BaseMixin],
+    data() {
+        return {
+            mdiEngine: mdiEngine,
+        }
+    },
+    computed: {
+        toolhead() {
+            return this.$store.state.printer?.toolhead ?? {}
+        },
+
+        configPrinter() {
+            return this.$store.state.printer?.configfile?.settings?.printer ?? {}
+        },
+
+        velocity(): number {
+            return Math.trunc(this.toolhead.max_velocity ?? 300)
+        },
+
+        accel(): number {
+            return Math.trunc(this.toolhead.max_accel ?? 3000)
+        },
+
+        accelToDecel(): number {
+            return Math.trunc(this.toolhead.max_accel_to_decel ?? this.accel / 2)
+        },
+
+        minimumCruiseRatio(): number | null {
+            const value = this.toolhead.minimum_cruise_ratio ?? null
+
+            if (value === null) return null
+
+            return Math.round(value * 100)
+        },
+
+        squareCornerVelocity(): number {
+            return Math.floor((this.toolhead.square_corner_velocity ?? 8) * 10) / 10
+        },
+
+        defaultVelocity(): number {
+            return Math.trunc(this.configPrinter.max_velocity ?? 300)
+        },
+
+        defaultAccel(): number {
+            return Math.trunc(this.configPrinter.max_accel ?? 3000)
+        },
+
+        defaultAccelToDecel(): number {
+            return Math.trunc(this.configPrinter.max_accel_to_decel ?? 1500)
+        },
+
+        defaultMinimumCruiseRatio(): number {
+            const value = this.configPrinter.minimum_cruise_ratio ?? 0.5
+
+            return Math.round(value * 100)
+        },
+
+        defaultSquareCornerVelocity(): number {
+            const value = this.configPrinter.square_corner_velocity ?? 8
+
+            return Math.floor(value * 10) / 10
+        },
+    },
+    methods: {
+        sendCruiseRatioCmd(params: { name: string; value: number }): void {
+            params.value = params.value / 100
+
+            this.sendCmd(params)
+        },
+
+        sendCmd: debounce(function (this: any, params: { name: string; value: number }): void {
+            const gcode = `SET_VELOCITY_LIMIT ${params.name}=${params.value}`
+
+            this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
+            this.$socket.emit('printer.gcode.script', { script: gcode })
+        }, 500),
+    },
 })
-export default class MachineSettingsPanel extends Mixins(BaseMixin) {
-    mdiEngine = mdiEngine
-
-    get toolhead() {
-        return this.$store.state.printer?.toolhead ?? {}
-    }
-
-    get configPrinter() {
-        return this.$store.state.printer?.configfile?.settings?.printer ?? {}
-    }
-
-    get velocity(): number {
-        return Math.trunc(this.toolhead.max_velocity ?? 300)
-    }
-
-    get accel(): number {
-        return Math.trunc(this.toolhead.max_accel ?? 3000)
-    }
-
-    get accelToDecel(): number {
-        return Math.trunc(this.toolhead.max_accel_to_decel ?? this.accel / 2)
-    }
-
-    get minimumCruiseRatio(): number | null {
-        const value = this.toolhead.minimum_cruise_ratio ?? null
-
-        if (value === null) return null
-
-        return Math.round(value * 100)
-    }
-
-    get squareCornerVelocity(): number {
-        return Math.floor((this.toolhead.square_corner_velocity ?? 8) * 10) / 10
-    }
-
-    get defaultVelocity(): number {
-        return Math.trunc(this.configPrinter.max_velocity ?? 300)
-    }
-
-    get defaultAccel(): number {
-        return Math.trunc(this.configPrinter.max_accel ?? 3000)
-    }
-
-    get defaultAccelToDecel(): number {
-        return Math.trunc(this.configPrinter.max_accel_to_decel ?? 1500)
-    }
-
-    get defaultMinimumCruiseRatio(): number {
-        const value = this.configPrinter.minimum_cruise_ratio ?? 0.5
-
-        return Math.round(value * 100)
-    }
-
-    get defaultSquareCornerVelocity(): number {
-        const value = this.configPrinter.square_corner_velocity ?? 8
-
-        return Math.floor(value * 10) / 10
-    }
-
-    sendCruiseRatioCmd(params: { name: string; value: number }): void {
-        params.value = params.value / 100
-
-        this.sendCmd(params)
-    }
-
-    @Debounce(500)
-    sendCmd(params: { name: string; value: number }): void {
-        const gcode = `SET_VELOCITY_LIMIT ${params.name}=${params.value}`
-
-        this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
-        this.$socket.emit('printer.gcode.script', { script: gcode })
-    }
-}
 </script>
