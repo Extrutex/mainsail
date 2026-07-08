@@ -20,13 +20,12 @@
 
 <script lang="ts">
 import { defineComponent } from 'vue'
-import draggable from 'vuedraggable'
 import { mdiCheckboxBlankOutline, mdiCheckboxMarked, mdiDragVertical, mdiInformation } from '@mdi/js'
 import DashboardMixin from '@/components/mixins/dashboard'
 
 export default defineComponent({
     name: 'SettingsDashboardSortableItem',
-    components: { draggable },
+    components: {},
     mixins: [DashboardMixin],
     props: {
         name: { type: String, required: true },

@@ -249,11 +249,11 @@ export default defineComponent({
             return this.$store.state.printer.mmu_machine ?? undefined
         },
 
-        mmuSettings(): any {
+        mmuSettings() {
             return this.$store.state.printer.configfile?.settings?.mmu ?? {}
         },
 
-        mmuSoftwareVars(): any {
+        mmuSoftwareVars() {
             return this.$store.state.printer['gcode_macro _MMU_SOFTWARE_VARS']
         },
 

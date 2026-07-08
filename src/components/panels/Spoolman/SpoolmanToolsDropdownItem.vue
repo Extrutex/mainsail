@@ -20,7 +20,7 @@ export default defineComponent({
     components: {},
     mixins: [BaseMixin],
     props: {
-        objectName: { type: String, required: false, default: false },
+        objectName: { type: String, required: false, default: '' },
     },
     data() {
         return {

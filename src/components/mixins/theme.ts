@@ -6,7 +6,7 @@ export default defineComponent({
             return this.$store.getters['gui/theme']
         },
 
-        theme(): any {
+        theme() {
             return this.$store.getters['gui/getTheme']
         },
 

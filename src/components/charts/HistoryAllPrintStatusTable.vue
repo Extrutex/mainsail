@@ -15,7 +15,6 @@ import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import HistoryStatsMixin from '@/components/mixins/historyStats'
 import HistoryAllPrintStatusTableItem from '@/components/charts/HistoryAllPrintStatusTableItem.vue'
-import { HistoryStatsValueNames } from '@/store/server/history/types'
 
 export default defineComponent({
     name: 'HistoryAllPrintStatusTable',

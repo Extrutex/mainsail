@@ -94,7 +94,6 @@
 import { defineComponent } from 'vue'
 import BaseMixin from '../mixins/base'
 import ConnectionStatus from '../ui/ConnectionStatus.vue'
-import Panel from '@/components/ui/Panel.vue'
 import {
     mdiRestart,
     mdiDownload,
@@ -108,7 +107,7 @@ import {
 
 export default defineComponent({
     name: 'KlippyStatePanel',
-    components: { Panel, ConnectionStatus },
+    components: { ConnectionStatus },
     mixins: [BaseMixin],
     data() {
         return {

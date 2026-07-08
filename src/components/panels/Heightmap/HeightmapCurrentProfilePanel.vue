@@ -69,10 +69,10 @@ export default defineComponent({
     },
     computed: {
         x_count() {
-            return this.bed_mesh.probed_matrix[0]?.length ?? 0
+            return this.probed_matrix[0]?.length ?? 0
         },
         y_count() {
-            return this.bed_mesh.probed_matrix?.length ?? 0
+            return this.probed_matrix.length
         },
         x_step_size() {
             if (this.x_count < 1) return 0

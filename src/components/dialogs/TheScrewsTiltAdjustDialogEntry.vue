@@ -12,8 +12,6 @@
 import { defineComponent } from 'vue'
 import type { PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
-import Panel from '@/components/ui/Panel.vue'
-import Responsive from '@/components/ui/Responsive.vue'
 import SettingsRow from '@/components/settings/SettingsRow.vue'
 import { mdiRotateLeft, mdiRotateRight, mdiCloseThick } from '@mdi/js'
 import ControlMixin from '@/components/mixins/control'
@@ -27,7 +25,7 @@ interface ScrewsTiltAdjustResult {
 
 export default defineComponent({
     name: 'TheScrewsTiltAdjustDialogEntry',
-    components: { Panel, Responsive, SettingsRow },
+    components: { SettingsRow },
     mixins: [BaseMixin, ControlMixin],
     props: {
         name: { type: String, required: true },

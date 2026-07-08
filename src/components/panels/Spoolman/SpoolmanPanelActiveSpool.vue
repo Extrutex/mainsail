@@ -15,13 +15,11 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
-import Panel from '@/components/ui/Panel.vue'
-import SpoolmanChangeSpoolDialog from '@/components/dialogs/SpoolmanChangeSpoolDialog.vue'
 import { ServerSpoolmanStateSpool } from '@/store/server/spoolman/types'
 
 export default defineComponent({
     name: 'SpoolmanPanelActiveSpool',
-    components: { Panel, SpoolmanChangeSpoolDialog },
+    components: {},
     mixins: [BaseMixin],
     props: {
         small: { type: Boolean, required: false, default: false },

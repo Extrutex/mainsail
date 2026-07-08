@@ -23,7 +23,6 @@
 import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { mdiLightbulbOutline, mdiLightbulbOnOutline } from '@mdi/js'
-import { GuiMiscellaneousStateEntryLightgroup } from '@/store/gui/miscellaneous/types'
 
 export default defineComponent({
     name: 'MiscellaneousLightNeopixelGroup',

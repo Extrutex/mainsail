@@ -15,7 +15,7 @@ export default defineComponent({
     components: { FarmPrinterPanel },
     mixins: [BaseMixin],
     computed: {
-        printers(): any[] {
+        printers() {
             return this.$store.getters['farm/getPrinters']
         },
     },

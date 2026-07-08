@@ -43,7 +43,6 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
-import TheSelectPrinterDialog from '@/components/TheSelectPrinterDialog.vue'
 import AboutDialog from '@/components/dialogs/AboutDialog.vue'
 import { navigationWidth, topbarHeight } from '@/store/variables'
 import MainsailLogo from '@/components/ui/MainsailLogo.vue'
@@ -55,7 +54,6 @@ export default defineComponent({
     name: 'TheSidebar',
     components: {
         SidebarItem,
-        TheSelectPrinterDialog,
         AboutDialog,
         MainsailLogo,
     },

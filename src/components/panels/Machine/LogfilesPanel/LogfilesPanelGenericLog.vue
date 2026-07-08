@@ -10,13 +10,12 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
-import Panel from '@/components/ui/Panel.vue'
 import { FileStateFile } from '@/store/files/types'
 import { mdiDownload } from '@mdi/js'
 
 export default defineComponent({
     name: 'LogfilesPanel',
-    components: { Panel },
+    components: {},
     mixins: [BaseMixin],
     props: {
         name: { type: String, required: true },

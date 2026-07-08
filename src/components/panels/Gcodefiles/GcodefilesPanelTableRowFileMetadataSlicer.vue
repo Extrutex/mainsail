@@ -10,7 +10,6 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
-import { FileStateGcodefile } from '@/store/files/types'
 
 export default defineComponent({
     name: 'GcodefilesPanelTableRowFileMetadataSlicer',

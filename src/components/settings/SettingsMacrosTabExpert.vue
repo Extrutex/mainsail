@@ -299,7 +299,6 @@ import BaseMixin from '../mixins/base'
 import ThemeMixin from '@/components/mixins/theme'
 import draggable from 'vuedraggable'
 import SettingsRow from '@/components/settings/SettingsRow.vue'
-import { Debounce } from 'vue-debounce-decorator'
 import { PrinterStateMacro } from '@/store/printer/types'
 import { GuiMacrosStateMacrogroup, GuiMacrosStateMacrogroupMacro } from '@/store/gui/macros/types'
 import {
@@ -415,7 +414,8 @@ export default defineComponent({
 
                 return macros
             },
-            set(newVal) {},
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            set(_newVal) {},
         },
     },
     watch: {

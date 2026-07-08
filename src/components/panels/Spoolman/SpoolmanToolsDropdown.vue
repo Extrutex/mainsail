@@ -29,7 +29,7 @@ export default defineComponent({
     components: { SpoolmanToolsDropdownItem },
     mixins: [BaseMixin],
     props: {
-        tools: { type: Array as PropType<string[]>, required: false, default: false },
+        tools: { type: Array as PropType<string[]>, required: false, default: () => [] },
     },
     data() {
         return {

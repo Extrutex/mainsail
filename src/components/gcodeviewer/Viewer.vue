@@ -217,7 +217,7 @@
                 <strong>{{ loadedFile }}</strong>
             </div>
             <v-progress-linear class="mt-2" :value="loadingPercent"></v-progress-linear>
-            <template #action="{ attrs }">
+            <template #action>
                 <v-btn color="red" variant="text" v-bind="props" style="min-width: auto" @click="cancelRendering()">
                     <v-icon class="0">{{ mdiClose }}</v-icon>
                 </v-btn>
@@ -241,7 +241,7 @@
                 </div>
                 <v-progress-linear class="mt-2" indeterminate />
             </template>
-            <template #action="{ attrs }">
+            <template #action>
                 <v-btn color="red" variant="text" v-bind="props" style="min-width: auto" @click="cancelDownload">
                     <v-icon class="0">{{ mdiClose }}</v-icon>
                 </v-btn>
@@ -281,7 +281,6 @@ import {
     mdiSelectionRemove,
 } from '@mdi/js'
 import ConfirmationDialog from '@/components/dialogs/ConfirmationDialog.vue'
-import { Debounce } from 'vue-debounce-decorator'
 
 interface downloadSnackbar {
     status: boolean
@@ -305,7 +304,7 @@ interface ViewerObjectMetadata {
 let viewer: GCodeViewerInstance | null = null
 
 export default defineComponent({
-    name: 'Viewer',
+    name: 'GcodeViewer',
     components: { ConfirmationDialog, Panel, CodeStream },
     mixins: [BaseMixin],
     props: {
@@ -336,7 +335,7 @@ export default defineComponent({
             loadedFile: null as string | null,
             reloadRequired: false,
             fileSize: 0,
-            renderQuality: this.renderQualities[2],
+            renderQuality: null as { label: string; value: number } | null,
             scrubPosition: 0,
             scrubPlaying: false,
             scrubSpeed: 1,
@@ -797,6 +796,9 @@ export default defineComponent({
             viewer.simulateToolPosition()
         },
     },
+    created() {
+        this.renderQuality = this.renderQualities[2]
+    },
     async mounted() {
         this.loadedFile = this.$store.state.gcodeviewer?.loadedFileBackup ?? null
         viewer = this.$store.state.gcodeviewer?.viewerBackup ?? null
@@ -1010,7 +1012,7 @@ export default defineComponent({
 
             if (viewer === null) return
 
-            viewer.updateRenderQuality(this.renderQuality.value)
+            viewer.updateRenderQuality(this.renderQuality?.value ?? this.renderQualities[2].value)
             await viewer.processFile(text)
             this.fileData = viewer.fileData
             this.loadingPercent = 100

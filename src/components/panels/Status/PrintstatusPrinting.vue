@@ -134,16 +134,11 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
-import StatusPanelFilesJobqueue from '@/components/panels/Status/Jobqueue.vue'
-import StatusPanelFilesGcodes from '@/components/panels/Status/Gcodefiles.vue'
 import AfcMixin from '@/components/mixins/afc'
 
 export default defineComponent({
     name: 'StatusPanelPrintstatusPrinting',
-    components: {
-        StatusPanelFilesJobqueue,
-        StatusPanelFilesGcodes,
-    },
+    components: {},
     mixins: [BaseMixin, AfcMixin],
     data() {
         return {
@@ -172,6 +167,7 @@ export default defineComponent({
             const filamentCrossSection = Math.pow(this.filament_diameter / 2, 2) * Math.PI
             const currentFlow = filamentCrossSection * this.live_extruder_velocity
 
+            // eslint-disable-next-line vue/no-side-effects-in-computed-properties
             if (currentFlow && this.maxFlow < currentFlow) this.maxFlow = currentFlow
 
             return currentFlow?.toFixed(1)

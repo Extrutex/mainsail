@@ -106,7 +106,6 @@ import { debounce, caseInsensitiveSort } from '@/plugins/helpers'
 import { GuiMiscellaneousStateEntry, GuiMiscellaneousStateEntryPreset } from '@/store/gui/miscellaneous/types'
 import { ColorPickerProps } from '@jaames/iro/dist/ColorPicker'
 import iro from '@jaames/iro'
-import { Debounce } from 'vue-debounce-decorator'
 import { IroColor } from '@irojs/iro-core'
 
 interface ColorData {

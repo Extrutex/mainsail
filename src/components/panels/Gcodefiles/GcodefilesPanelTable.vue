@@ -1,24 +1,20 @@
 <template>
     <v-data-table
         v-model="selectedFiles"
-        :items="files"
+        :items="sortedFiles"
         class="files-table"
-        :headers="filteredHeaders"
-        :custom-sort="sortFiles"
-        v-model:sort-by="sortBy"
-        v-model:sort-desc="sortDesc"
+        :headers="vuetifyHeaders"
+        :custom-key-sort="noopSortMap"
+        v-model:sort-by="vuetifySortBy"
         v-model:items-per-page="countPerPage"
-        :footer-props="{
-            itemsPerPageText: $t('Files.Files'),
-            itemsPerPageAllText: $t('Files.AllFiles'),
-            itemsPerPageOptions: [10, 25, 50, 100, -1],
-        }"
-        item-key="filename"
+        :items-per-page-text="$t('Files.Files')"
+        :items-per-page-options="[10, 25, 50, 100, -1]"
+        item-value="filename"
         :search="search"
         :custom-filter="advancedSearch"
         mobile-breakpoint="0"
         show-select
-        @current-items="refreshMetadata">
+        @update:current-items="refreshMetadata">
         <template #no-data>
             <div class="text-center">{{ $t('Files.Empty') }}</div>
         </template>
@@ -27,19 +23,19 @@
             <gcodefiles-panel-table-row-back />
         </template>
 
-        <template #item="{ index, item, isSelected, select }">
+        <template #item="{ index, item, isSelected, toggleSelect }">
             <gcodefiles-panel-table-row-file
                 v-if="!item.isDirectory"
                 :key="`${index} ${item.filename}`"
                 :item="item"
-                :is-selected="isSelected"
-                :select="select" />
+                :is-selected="isSelected(item)"
+                :select="() => toggleSelect(item)" />
             <gcodefiles-panel-table-row-directory
                 v-else
                 :key="`${index} ${item.filename}`"
                 :item="item"
-                :is-selected="isSelected"
-                :select="select" />
+                :is-selected="isSelected(item)"
+                :select="() => toggleSelect(item)" />
         </template>
     </v-data-table>
 </template>
@@ -47,11 +43,16 @@
 import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { sortFiles } from '@/plugins/helpers'
-import { FileStateGcodefile } from '@/store/files/types'
+import { FileStateFile, FileStateGcodefile } from '@/store/files/types'
 import GcodefilesMixin from '@/components/mixins/gcodefiles'
 import GcodefilesPanelTableRowBack from '@/components/panels/Gcodefiles/GcodefilesPanelTableRowBack.vue'
 import GcodefilesPanelTableRowDirectory from '@/components/panels/Gcodefiles/GcodefilesPanelTableRowDirectory.vue'
 import GcodefilesPanelTableRowFile from '@/components/panels/Gcodefiles/GcodefilesPanelTableRowFile.vue'
+
+interface VuetifySortItem {
+    key: string
+    order?: boolean | 'asc' | 'desc'
+}
 
 export default defineComponent({
     name: 'GcodefilesPanelTable',
@@ -61,27 +62,22 @@ export default defineComponent({
         GcodefilesPanelTableRowFile,
     },
     mixins: [BaseMixin, GcodefilesMixin],
-    data() {
-        return {
-            sortFiles: sortFiles,
-        }
-    },
     computed: {
         sortBy: {
-            get() {
+            get(): string {
                 return this.$store.state.gui.view.gcodefiles.sortBy ?? 'modified'
             },
-            set(newVal) {
+            set(newVal: string) {
                 if (newVal === undefined) newVal = 'modified'
 
                 this.$store.dispatch('gui/saveSetting', { name: 'view.gcodefiles.sortBy', value: newVal })
             },
         },
         sortDesc: {
-            get() {
+            get(): boolean {
                 return this.$store.state.gui.view.gcodefiles.sortDesc ?? true
             },
-            set(newVal) {
+            set(newVal: boolean) {
                 if (newVal === undefined) newVal = false
 
                 this.$store.dispatch('gui/saveSetting', { name: 'view.gcodefiles.sortDesc', value: newVal })
@@ -94,6 +90,43 @@ export default defineComponent({
             set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.gcodefiles.countPerPage', value: newVal })
             },
+        },
+
+        // sorting is fully handled by `sortFiles` (see `sortedFiles`); the table only needs
+        // `sort-by` to drive the header arrows/click handling, bridged to the two store fields.
+        vuetifySortBy: {
+            get(): VuetifySortItem[] {
+                return [{ key: this.sortBy, order: this.sortDesc ? 'desc' : 'asc' }]
+            },
+            set(newVal: VuetifySortItem[]) {
+                const entry = newVal[0]
+                this.sortBy = entry?.key ?? 'modified'
+                this.sortDesc = entry?.order === 'desc'
+            },
+        },
+
+        sortedFiles(): FileStateFile[] {
+            return sortFiles(this.files.slice(), [this.sortBy], [this.sortDesc])
+        },
+
+        vuetifyHeaders() {
+            return this.filteredHeaders.map((header) => ({
+                title: header.text,
+                key: header.value,
+                sortable: header.sortable,
+                class: header.class,
+            }))
+        },
+
+        // sort() is already applied by `sortedFiles`; keep the table's own re-sort a no-op
+        // (stable sort keeps our order) so header clicks still work without double-sorting.
+        noopSortMap() {
+            const map: Record<string, () => number> = {}
+            this.filteredHeaders.forEach((header) => {
+                if (header.sortable !== false) map[header.value] = () => 0
+            })
+
+            return map
         },
     },
     methods: {

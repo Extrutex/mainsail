@@ -24,13 +24,12 @@ import type { ComponentPublicInstance } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import ControlMixin from '@/components/mixins/control'
 import { FileStateGcodefile } from '@/store/files/types'
-import Panel from '@/components/ui/Panel.vue'
 import StatusPanelGcodefilesEntry from '@/components/panels/Status/GcodefilesEntry.vue'
 import { debounce } from '@/plugins/helpers'
 
 export default defineComponent({
     name: 'StatusPanelGcodefiles',
-    components: { Panel, StatusPanelGcodefilesEntry },
+    components: { StatusPanelGcodefilesEntry },
     mixins: [BaseMixin, ControlMixin],
     data() {
         return {
@@ -98,6 +97,7 @@ export default defineComponent({
             this.contentTdWidth = (filesGcodeCard?.$el.clientWidth ?? 0) - 48 - 48 - 32
         },
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         handleResize: debounce(function (this: any) {
             this.$nextTick(() => {
                 this.calcContentTdWidth()

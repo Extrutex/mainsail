@@ -40,7 +40,6 @@ import type { FocusableRef } from '@/types/vuetify'
 import BaseMixin from '@/components/mixins/base'
 import { mdiCloseThick } from '@mdi/js'
 import GcodefilesMixin from '@/components/mixins/gcodefiles'
-import { FileStateGcodefile } from '@/store/files/types'
 
 export default defineComponent({
     name: 'GcodefilesRenameDirectoryDialog',

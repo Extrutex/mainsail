@@ -55,7 +55,7 @@
                         <span>{{ $t('History.TitleExportHistory') }}</span>
                     </v-tooltip>
                     <v-menu :offset-y="true" :close-on-content-click="false">
-                        <template #activator="{ props }">
+                        <template #activator>
                             <v-tooltip top>
                                 <template #activator="{ props }">
                                     <v-btn class="px-2 minwidth-0 ml-3" v-bind="props" v-on="{ ...on, ...onToolTip }">
@@ -113,19 +113,15 @@
         <v-divider class="mb-3" />
         <v-data-table
             v-model="selectedJobsTable"
-            :items="entries"
+            :items="sortedEntries"
             class="history-jobs-table"
-            :headers="filteredHeaders"
-            :custom-sort="sortFiles"
-            v-model:sort-by="sortBy"
-            v-model:sort-desc="sortDesc"
+            :headers="vuetifyHeaders"
+            :custom-key-sort="noopSortMap"
+            v-model:sort-by="vuetifySortBy"
             v-model:items-per-page="countPerPage"
-            :footer-props="{
-                itemsPerPageText: $t('History.Jobs'),
-                itemsPerPageAllText: $t('History.AllJobs'),
-                itemsPerPageOptions: [10, 25, 50, 100, -1],
-            }"
-            item-key="select_id"
+            :items-per-page-text="$t('History.Jobs')"
+            :items-per-page-options="[10, 25, 50, 100, -1]"
+            item-value="select_id"
             :search="search"
             :custom-filter="advancedSearch"
             mobile-breakpoint="0"
@@ -134,21 +130,21 @@
                 <div class="text-center">{{ $t('History.Empty') }}</div>
             </template>
 
-            <template #item="{ item, isSelected, select }">
+            <template #item="{ item, isSelected, toggleSelect }">
                 <history-list-entry-job
                     v-if="item.type === 'job'"
                     :key="item.select_id"
-                    :is-selected="isSelected"
+                    :is-selected="isSelected(item)"
                     :item="item"
                     :table-fields="tableFields"
-                    @select="select" />
+                    @select="toggleSelect(item)" />
                 <history-list-entry-maintenance
                     v-else-if="item.type === 'maintenance'"
                     :key="item.select_id"
-                    :is-selected="isSelected"
+                    :is-selected="isSelected(item)"
                     :item="item"
                     :table-fields="tableFields"
-                    @select="select" />
+                    @select="toggleSelect(item)" />
             </template>
         </v-data-table>
         <confirmation-dialog
@@ -183,7 +179,6 @@ import {
     mdiMagnify,
     mdiNotebookPlus,
 } from '@mdi/js'
-import HistoryListPanelDetailsDialog from '@/components/dialogs/HistoryListPanelDetailsDialog.vue'
 import HistoryListEntryJob from '@/components/panels/History/HistoryListEntryJob.vue'
 import HistoryListPanelAddMaintenance from '@/components/dialogs/HistoryListPanelAddMaintenance.vue'
 import { GuiMaintenanceStateEntry, HistoryListRowMaintenance } from '@/store/gui/maintenance/types'
@@ -201,7 +196,6 @@ export default defineComponent({
         HistoryListEntryMaintenance,
         HistoryListPanelAddMaintenance,
         HistoryListEntryJob,
-        HistoryListPanelDetailsDialog,
         Panel,
     },
     mixins: [BaseMixin, HistoryMixin, HistoryStatsMixin],
@@ -251,6 +245,21 @@ export default defineComponent({
             }
 
             return entries
+        },
+        // sorting is fully handled by `sortFiles` (see `sortedEntries`); the table only
+        // needs `sort-by` to drive the header arrows/click handling.
+        sortedEntries() {
+            return this.sortFiles(this.entries.slice(), [this.sortBy], [this.sortDesc])
+        },
+        vuetifySortBy: {
+            get() {
+                return [{ key: this.sortBy, order: this.sortDesc ? 'desc' : 'asc' }]
+            },
+            set(newVal) {
+                const entry = newVal[0]
+                this.sortBy = entry?.key ?? 'start_time'
+                this.sortDesc = entry?.order === 'desc'
+            },
         },
         headers() {
             const headers: HistoryListPanelCol[] = [
@@ -428,6 +437,23 @@ export default defineComponent({
         },
         filteredHeaders(): HistoryListPanelCol[] {
             return this.headers.filter((header: HistoryListPanelCol) => header.visible)
+        },
+        vuetifyHeaders() {
+            return this.filteredHeaders.map((header: HistoryListPanelCol) => ({
+                title: header.text,
+                key: header.value,
+                align: header.align,
+            }))
+        },
+        // sort() is already applied by `sortedEntries`; keep the table's own re-sort a no-op
+        // (stable sort keeps our order) so header clicks still work without double-sorting.
+        noopSortMap() {
+            const map: Record<string, () => number> = {}
+            this.filteredHeaders.forEach((header: HistoryListPanelCol) => {
+                if (header.value) map[header.value] = () => 0
+            })
+
+            return map
         },
         allPrintStatusArray(): ServerHistoryStateAllPrintStatusEntry[] {
             const statuses = this.$store.getters['server/history/getAllPrintStatusArray'] ?? []

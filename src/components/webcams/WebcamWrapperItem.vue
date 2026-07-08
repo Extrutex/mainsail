@@ -38,7 +38,6 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
-import { GuiWebcamStateWebcam } from '@/store/gui/webcams/types'
 import { DynamicCamLoader } from '@/components/webcams/streamers/DynamicCamLoader'
 
 export default defineComponent({

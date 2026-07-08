@@ -58,8 +58,8 @@ export default defineComponent({
                     value === this.name ||
                     this.$t('Heightmap.InvalidNameAlreadyExists'),
 
-                // eslint-disable-next-line no-control-regex
                 (value: string) =>
+                    // eslint-disable-next-line no-control-regex
                     value === value.replace(/[^\x00-\x7F]/g, '') || this.$t('Heightmap.InvalidNameAscii'),
             ],
         }

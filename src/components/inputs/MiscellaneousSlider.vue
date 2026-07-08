@@ -229,6 +229,7 @@ export default defineComponent({
             clearTimeout(this.timeout)
         },
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         changeSliderValue: debounce(function (this: any): void {
             if (this.value === this.sliderValue) return
             /**

@@ -13,13 +13,11 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
-import Panel from '@/components/ui/Panel.vue'
 import { convertName } from '@/plugins/helpers'
-import type { EndstopItem } from '@/store/printer/types'
 
 export default defineComponent({
     name: 'EndstopPanelItem',
-    components: { Panel },
+    components: {},
     mixins: [BaseMixin],
     props: {
         item: { type: Object },

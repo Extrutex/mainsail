@@ -14,15 +14,14 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
-import NavigationMixin, { NaviPoint } from '@/components/mixins/navigation'
+import NavigationMixin from '@/components/mixins/navigation'
 import ThemeMixin from '@/components/mixins/theme'
 import SettingsRow from '@/components/settings/SettingsRow.vue'
-import draggable from 'vuedraggable'
 import { mdiDragVertical, mdiCheckboxMarked, mdiCheckboxBlankOutline } from '@mdi/js'
 
 export default defineComponent({
     name: 'SettingsNavigationTab',
-    components: { SettingsRow, draggable },
+    components: { SettingsRow },
     mixins: [NavigationMixin, BaseMixin, ThemeMixin],
     props: {
         naviPoint: { type: Object, required: true },

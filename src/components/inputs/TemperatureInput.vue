@@ -64,6 +64,7 @@ export default defineComponent({
         max_temp: { type: Number, required: true },
         command: { type: String, required: true },
         attributeName: { type: String, required: true },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         presets: { type: Array as PropType<any[]>, default: () => [] },
         inputDigits: { type: Number, default: 3 },
     },

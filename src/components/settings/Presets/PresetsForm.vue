@@ -1,4 +1,5 @@
 <template>
+    <!-- eslint-disable vue/no-mutating-props -->
     <v-card flat>
         <v-form v-model="valid" @submit.prevent="savePreset">
             <v-card-title>{{ title }}</v-card-title>
@@ -53,6 +54,7 @@
 </template>
 
 <script lang="ts">
+/* eslint-disable vue/no-mutating-props */
 import { defineComponent, PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import SettingsRow from '@/components/settings/SettingsRow.vue'

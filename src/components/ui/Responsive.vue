@@ -13,7 +13,7 @@ import { defineComponent } from 'vue'
 import ResponsiveMixin from '@/components/mixins/responsive'
 
 export default defineComponent({
-    name: 'Responsive',
+    name: 'ResponsiveWrapper',
     mixins: [ResponsiveMixin],
     props: {
         noHide: { type: Boolean, default: false },

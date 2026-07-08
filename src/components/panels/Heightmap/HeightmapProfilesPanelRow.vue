@@ -66,7 +66,6 @@
 import { defineComponent } from 'vue'
 import { mdiDelete, mdiGrid, mdiPencil, mdiProgressUpload } from '@mdi/js'
 import BaseMixin from '@/components/mixins/base'
-import { PrinterStateBedMeshProfile } from '@/store/printer/types'
 import HeightmapRenameProfileDialog from '@/components/dialogs/HeightmapRenameProfileDialog.vue'
 import ConfirmationDialog from '@/components/dialogs/ConfirmationDialog.vue'
 

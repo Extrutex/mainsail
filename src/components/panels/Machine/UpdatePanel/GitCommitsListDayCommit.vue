@@ -42,11 +42,10 @@ import {
     ServerUpdateManagerStateGitRepo,
     ServerUpdateManagerStateGitRepoCommit,
 } from '@/store/server/updateManager/types'
-import Panel from '@/components/ui/Panel.vue'
 
 export default defineComponent({
     name: 'GitCommitsListDayCommit',
-    components: { Panel },
+    components: {},
     mixins: [BaseMixin],
     props: {
         commit: { type: Object as PropType<ServerUpdateManagerStateGitRepoCommit>, required: true },

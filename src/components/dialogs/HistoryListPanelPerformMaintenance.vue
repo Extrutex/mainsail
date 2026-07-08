@@ -33,20 +33,19 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { GuiMaintenanceStateEntry } from '@/store/gui/maintenance/types'
+import { defineComponent, PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import Panel from '@/components/ui/Panel.vue'
 import { mdiCloseThick, mdiNotebook } from '@mdi/js'
-import { GuiMaintenanceStateEntry } from '@/store/gui/maintenance/types'
-import HistoryListPanelDetailMaintenanceHistoryEntry from '@/components/dialogs/HistoryListPanelDetailMaintenanceHistoryEntry.vue'
 
 export default defineComponent({
     name: 'HistoryListPanelPerformMaintenance',
-    components: { Panel, HistoryListPanelDetailMaintenanceHistoryEntry },
+    components: { Panel },
     mixins: [BaseMixin],
     props: {
         modelValue: { type: Boolean },
-        item: { type: Object, default: false },
+        item: { type: Object as PropType<GuiMaintenanceStateEntry>, default: () => ({}) as GuiMaintenanceStateEntry },
     },
     emits: ['close-details-dialog', 'update:modelValue'],
     data() {

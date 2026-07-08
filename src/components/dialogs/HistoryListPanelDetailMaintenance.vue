@@ -56,7 +56,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
+import { defineComponent, PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import Panel from '@/components/ui/Panel.vue'
 import { mdiCloseThick, mdiNotebook, mdiPencil } from '@mdi/js'
@@ -70,7 +70,7 @@ export default defineComponent({
     mixins: [BaseMixin],
     props: {
         modelValue: { type: Boolean },
-        item: { type: Object, default: false },
+        item: { type: Object as PropType<GuiMaintenanceStateEntry>, default: () => ({}) as GuiMaintenanceStateEntry },
     },
     emits: ['update:modelValue'],
     data() {

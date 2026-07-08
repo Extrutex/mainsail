@@ -27,15 +27,12 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import BaseMixin from '../../mixins/base'
-import SettingsRow from '@/components/settings/SettingsRow.vue'
 import { caseInsensitiveSort } from '@/plugins/helpers'
 import { GuiMiscellaneousStateEntryLightgroup } from '@/store/gui/miscellaneous/types'
 
 export default defineComponent({
     name: 'SettingsMiscellaneousTabLightGroupsList',
-    components: {
-        SettingsRow,
-    },
+    components: {},
     mixins: [BaseMixin],
     props: {
         type: { type: String, required: true },

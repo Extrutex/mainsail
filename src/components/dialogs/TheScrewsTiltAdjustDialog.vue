@@ -44,8 +44,6 @@
 import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import Panel from '@/components/ui/Panel.vue'
-import Responsive from '@/components/ui/Responsive.vue'
-import SettingsRow from '@/components/settings/SettingsRow.vue'
 import { mdiArrowCollapseDown, mdiCloseThick } from '@mdi/js'
 import ControlMixin from '@/components/mixins/control'
 import TheScrewsTiltAdjustDialogEntry from '@/components/dialogs/TheScrewsTiltAdjustDialogEntry.vue'
@@ -53,7 +51,7 @@ import { ServerStateEvent } from '@/store/server/types'
 
 export default defineComponent({
     name: 'TheScrewsTiltAdjustDialog',
-    components: { TheScrewsTiltAdjustDialogEntry, Panel, Responsive, SettingsRow },
+    components: { TheScrewsTiltAdjustDialogEntry, Panel },
     mixins: [BaseMixin, ControlMixin],
     data() {
         return {

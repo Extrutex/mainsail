@@ -44,7 +44,7 @@ import { mdiChevronDown } from '@mdi/js'
 import { TranslateResult } from 'vue-i18n'
 
 export default defineComponent({
-    name: 'Panel',
+    name: 'MainsailPanel',
     mixins: [BaseMixin],
     props: {
         icon: { type: String as PropType<string | null>, default: null },

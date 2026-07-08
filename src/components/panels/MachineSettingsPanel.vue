@@ -187,6 +187,7 @@ export default defineComponent({
             this.sendCmd(params)
         },
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         sendCmd: debounce(function (this: any, params: { name: string; value: number }): void {
             const gcode = `SET_VELOCITY_LIMIT ${params.name}=${params.value}`
 

@@ -28,9 +28,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
-import SettingsRow from '@/components/settings/SettingsRow.vue'
 import Panel from '@/components/ui/Panel.vue'
-import { ServerHistoryStateJob } from '@/store/server/history/types'
 import { mdiCloseThick, mdiUpdate } from '@mdi/js'
 import { formatFilesize, formatPrintTime } from '@/plugins/helpers'
 
@@ -38,7 +36,6 @@ export default defineComponent({
     name: 'HistoryListPanelDetailsDialog',
     components: {
         Panel,
-        SettingsRow,
     },
     mixins: [BaseMixin],
     props: {

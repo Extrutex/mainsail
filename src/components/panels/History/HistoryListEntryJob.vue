@@ -6,7 +6,12 @@
         @contextmenu="showContextMenu($event)"
         @click="detailsDialogBool = true">
         <td class="pr-0">
-            <v-simple-checkbox v-ripple :value="isSelected" class="pa-0 mr-0" @click.stop="select(!isSelected)" />
+            <v-checkbox
+                :model-value="isSelected"
+                density="compact"
+                hide-details
+                class="pa-0 mr-0"
+                @click.stop="select(!isSelected)" />
         </td>
         <td class="px-0 text-center" style="width: 32px">
             <template v-if="!item.exists">
@@ -16,18 +21,19 @@
                 <v-tooltip top>
                     <template #activator="{ props }">
                         <vue-load-image>
-                            <template #image><img
-                                :alt="item.filename"
-                                :src="smallThumbnail"
-                                width="32"
-                                height="32"
-                                v-bind="props" /></template>
-                            <template #preloader><div>
-                                <v-progress-circular indeterminate color="primary" />
-                            </div></template>
-                            <template #error><div>
-                                <v-icon>{{ mdiFile }}</v-icon>
-                            </div></template>
+                            <template #image>
+                                <img :alt="item.filename" :src="smallThumbnail" width="32" height="32" v-bind="props" />
+                            </template>
+                            <template #preloader>
+                                <div>
+                                    <v-progress-circular indeterminate color="primary" />
+                                </div>
+                            </template>
+                            <template #error>
+                                <div>
+                                    <v-icon>{{ mdiFile }}</v-icon>
+                                </div>
+                            </template>
                         </vue-load-image>
                     </template>
                     <span><img :alt="item.filename" :src="bigThumbnail" width="250" /></span>
@@ -35,13 +41,19 @@
             </template>
             <template v-else-if="smallThumbnail">
                 <vue-load-image>
-                    <template #image><img :alt="item.filename" :src="smallThumbnail" width="32" height="32" /></template>
-                    <template #preloader><div>
-                        <v-progress-circular indeterminate color="primary" />
-                    </div></template>
-                    <template #error><div>
-                        <v-icon>{{ mdiFile }}</v-icon>
-                    </div></template>
+                    <template #image>
+                        <img :alt="item.filename" :src="smallThumbnail" width="32" height="32" />
+                    </template>
+                    <template #preloader>
+                        <div>
+                            <v-progress-circular indeterminate color="primary" />
+                        </div>
+                    </template>
+                    <template #error>
+                        <div>
+                            <v-icon>{{ mdiFile }}</v-icon>
+                        </div>
+                    </template>
                 </vue-load-image>
             </template>
             <template v-else>
@@ -127,7 +139,6 @@
 import { defineComponent } from 'vue'
 import type { LongpressEvent } from '@/directives/longpress'
 import HistoryListPanelDetailsDialog from '@/components/dialogs/HistoryListPanelDetailsDialog.vue'
-import Panel from '@/components/ui/Panel.vue'
 import BaseMixin from '@/components/mixins/base'
 import StartPrintDialog from '@/components/dialogs/StartPrintDialog.vue'
 import { FileStateFileThumbnail, FileStateGcodefile } from '@/store/files/types'
@@ -163,7 +174,6 @@ export default defineComponent({
         AddBatchToQueueDialog,
         HistoryListPanelNoteDialog,
         HistoryListPanelDetailsDialog,
-        Panel,
         StartPrintDialog,
     },
     mixins: [BaseMixin],

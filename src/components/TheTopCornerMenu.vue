@@ -99,7 +99,6 @@
 import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { ServerPowerStateDevice } from '@/store/server/power/types'
-import Panel from '@/components/ui/Panel.vue'
 import { mdiCloseThick, mdiPowerStandby, mdiRestart, mdiPower, mdiToggleSwitch, mdiToggleSwitchOff } from '@mdi/js'
 import TopCornerMenuService from '@/components/ui/TopCornerMenuService.vue'
 import ConfirmationDialog from '@/components/dialogs/ConfirmationDialog.vue'
@@ -122,7 +121,7 @@ interface dialogConfirmation {
 
 export default defineComponent({
     name: 'TheTopCornerMenu',
-    components: { ConfirmationDialog, TopCornerMenuService, Panel },
+    components: { ConfirmationDialog, TopCornerMenuService },
     mixins: [BaseMixin, ServiceMixins],
     data() {
         return {

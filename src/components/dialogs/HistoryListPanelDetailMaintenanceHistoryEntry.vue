@@ -24,18 +24,17 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from 'vue'
-import BaseMixin from '@/components/mixins/base'
-import Panel from '@/components/ui/Panel.vue'
-import { mdiAdjust, mdiAlarm, mdiCalendar, mdiCloseThick } from '@mdi/js'
 import { GuiMaintenanceStateEntry } from '@/store/gui/maintenance/types'
+import { defineComponent, PropType } from 'vue'
+import BaseMixin from '@/components/mixins/base'
+import { mdiAdjust, mdiAlarm, mdiCalendar, mdiCloseThick } from '@mdi/js'
 
 export default defineComponent({
     name: 'HistoryListPanelDetailMaintenanceHistoryEntry',
-    components: { Panel },
+    components: {},
     mixins: [BaseMixin],
     props: {
-        item: { type: Object, default: false },
+        item: { type: Object as PropType<GuiMaintenanceStateEntry>, default: () => ({}) as GuiMaintenanceStateEntry },
         current: { type: Boolean, default: false },
         last: { type: Boolean, default: false },
     },

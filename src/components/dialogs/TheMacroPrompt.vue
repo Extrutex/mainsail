@@ -45,12 +45,11 @@ import { mdiCloseThick, mdiInformation } from '@mdi/js'
 import { ServerStateEvent, ServerStateEventPrompt } from '@/store/server/types'
 import MacroPromptFooterButton from '@/components/dialogs/MacroPromptFooterButton.vue'
 import MacroPromptText from '@/components/dialogs/MacroPromptText.vue'
-import MacroPromptButton from '@/components/dialogs/MacroPromptButton.vue'
 import MacroPromptButtonGroup from '@/components/dialogs/MacroPromptButtonGroup.vue'
 
 export default defineComponent({
     name: 'TheMacroPrompt',
-    components: { MacroPromptButtonGroup, MacroPromptButton, MacroPromptText, MacroPromptFooterButton, Panel },
+    components: { MacroPromptButtonGroup, MacroPromptText, MacroPromptFooterButton, Panel },
     mixins: [BaseMixin],
     data() {
         return {
@@ -91,6 +90,7 @@ export default defineComponent({
 
                 // stop processing and clear events once we find an end action
                 if (type === 'end') {
+                    // eslint-disable-next-line vue/no-side-effects-in-computed-properties
                     this.currentPrompt = []
                     break
                 }
@@ -106,16 +106,19 @@ export default defineComponent({
 
                 // stop processing events once we find a begin action
                 if (type === 'begin') {
+                    // eslint-disable-next-line vue/no-side-effects-in-computed-properties
                     this.currentPrompt = []
                     break
                 }
             }
 
             // save our checkpoint event...we'll never have to look at messages prior to the checkpoint again
+            // eslint-disable-next-line vue/no-side-effects-in-computed-properties
             this.checkpointEvent = events[events.length - 1]
 
             // if we found new prompt events in this chunk, let's append them
             if (promptEvents.length > 0) {
+                // eslint-disable-next-line vue/no-side-effects-in-computed-properties
                 this.currentPrompt = [...this.currentPrompt, ...promptEvents]
             }
 

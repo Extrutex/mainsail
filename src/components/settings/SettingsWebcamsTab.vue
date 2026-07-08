@@ -29,7 +29,6 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import BaseMixin from '../mixins/base'
-import SettingsRow from '@/components/settings/SettingsRow.vue'
 import { mdiDelete, mdiPencil } from '@mdi/js'
 import WebcamMixin from '@/components/mixins/webcam'
 import { FileStateFile } from '@/store/files/types'
@@ -42,7 +41,6 @@ const DEFAULT_ASPECT_RATIO = '16:9'
 export default defineComponent({
     name: 'SettingsWebcamsTab',
     components: {
-        SettingsRow,
         WebcamForm,
         WebcamListEntry,
     },

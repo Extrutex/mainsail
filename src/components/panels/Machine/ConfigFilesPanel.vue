@@ -97,21 +97,17 @@
             <v-data-table
                 v-if="!showMissingConfigRootWarning"
                 v-model="selectedFiles"
-                :items="files"
+                :items="sortedFiles"
                 class="files-table"
-                :headers="headers"
+                :headers="vuetifyHeaders"
+                :custom-key-sort="noopSortMap"
                 v-model:page="currentPage"
-                :custom-sort="sortFiles"
-                v-model:sort-by="sortBy"
-                v-model:sort-desc="sortDesc"
+                v-model:sort-by="vuetifySortBy"
                 v-model:items-per-page="countPerPage"
-                :footer-props="{
-                    itemsPerPageText: $t('Machine.ConfigFilesPanel.Files'),
-                    itemsPerPageAllText: $t('Machine.ConfigFilesPanel.AllFiles'),
-                    itemsPerPageOptions: [10, 25, 50, 100, -1],
-                }"
+                :items-per-page-text="$t('Machine.ConfigFilesPanel.Files')"
+                :items-per-page-options="[10, 25, 50, 100, -1]"
                 mobile-breakpoint="0"
-                item-key="filename"
+                item-value="filename"
                 show-select>
                 <template #no-data>
                     <div class="text-center">{{ $t('Machine.ConfigFilesPanel.Empty') }}</div>
@@ -125,7 +121,7 @@
                         @dragleave="dragLeaveFilelist"
                         @drop.prevent.stop="dragDropFilelist($event, { isDirectory: true, filename: '..' })">
                         <td class="file-list__select-td pr-0">
-                            <v-simple-checkbox v-ripple disabled class="pa-0 mr-0" />
+                            <v-checkbox disabled density="compact" hide-details class="pa-0 mr-0" />
                         </td>
                         <td class="px-0 text-center" style="width: 32px">
                             <v-icon>{{ mdiFolderUpload }}</v-icon>
@@ -134,7 +130,7 @@
                     </tr>
                 </template>
 
-                <template #item="{ index, item, isSelected, select }">
+                <template #item="{ index, item, isSelected, toggleSelect }">
                     <tr
                         :key="`${index} ${item.filename}`"
                         v-longpress:600="{ handler: showContextMenu, args: [item] }"
@@ -149,11 +145,12 @@
                         @dragleave="dragLeaveFilelist"
                         @drop.prevent.stop="dragDropFilelist($event, item)">
                         <td class="file-list__select-td pr-0">
-                            <v-simple-checkbox
-                                v-ripple
-                                :value="isSelected"
+                            <v-checkbox
+                                :model-value="isSelected(item)"
+                                density="compact"
+                                hide-details
                                 class="pa-0 mr-0"
-                                @click.stop="select(!isSelected)" />
+                                @click.stop="toggleSelect(item)" />
                         </td>
                         <td class="px-0 text-center" style="width: 32px">
                             <v-icon v-if="item.isDirectory">{{ mdiFolder }}</v-icon>
@@ -447,7 +444,7 @@
             {{ Math.round(uploadSnackbar.percent) }} % @ {{ formatFilesize(Math.round(uploadSnackbar.speed)) }}/s
             <br />
             <v-progress-linear class="mt-2" :value="uploadSnackbar.percent" />
-            <template #action="{ attrs }">
+            <template #action>
                 <v-btn color="red" variant="text" v-bind="props" style="min-width: auto" @click="cancelUpload">
                     <v-icon class="0">{{ mdiClose }}</v-icon>
                 </v-btn>
@@ -553,7 +550,6 @@ export default defineComponent({
             mdiCloseThick: mdiCloseThick,
             mdiLockOutline: mdiLockOutline,
             mdiContentCopy: mdiContentCopy,
-            sortFiles: sortFiles,
             formatFilesize: formatFilesize,
             currentPage: 1,
             contextMenu: {
@@ -788,6 +784,39 @@ export default defineComponent({
                 { text: this.$t('Machine.ConfigFilesPanel.Filesize'), value: 'size', align: 'right' },
                 { text: this.$t('Machine.ConfigFilesPanel.LastModified'), value: 'modified', align: 'right' },
             ]
+        },
+        vuetifyHeaders() {
+            return this.headers.map((header) => ({
+                title: header.text,
+                key: header.value,
+                sortable: header.sortable,
+                align: header.align,
+            }))
+        },
+        // sorting is fully handled by `sortedFiles`; the table only needs `sort-by` to
+        // drive the header arrows/click handling, bridged to the two store fields.
+        vuetifySortBy: {
+            get() {
+                return [{ key: this.sortBy ?? 'filename', order: this.sortDesc ? 'desc' : 'asc' }]
+            },
+            set(newVal) {
+                const entry = newVal[0]
+                this.sortBy = entry?.key ?? 'filename'
+                this.sortDesc = entry?.order === 'desc'
+            },
+        },
+        sortedFiles() {
+            return sortFiles(this.files.slice(), [this.sortBy], [this.sortDesc])
+        },
+        // sort() is already applied by `sortedFiles`; keep the table's own re-sort a no-op
+        // (stable sort keeps our order) so header clicks still work without double-sorting.
+        noopSortMap() {
+            const map = {}
+            this.headers.forEach((header) => {
+                if (header.sortable !== false && header.value) map[header.value] = () => 0
+            })
+
+            return map
         },
         selectedFiles: {
             get() {

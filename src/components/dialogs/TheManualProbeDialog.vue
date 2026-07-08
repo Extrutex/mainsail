@@ -94,7 +94,6 @@
 import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import Panel from '@/components/ui/Panel.vue'
-import Responsive from '@/components/ui/Responsive.vue'
 
 import {
     mdiArrowCollapseDown,
@@ -109,7 +108,7 @@ import {
 
 export default defineComponent({
     name: 'TheManualProbeDialog',
-    components: { Panel, Responsive },
+    components: { Panel },
     mixins: [BaseMixin],
     data() {
         return {

@@ -90,6 +90,7 @@ export default defineComponent({
         },
 
         naviPoints(): NaviPoint[] {
+            // eslint-disable-next-line vue/no-side-effects-in-computed-properties
             return this.routesNaviPoints.sort((a, b) => a.position - b.position)
         },
 

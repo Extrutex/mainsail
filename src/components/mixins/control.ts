@@ -104,7 +104,7 @@ export default defineComponent({
             return this.homedAxes.includes('z')
         },
 
-        macros(): any {
+        macros() {
             return this.$store.getters['printer/getMacros']
         },
 

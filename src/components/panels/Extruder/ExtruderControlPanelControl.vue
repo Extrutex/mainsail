@@ -199,7 +199,6 @@ import { mdiArrowDownBold, mdiArrowUpBold, mdiPrinter3dNozzle } from '@mdi/js'
 import BaseMixin from '@/components/mixins/base'
 import NumberInput from '@/components/inputs/NumberInput.vue'
 import Responsive from '@/components/ui/Responsive.vue'
-import ToolSlider from '@/components/inputs/ToolSlider.vue'
 import ExtruderMixin from '@/components/mixins/extruder'
 import { parseNumber } from '@/plugins/helpers'
 
@@ -208,7 +207,6 @@ export default defineComponent({
     components: {
         NumberInput,
         Responsive,
-        ToolSlider,
     },
     mixins: [BaseMixin, ExtruderMixin],
     data() {

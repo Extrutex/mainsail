@@ -94,7 +94,6 @@ import {
     mdiRenameBox,
     mdiDelete,
 } from '@mdi/js'
-import Panel from '@/components/ui/Panel.vue'
 import AddBatchToQueueDialog from '@/components/dialogs/AddBatchToQueueDialog.vue'
 import ConfirmationDialog from '@/components/dialogs/ConfirmationDialog.vue'
 import GcodefilesRenameFileDialog from '@/components/dialogs/GcodefilesRenameFileDialog.vue'
@@ -106,7 +105,6 @@ export default defineComponent({
     name: 'StatusPanelGcodefilesEntry',
     components: {
         GcodefilesThumbnail,
-        Panel,
         StartPrintDialog,
         AddBatchToQueueDialog,
         ConfirmationDialog,

@@ -10,11 +10,11 @@ export default defineComponent({
             return this.homing_origin.length > 1 ? Math.round(this.homing_origin[2] * 1000) / 1000 : 0
         },
 
-        commands(): any {
+        commands() {
             return this.$store.state.printer.gcode?.commands ?? {}
         },
 
-        settings(): any {
+        settings() {
             return this.$store.state.printer.configfile?.settings ?? {}
         },
 
@@ -28,7 +28,7 @@ export default defineComponent({
             return 'stepper_z'
         },
 
-        endstop_pin(): any {
+        endstop_pin() {
             return this.settings[this.stepper_name]?.endstop_pin?.trim() ?? null
         },
 

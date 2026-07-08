@@ -85,16 +85,14 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { debounce } from '@/plugins/helpers'
-import { Debounce } from 'vue-debounce-decorator'
 import BaseMixin from '@/components/mixins/base'
-import Panel from '@/components/ui/Panel.vue'
 import NumberInput from '@/components/inputs/NumberInput.vue'
 import Responsive from '@/components/ui/Responsive.vue'
 import ControlMixin from '@/components/mixins/control'
 
 export default defineComponent({
     name: 'FirmwareRetractionSettings',
-    components: { Panel, NumberInput, Responsive },
+    components: { NumberInput, Responsive },
     mixins: [BaseMixin, ControlMixin],
     computed: {
         retractLength(): number {

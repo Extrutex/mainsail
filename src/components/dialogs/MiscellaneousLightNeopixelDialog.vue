@@ -322,6 +322,7 @@ export default defineComponent({
         },
     },
     methods: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onColorRGBChanged: debounce(function (this: any, value: IroColor) {
             if (value.red === this.targetRed && value.green === this.targetGreen && value.blue === this.targetBlue)
                 return
@@ -335,6 +336,7 @@ export default defineComponent({
 
             this.updateColor(color)
         }, 500),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onColorWhiteChanged: debounce(function (this: any, value: IroColor) {
             if (value.alpha === this.targetWhite) return
 
@@ -347,6 +349,7 @@ export default defineComponent({
 
             this.updateColor(color)
         }, 500),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         onColorInput: debounce(function (this: any, payload: { name: string; value: number }) {
             const color: ColorData = {
                 red: this.targetRed,

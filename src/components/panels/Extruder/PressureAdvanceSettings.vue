@@ -39,17 +39,15 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import { debounce } from '@/plugins/helpers'
-import { Debounce } from 'vue-debounce-decorator'
 import BaseMixin from '@/components/mixins/base'
 import NumberInput from '@/components/inputs/NumberInput.vue'
-import Responsive from '@/components/ui/Responsive.vue'
 
 const PRECISION = 1000
 const DEFAULT_SMOOTH_TIME = 0.04
 
 export default defineComponent({
     name: 'PressureAdvanceSettings',
-    components: { NumberInput, Responsive },
+    components: { NumberInput },
     mixins: [BaseMixin],
     props: {
         isSmall: { type: Boolean, default: false },

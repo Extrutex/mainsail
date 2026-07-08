@@ -15,7 +15,6 @@ import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import SettingsRow from '@/components/settings/SettingsRow.vue'
 import { mdiDelete, mdiPencil } from '@mdi/js'
-import { GuiMiscellaneousStateEntryPreset } from '@/store/gui/miscellaneous/types'
 
 export default defineComponent({
     name: 'SettingsMiscellaneousTabLightPresetsListEntry',

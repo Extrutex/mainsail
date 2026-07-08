@@ -11,7 +11,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
-import { FileStateGcodefile, FileStateGcodefileFilament } from '@/store/files/types'
+import { FileStateGcodefileFilament } from '@/store/files/types'
 import { convertStringToArray } from '@/plugins/helpers'
 
 export default defineComponent({

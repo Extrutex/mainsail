@@ -49,11 +49,10 @@ import Panel from '@/components/ui/Panel.vue'
 import { mdiCloseThick, mdiFileSyncOutline } from '@mdi/js'
 import { rolloverLogfiles } from '@/store/variables'
 import { capitalize } from '@/plugins/helpers'
-import LogfilesPanelGenericLog from '@/components/panels/Machine/LogfilesPanel/LogfilesPanelGenericLog.vue'
 
 export default defineComponent({
     name: 'LogfilesPanelRolloverDialog',
-    components: { LogfilesPanelGenericLog, Panel },
+    components: { Panel },
     mixins: [BaseMixin],
     props: {
         modelValue: { type: Boolean },

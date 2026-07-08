@@ -19,7 +19,7 @@ import { GuiWebcamStateWebcam } from '@/store/gui/webcams/types'
 import WebcamMixin from '@/components/mixins/webcam'
 
 export default defineComponent({
-    name: 'Hlsstreamer',
+    name: 'HlsStreamer',
     mixins: [BaseMixin, WebcamMixin],
     props: {
         camSettings: { type: Object as PropType<GuiWebcamStateWebcam>, required: true },

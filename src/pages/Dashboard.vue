@@ -115,35 +115,35 @@ export default defineComponent({
         WebcamPanel,
     },
     computed: {
-        mobileLayout(): any[] {
+        mobileLayout() {
             return this.$store.getters['gui/getPanels']('mobile', 0, true)
         },
 
-        tabletLayout1(): any[] {
+        tabletLayout1() {
             return this.$store.getters['gui/getPanels']('tablet', 1, true)
         },
 
-        tabletLayout2(): any[] {
+        tabletLayout2() {
             return this.$store.getters['gui/getPanels']('tablet', 2, true)
         },
 
-        desktopLayout1(): any[] {
+        desktopLayout1() {
             return this.$store.getters['gui/getPanels']('desktop', 1, true)
         },
 
-        desktopLayout2(): any[] {
+        desktopLayout2() {
             return this.$store.getters['gui/getPanels']('desktop', 2, true)
         },
 
-        widescreenLayout1(): any[] {
+        widescreenLayout1() {
             return this.$store.getters['gui/getPanels']('widescreen', 1, true)
         },
 
-        widescreenLayout2(): any[] {
+        widescreenLayout2() {
             return this.$store.getters['gui/getPanels']('widescreen', 2, true)
         },
 
-        widescreenLayout3(): any[] {
+        widescreenLayout3() {
             return this.$store.getters['gui/getPanels']('widescreen', 3, true)
         },
     },

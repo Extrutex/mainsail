@@ -45,7 +45,6 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
-import SettingsRow from '@/components/settings/SettingsRow.vue'
 import Panel from '@/components/ui/Panel.vue'
 import { mdiCloseThick, mdiHelpCircle } from '@mdi/js'
 import CheckboxList from '@/components/inputs/CheckboxList.vue'
@@ -54,7 +53,7 @@ import SettingsGeneralDatabase from '@/components/mixins/settingsGeneralDatabase
 
 export default defineComponent({
     name: 'SettingsGeneralTabResetDatabase',
-    components: { Panel, SettingsRow, CheckboxList },
+    components: { Panel, CheckboxList },
     mixins: [BaseMixin, SettingsGeneralDatabase],
     data() {
         return {

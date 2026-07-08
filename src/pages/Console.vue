@@ -106,7 +106,7 @@ export default defineComponent({
         }
     },
     computed: {
-        events(): any[] {
+        events() {
             return this.$store.getters['server/getConsoleEvents'](this.consoleDirection === 'table')
         },
     },

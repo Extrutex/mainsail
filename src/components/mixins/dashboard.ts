@@ -27,7 +27,7 @@ export default defineComponent({
             return this.$store.getters['gui/macros/getAllMacrogroups'] ?? []
         },
 
-        webcams(): any[] {
+        webcams() {
             return this.$store.getters['gui/webcams/getWebcams'] ?? []
         },
     },

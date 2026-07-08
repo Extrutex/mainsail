@@ -277,6 +277,7 @@ export default defineComponent({
             this.resizeObserver.observe(wrapper)
         },
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         handleResize: debounce(function (this: any) {
             this.$nextTick(() => {
                 this.calcThumbnailFactor()

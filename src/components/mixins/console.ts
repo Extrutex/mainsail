@@ -36,7 +36,7 @@ export default defineComponent({
             },
         },
 
-        customFilters(): any {
+        customFilters() {
             return this.$store.state.gui.console.consolefilters ?? {}
         },
 

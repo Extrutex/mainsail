@@ -76,6 +76,7 @@ export default defineComponent({
             return Object.keys(this.$store.state.printer).filter((name) => name.startsWith('nevermore'))
         },
         monitors() {
+            // eslint-disable-next-line vue/no-side-effects-in-computed-properties
             return this.available_monitors.sort(this.sortObjectName)
         },
         temperature_fans() {

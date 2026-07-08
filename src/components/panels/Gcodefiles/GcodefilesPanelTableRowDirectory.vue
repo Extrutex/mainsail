@@ -12,7 +12,12 @@
         @dragstart="onDragStart"
         @drag="onDrag">
         <td class="file-list__select-td pr-0">
-            <v-simple-checkbox v-ripple :value="isSelected" class="pa-0 mr-0" @click.stop="select(!isSelected)" />
+            <v-checkbox
+                :model-value="isSelected"
+                density="compact"
+                hide-details
+                class="pa-0 mr-0"
+                @click.stop="select(!isSelected)" />
         </td>
         <td class="px-0 text-center" style="width: 32px">
             <v-icon>{{ mdiFolder }}</v-icon>
@@ -49,7 +54,6 @@ import { defineComponent } from 'vue'
 import type { LongpressEvent } from '@/directives/longpress'
 import BaseMixin from '@/components/mixins/base'
 import GcodefilesMixin from '@/components/mixins/gcodefiles'
-import { FileStateGcodefile } from '@/store/files/types'
 import { mdiDelete, mdiFolder, mdiRenameBox } from '@mdi/js'
 import { CLOSE_CONTEXT_MENU, EventBus } from '@/plugins/eventBus'
 

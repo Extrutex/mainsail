@@ -27,7 +27,6 @@
 import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import SettingsRow from '@/components/settings/SettingsRow.vue'
-import { GuiWebcamStateWebcam } from '@/store/gui/webcams/types'
 import { mdiDelete, mdiPencil, mdiLightbulbOutline } from '@mdi/js'
 import WebcamMixin from '@/components/mixins/webcam'
 

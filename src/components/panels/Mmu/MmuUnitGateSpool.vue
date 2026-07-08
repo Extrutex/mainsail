@@ -257,7 +257,7 @@ export default defineComponent({
             return classes
         },
         hasSelectGateListener() {
-            return !!this.$listeners['select-gate']
+            return !!this.$attrs.onSelectGate
         },
     },
     methods: {

@@ -101,14 +101,13 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import Panel from '@/components/ui/Panel.vue'
-import SettingsRow from '@/components/settings/SettingsRow.vue'
 import BaseMixin from '@/components/mixins/base'
 import TimelapseMixin from '@/components/mixins/timelapse'
 import { mdiCloseThick, mdiTextBoxSearchOutline } from '@mdi/js'
 
 export default defineComponent({
     name: 'TimelapseRenderingsettingsDialog',
-    components: { Panel, SettingsRow },
+    components: { Panel },
     mixins: [BaseMixin, TimelapseMixin],
     props: {
         modelValue: { type: Boolean, default: false },

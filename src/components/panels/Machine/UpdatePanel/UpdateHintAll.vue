@@ -47,13 +47,12 @@ import BaseMixin from '@/components/mixins/base'
 import { ServerUpdateManagerStateGitRepo, ServerUpdateManagerStateGuiList } from '@/store/server/updateManager/types'
 import { mdiProgressQuestion, mdiCloseThick } from '@mdi/js'
 import Panel from '@/components/ui/Panel.vue'
-import GitCommitsListDay from '@/components/panels/Machine/UpdatePanel/GitCommitsListDay.vue'
 import UpdateHintAlert from '@/components/panels/Machine/UpdatePanel/UpdateHintAlert.vue'
 import semver from 'semver'
 
 export default defineComponent({
     name: 'UpdateHintAll',
-    components: { GitCommitsListDay, Panel, UpdateHintAlert },
+    components: { Panel, UpdateHintAlert },
     mixins: [BaseMixin],
     props: {
         modelValue: { type: Boolean },

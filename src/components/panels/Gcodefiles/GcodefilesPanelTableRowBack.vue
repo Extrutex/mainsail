@@ -7,7 +7,7 @@
         @drop="onDrop"
         @dragover="onDragOver">
         <td class="file-list__select-td pr-0">
-            <v-simple-checkbox v-ripple disabled class="pa-0 mr-0" />
+            <v-checkbox disabled density="compact" hide-details class="pa-0 mr-0" />
         </td>
         <td class="px-0 text-center" style="width: 32px">
             <v-icon>{{ mdiFolderUpload }}</v-icon>

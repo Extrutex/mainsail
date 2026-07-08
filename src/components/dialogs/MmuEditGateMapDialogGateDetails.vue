@@ -413,6 +413,7 @@ export default defineComponent({
         },
     },
     methods: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         selectFilamentColor: debounce(function (this: any, newColor: VColorPickerColor) {
             this.filamentColor = newColor.hexa
         }, 500),
@@ -444,6 +445,7 @@ export default defineComponent({
             const gcode = `MMU_GATE_MAP GATE=${this.selectedGate} ${attribute.toUpperCase()}=${escapedValue} QUIET=1`
             this.doSend(gcode)
         },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         debounceSetMmuGateMap: debounce(function (this: any, attribute: string, value: string | number) {
             this.setMmuGateMap(attribute, value)
         }, 500),

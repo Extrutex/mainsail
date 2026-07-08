@@ -38,7 +38,6 @@ import BaseMixin from '@/components/mixins/base'
 import Panel from '@/components/ui/Panel.vue'
 import { mdiCloseThick } from '@mdi/js'
 import GcodefilesMixin from '@/components/mixins/gcodefiles'
-import { FileStateGcodefile } from '@/store/files/types'
 
 export default defineComponent({
     name: 'GcodefilesDuplicateFileDialog',

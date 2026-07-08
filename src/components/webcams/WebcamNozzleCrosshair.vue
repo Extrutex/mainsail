@@ -10,8 +10,6 @@
 import { defineComponent } from 'vue'
 import { debounce } from '@/plugins/helpers'
 import BaseMixin from '@/components/mixins/base'
-import { GuiWebcamStateWebcam } from '@/store/gui/webcams/types'
-import { Debounce } from 'vue-debounce-decorator'
 
 export default defineComponent({
     name: 'WebcamWrapper',

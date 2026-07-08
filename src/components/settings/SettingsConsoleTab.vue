@@ -137,7 +137,6 @@ import { defineComponent } from 'vue'
 import { debounce } from '@/plugins/helpers'
 import BaseMixin from '../mixins/base'
 import SettingsRow from '@/components/settings/SettingsRow.vue'
-import { Debounce } from 'vue-debounce-decorator'
 import { mdiFilter, mdiPencil, mdiFilterOff, mdiDelete, mdiConsoleLine } from '@mdi/js'
 import { GuiConsoleStateFilter } from '@/store/gui/console/types'
 

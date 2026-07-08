@@ -6,7 +6,12 @@
         @contextmenu="showContextMenu($event)"
         @click="detailsDialogBool = true">
         <td class="pr-0">
-            <v-simple-checkbox v-ripple :value="isSelected" class="pa-0 mr-0" @click.stop="select(!isSelected)" />
+            <v-checkbox
+                :model-value="isSelected"
+                density="compact"
+                hide-details
+                class="pa-0 mr-0"
+                @click.stop="select(!isSelected)" />
         </td>
         <td class="px-0 text-center" style="width: 32px">
             <v-icon color="primary">{{ icon }}</v-icon>
@@ -62,7 +67,6 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import type { LongpressEvent } from '@/directives/longpress'
-import Panel from '@/components/ui/Panel.vue'
 import BaseMixin from '@/components/mixins/base'
 import {
     mdiAdjust,
@@ -75,13 +79,11 @@ import {
     mdiTextBoxSearch,
 } from '@mdi/js'
 import { CLOSE_CONTEXT_MENU, EventBus } from '@/plugins/eventBus'
-import { HistoryListPanelCol } from '@/store/server/history/types'
-import { GuiMaintenanceStateEntry } from '@/store/gui/maintenance/types'
 import HistoryListPanelDetailMaintenance from '@/components/dialogs/HistoryListPanelDetailMaintenance.vue'
 
 export default defineComponent({
     name: 'HistoryListPanel',
-    components: { HistoryListPanelDetailMaintenance, Panel },
+    components: { HistoryListPanelDetailMaintenance },
     mixins: [BaseMixin],
     props: {
         item: { type: Object, required: true },

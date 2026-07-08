@@ -195,6 +195,7 @@ export default defineComponent({
             clearTimeout(this.timeout)
         },
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         changeSlider: debounce(function (this: any): void {
             this.sendCmd()
 

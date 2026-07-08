@@ -8,7 +8,6 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
-import { HistoryStatsValueNames, ServerHistoryStateAllPrintStatusEntry } from '@/store/server/history/types'
 import { formatPrintTime } from '@/plugins/helpers'
 
 export default defineComponent({

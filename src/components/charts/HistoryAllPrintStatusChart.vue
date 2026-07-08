@@ -18,7 +18,7 @@ import type { ECBasicOption } from 'echarts/types/dist/shared.d'
 import type { ECharts } from 'echarts/core'
 import type { EChartRef } from '@/types/echarts'
 import { formatPrintTime } from '@/plugins/helpers'
-import { HistoryStatsValueNames, ServerHistoryStateAllPrintStatusEntry } from '@/store/server/history/types'
+import { ServerHistoryStateAllPrintStatusEntry } from '@/store/server/history/types'
 
 export default defineComponent({
     name: 'HistoryAllPrintStatusChart',

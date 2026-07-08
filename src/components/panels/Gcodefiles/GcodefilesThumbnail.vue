@@ -8,13 +8,19 @@
         :disabled="!bigThumbnailUrl">
         <template #activator="{ props }">
             <vue-load-image>
-                <template #image><img :src="smallThumbnailUrl" width="32" height="32" :alt="item.filename" v-bind="props" /></template>
-                <template #preloader><div>
-                    <v-progress-circular indeterminate color="primary" />
-                </div></template>
-                <template #error><div>
-                    <v-icon>{{ mdiFile }}</v-icon>
-                </div></template>
+                <template #image>
+                    <img :src="smallThumbnailUrl" width="32" height="32" :alt="item.filename" v-bind="props" />
+                </template>
+                <template #preloader>
+                    <div>
+                        <v-progress-circular indeterminate color="primary" />
+                    </div>
+                </template>
+                <template #error>
+                    <div>
+                        <v-icon>{{ mdiFile }}</v-icon>
+                    </div>
+                </template>
             </vue-load-image>
         </template>
         <span>
@@ -26,7 +32,6 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
-import { FileStateGcodefile } from '@/store/files/types'
 import { mdiFile, mdiFolder } from '@mdi/js'
 import { defaultBigThumbnailBackground, thumbnailBigMin, thumbnailSmallMax, thumbnailSmallMin } from '@/store/variables'
 import { escapePath } from '@/plugins/helpers'

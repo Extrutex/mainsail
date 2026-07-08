@@ -7,7 +7,7 @@ export default defineComponent({
             return 'AFC' in this.$store.state.printer
         },
 
-        afc(): any {
+        afc() {
             return this.$store.state.printer.AFC ?? {}
         },
 
@@ -48,14 +48,14 @@ export default defineComponent({
             return this.afc.error_state ?? false
         },
 
-        afcCurrentLane(): any {
+        afcCurrentLane() {
             const current = this.afc.current_load ?? this.afc.current_lane ?? null
             if (current === null) return null
 
             return this.getAfcLaneObject(current)
         },
 
-        afcCurrentBuffer(): any {
+        afcCurrentBuffer() {
             const name = this.afcCurrentLane?.buffer ?? null
             if (name === null) return null
 
@@ -104,29 +104,29 @@ export default defineComponent({
             return this.$store.state.gui.view.afc?.hiddenUnits ?? []
         },
 
-        afcCurrentToolchange(): any {
+        afcCurrentToolchange() {
             return this.afc.current_toolchange ?? undefined
         },
     },
     methods: {
-        getPrinterObject(key: string): any {
+        getPrinterObject(key: string) {
             const printer = this.$store.state.printer ?? {}
             return printer[key] ?? null
         },
 
-        getPrinterSettings(key: string): any {
+        getPrinterSettings(key: string) {
             const settings = this.$store.state.printer.configfile?.settings ?? {}
 
             return settings[key.toLowerCase()] ?? null
         },
 
-        getAfcLaneObject(lane: string): any {
+        getAfcLaneObject(lane: string) {
             const key_stepper = `AFC_stepper ${lane}`
             const key_lane = `AFC_lane ${lane}`
             return this.getPrinterObject(key_stepper) ?? this.getPrinterObject(key_lane) ?? {}
         },
 
-        getAfcLaneSettings(lane: string): any {
+        getAfcLaneSettings(lane: string) {
             const key_stepper = `AFC_stepper ${lane}`
             const key_lane = `AFC_lane ${lane}`
             return this.getPrinterSettings(key_stepper) ?? this.getPrinterSettings(key_lane) ?? {}
@@ -146,22 +146,22 @@ export default defineComponent({
             }
         },
 
-        getAfcExtruderObject(extruder: string): any {
+        getAfcExtruderObject(extruder: string) {
             const key_extruder = `AFC_extruder ${extruder}`
             return this.getPrinterObject(key_extruder) ?? {}
         },
 
-        getAfcExtruderSettings(extruder: string): any {
+        getAfcExtruderSettings(extruder: string) {
             const key = `AFC_extruder ${extruder}`
             return this.getPrinterSettings(key) ?? {}
         },
 
-        getAfcBufferObject(buffer: string): any {
+        getAfcBufferObject(buffer: string) {
             const key_buffer = `AFC_buffer ${buffer}`
             return this.getPrinterObject(key_buffer)
         },
 
-        getAfcHubObject(hub: string): any {
+        getAfcHubObject(hub: string) {
             const key = `AFC_hub ${hub}`
             return this.getPrinterObject(key) ?? {}
         },

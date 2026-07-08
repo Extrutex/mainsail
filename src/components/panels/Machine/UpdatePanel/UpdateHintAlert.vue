@@ -27,13 +27,11 @@ import { defineComponent, PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { ServerUpdateManagerStateGitRepo } from '@/store/server/updateManager/types'
 import { mdiCloseThick, mdiAlertCircle, mdiEye, mdiOpenInNew } from '@mdi/js'
-import Panel from '@/components/ui/Panel.vue'
-import GitCommitsListDay from '@/components/panels/Machine/UpdatePanel/GitCommitsListDay.vue'
 import { capitalize } from '@/plugins/helpers'
 
 export default defineComponent({
     name: 'UpdateHintAlert',
-    components: { GitCommitsListDay, Panel },
+    components: {},
     mixins: [BaseMixin],
     props: {
         repo: { type: Object as PropType<ServerUpdateManagerStateGitRepo>, required: true },

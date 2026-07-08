@@ -39,7 +39,6 @@ import BaseMixin from '@/components/mixins/base'
 import { mdiCloseThick } from '@mdi/js'
 import TemperaturePanelListItemEditChartSerie from '@/components/panels/Temperature/TemperaturePanelListItemEditChartSerie.vue'
 import TemperaturePanelListItemEditAdditionalSensor from '@/components/panels/Temperature/TemperaturePanelListItemEditAdditionalSensor.vue'
-import { Debounce } from 'vue-debounce-decorator'
 
 export default defineComponent({
     name: 'TemperaturePanelListItemEdit',

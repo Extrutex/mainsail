@@ -35,7 +35,7 @@ SOI[0] = 0xff
 SOI[1] = 0xd8
 
 export default defineComponent({
-    name: 'Mjpegstreamer',
+    name: 'MjpegStreamer',
     mixins: [BaseMixin, WebcamMixin],
     props: {
         camSettings: { type: Object as PropType<GuiWebcamStateWebcam>, required: true },

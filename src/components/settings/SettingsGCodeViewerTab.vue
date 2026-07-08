@@ -135,7 +135,6 @@
 import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import SettingsRow from '@/components/settings/SettingsRow.vue'
-import { Debounce } from 'vue-debounce-decorator'
 
 import { debounce, clearColorObject, ColorPickerValue } from '@/plugins/helpers'
 

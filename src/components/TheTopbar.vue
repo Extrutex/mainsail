@@ -63,7 +63,7 @@
             {{ Math.round(uploadSnackbar.percent) }} % @ {{ formatFilesize(Math.round(uploadSnackbar.speed)) }}/s
             <br />
             <v-progress-linear class="mt-2" :value="uploadSnackbar.percent"></v-progress-linear>
-            <template #action="{ attrs }">
+            <template #action>
                 <v-btn color="red" variant="text" v-bind="props" style="min-width: auto" @click="cancelUpload">
                     <v-icon class="0">{{ mdiClose }}</v-icon>
                 </v-btn>
@@ -81,7 +81,6 @@ import axios, { AxiosProgressEvent, CancelTokenSource } from 'axios'
 import { formatFilesize } from '@/plugins/helpers'
 import TheTopCornerMenu from '@/components/TheTopCornerMenu.vue'
 import TheSettingsMenu from '@/components/TheSettingsMenu.vue'
-import Panel from '@/components/ui/Panel.vue'
 import PrinterSelector from '@/components/ui/PrinterSelector.vue'
 import MainsailLogo from '@/components/ui/MainsailLogo.vue'
 import TheNotificationMenu from '@/components/notifications/TheNotificationMenu.vue'
@@ -105,7 +104,6 @@ export default defineComponent({
     components: {
         EmergencyStopDialog,
         InlineSvg,
-        Panel,
         TheSettingsMenu,
         TheTopCornerMenu,
         PrinterSelector,

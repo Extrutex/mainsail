@@ -70,14 +70,13 @@
 import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import Panel from '@/components/ui/Panel.vue'
-import Responsive from '@/components/ui/Responsive.vue'
 
 import { mdiArrowCollapseDown, mdiInformation, mdiCloseThick } from '@mdi/js'
 import ControlMixin from '@/components/mixins/control'
 
 export default defineComponent({
     name: 'TheBedScrewsDialog',
-    components: { Panel, Responsive },
+    components: { Panel },
     mixins: [BaseMixin, ControlMixin],
     data() {
         return {

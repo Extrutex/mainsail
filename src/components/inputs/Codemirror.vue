@@ -23,7 +23,7 @@ import { css } from '@codemirror/lang-css'
 import { indentUnit } from '@codemirror/language'
 
 export default defineComponent({
-    name: 'Codemirror',
+    name: 'CodemirrorEditor',
     mixins: [BaseMixin, ThemeMixin],
     props: {
         code: { type: String, required: false, default: '' },

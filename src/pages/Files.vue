@@ -37,7 +37,7 @@ export default defineComponent({
         }
     },
     computed: {
-        queued_jobs(): any[] {
+        queued_jobs() {
             return this.$store.state.server.jobQueue.queued_jobs ?? []
         },
 

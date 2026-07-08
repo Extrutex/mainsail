@@ -110,6 +110,7 @@ export default defineComponent({
         },
     },
     methods: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         setColor: debounce(function (this: any, newColor: string) {
             // only store the hex part without alpha (like the old `color.hex` value)
             this.color = newColor.slice(0, 7)

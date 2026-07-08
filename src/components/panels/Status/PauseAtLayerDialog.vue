@@ -82,15 +82,13 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
-import StatusPanelExcludeObjectDialogMap from '@/components/panels/Status/ExcludeObjectDialogMap.vue'
-import StatusPanelExcludeObjectDialogList from '@/components/panels/Status/ExcludeObjectDialogList.vue'
 import Panel from '@/components/ui/Panel.vue'
 import { mdiCloseThick, mdiLayersPlus } from '@mdi/js'
 import { PrinterStateMacro } from '@/store/printer/types'
 
 export default defineComponent({
     name: 'StatusPanelPauseAtLayerDialog',
-    components: { Panel, StatusPanelExcludeObjectDialogList, StatusPanelExcludeObjectDialogMap },
+    components: { Panel },
     mixins: [BaseMixin],
     props: {
         showDialog: { type: Boolean, required: true },

@@ -52,7 +52,6 @@ import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { sortResolutions } from '@/plugins/helpers'
 import TextfieldWithCopy from '@/components/inputs/TextfieldWithCopy.vue'
-import type { V4l2Device } from '@/types/moonraker/MachineRPC'
 
 export default defineComponent({
     name: 'DevicesDialogVideoDeviceV4l2',

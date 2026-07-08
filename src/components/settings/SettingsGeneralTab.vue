@@ -89,8 +89,6 @@
 import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import SettingsRow from '@/components/settings/SettingsRow.vue'
-import Panel from '@/components/ui/Panel.vue'
-import CheckboxList from '@/components/inputs/CheckboxList.vue'
 import SettingsGeneralTabBackupDatabase from '@/components/settings/General/GeneralBackup.vue'
 import SettingsGeneralTabRestoreDatabase from '@/components/settings/General/GeneralRestore.vue'
 import SettingsGeneralTabResetDatabase from '@/components/settings/General/GeneralReset.vue'
@@ -99,9 +97,7 @@ import SettingsGeneralDatabase from '@/components/mixins/settingsGeneralDatabase
 export default defineComponent({
     name: 'SettingsGeneralTab',
     components: {
-        Panel,
         SettingsRow,
-        CheckboxList,
         SettingsGeneralTabBackupDatabase,
         SettingsGeneralTabRestoreDatabase,
         SettingsGeneralTabResetDatabase,

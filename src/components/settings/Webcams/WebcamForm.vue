@@ -1,4 +1,5 @@
 <template>
+    <!-- eslint-disable vue/no-mutating-props -->
     <v-form ref="webcamForm" v-model="valid" @submit.prevent="submit">
         <v-card-title>{{ title }}</v-card-title>
         <v-card-text>
@@ -213,18 +214,16 @@
 </template>
 
 <script lang="ts">
+/* eslint-disable vue/no-mutating-props */
 import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
-import SettingsRow from '@/components/settings/SettingsRow.vue'
 import { mdiDelete, mdiPencil, mdiMenuDown } from '@mdi/js'
 import WebcamMixin from '@/components/mixins/webcam'
 import { GuiWebcamStateWebcam } from '@/store/gui/webcams/types'
 
 export default defineComponent({
     name: 'WebcamForm',
-    components: {
-        SettingsRow,
-    },
+    components: {},
     mixins: [BaseMixin, WebcamMixin],
     props: {
         webcam: { type: Object, required: true },

@@ -4,8 +4,7 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
-import GcodefilesMixin, { tableColumnSetting } from '@/components/mixins/gcodefiles'
-import { FileStateGcodefile } from '@/store/files/types'
+import GcodefilesMixin from '@/components/mixins/gcodefiles'
 import { formatFilesize, formatPrintTime } from '@/plugins/helpers'
 
 export default defineComponent({

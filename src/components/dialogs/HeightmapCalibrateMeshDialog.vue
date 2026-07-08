@@ -56,8 +56,8 @@ export default defineComponent({
             rules: [
                 (value: string) => !!value || this.$t('Heightmap.InvalidNameEmpty'),
 
-                // eslint-disable-next-line no-control-regex
                 (value: string) =>
+                    // eslint-disable-next-line no-control-regex
                     value === value.replace(/[^\x00-\x7F]/g, '') || this.$t('Heightmap.InvalidNameAscii'),
             ],
         }

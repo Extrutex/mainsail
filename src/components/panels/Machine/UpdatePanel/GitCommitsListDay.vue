@@ -26,12 +26,11 @@ import {
     ServerUpdateManagerStateGitRepo,
     ServerUpdateManagerStateGitRepoGroupedCommits,
 } from '@/store/server/updateManager/types'
-import Panel from '@/components/ui/Panel.vue'
 import GitCommitsListDayCommit from '@/components/panels/Machine/UpdatePanel/GitCommitsListDayCommit.vue'
 
 export default defineComponent({
     name: 'GitCommitsListDay',
-    components: { Panel, GitCommitsListDayCommit },
+    components: { GitCommitsListDayCommit },
     mixins: [BaseMixin],
     props: {
         groupedCommits: { type: Object as PropType<ServerUpdateManagerStateGitRepoGroupedCommits>, required: true },

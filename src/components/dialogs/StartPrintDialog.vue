@@ -38,14 +38,13 @@ import { defineComponent } from 'vue'
 import type { PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { FileStateGcodefile } from '@/store/files/types'
-import SettingsRow from '@/components/settings/SettingsRow.vue'
 import { mdiPrinter3d } from '@mdi/js'
 import { ServerSpoolmanStateSpool } from '@/store/server/spoolman/types'
 import AfcMixin from '@/components/mixins/afc'
 
 export default defineComponent({
     name: 'StartPrintDialog',
-    components: { SettingsRow },
+    components: {},
     mixins: [BaseMixin, AfcMixin],
     props: {
         modelValue: { type: Boolean, default: false },

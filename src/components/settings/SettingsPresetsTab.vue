@@ -27,7 +27,6 @@
 <script lang="ts">
 import { defineComponent } from 'vue'
 import BaseMixin from '../mixins/base'
-import SettingsRow from '@/components/settings/SettingsRow.vue'
 import { GuiPresetsStatePreset } from '@/store/gui/presets/types'
 import { mdiDelete, mdiPencil } from '@mdi/js'
 import PresetsEntry from '@/components/settings/Presets/PresetsEntry.vue'
@@ -36,7 +35,7 @@ import PresetsForm from '@/components/settings/Presets/PresetsForm.vue'
 
 export default defineComponent({
     name: 'SettingsPresetsTab',
-    components: { PresetsForm, PresetsEntryCooldown, PresetsEntry, SettingsRow },
+    components: { PresetsForm, PresetsEntryCooldown, PresetsEntry },
     mixins: [BaseMixin],
     data() {
         return {

@@ -31,12 +31,11 @@
 import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 
-import Panel from '@/components/ui/Panel.vue'
 import { mdiLockOutline } from '@mdi/js'
 
 export default defineComponent({
     name: 'PageHeightmap',
-    components: { Panel },
+    components: {},
     mixins: [BaseMixin],
     data() {
         return {

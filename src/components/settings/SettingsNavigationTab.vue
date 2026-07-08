@@ -24,13 +24,12 @@ import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import NavigationMixin, { NaviPoint } from '@/components/mixins/navigation'
 import ThemeMixin from '@/components/mixins/theme'
-import SettingsRow from '@/components/settings/SettingsRow.vue'
 import draggable from 'vuedraggable'
 import SettingsNavigationTabItem from '@/components/settings/SettingsNavigationTabItem.vue'
 
 export default defineComponent({
     name: 'SettingsNavigationTab',
-    components: { SettingsNavigationTabItem, SettingsRow, draggable },
+    components: { SettingsNavigationTabItem, draggable },
     mixins: [NavigationMixin, BaseMixin, ThemeMixin],
     computed: {
         sortableNaviPoints: {

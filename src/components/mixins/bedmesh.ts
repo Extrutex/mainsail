@@ -2,11 +2,11 @@ import { defineComponent } from 'vue'
 
 export default defineComponent({
     computed: {
-        bed_mesh(): any {
+        bed_mesh() {
             return this.$store.state.printer.bed_mesh ?? {}
         },
 
-        profiles(): any {
+        profiles() {
             return this.bed_mesh.profiles ?? {}
         },
 
@@ -32,13 +32,13 @@ export default defineComponent({
 
         is_active(): boolean {
             // if the current profile_mane is not empty, return true
-            if (this.bed_mesh.profile_name !== '') return true
+            if (this.bed_mesh.profile_name) return true
 
             return this.mesh_min[0] !== 0 || this.mesh_min[1] !== 0 || this.mesh_max[0] !== 0 || this.mesh_max[1] !== 0
         },
 
         name(): string {
-            if (this.bed_mesh.profile_name !== '') return this.bed_mesh.profile_name
+            if (this.bed_mesh.profile_name) return this.bed_mesh.profile_name
 
             return 'Unknown'
         },
