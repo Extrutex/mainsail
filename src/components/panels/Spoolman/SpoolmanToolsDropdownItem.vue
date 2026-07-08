@@ -1,6 +1,6 @@
 <template>
     <v-list-item>
-        <v-btn small @click="showChangeSpoolDialog = true">
+        <v-btn size="small" @click="showChangeSpoolDialog = true">
             <span v-if="color != null" class="_extruderColorState mr-2" :style="dotStyle" />
             {{ name }}
             <span v-if="spoolId === null" class="font-italic ml-1">({{ $t('Panels.SpoolmanPanel.NoSpool') }})</span>
@@ -11,46 +11,47 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { ServerSpoolmanStateSpool } from '@/store/server/spoolman/types'
 
-@Component({
+export default defineComponent({
+    name: 'SpoolmanToolsDropdownItem',
     components: {},
-})
-export default class SpoolmanToolsDropdownItem extends Mixins(BaseMixin) {
-    @Prop({ required: false, default: false }) readonly objectName!: string
-
-    showChangeSpoolDialog = false
-
-    get name() {
-        return (this.objectName.split(' ')[1] ?? 'Unknown').toUpperCase()
-    }
-
-    get color() {
-        return this.spool?.filament?.color_hex ?? '000000'
-    }
-
-    get dotStyle() {
+    mixins: [BaseMixin],
+    props: {
+        objectName: { type: String, required: false, default: false },
+    },
+    data() {
         return {
-            'background-color': '#' + this.color,
+            showChangeSpoolDialog: false,
         }
-    }
+    },
+    computed: {
+        name() {
+            return (this.objectName.split(' ')[1] ?? 'Unknown').toUpperCase()
+        },
+        color() {
+            return this.spool?.filament?.color_hex ?? '000000'
+        },
+        dotStyle() {
+            return {
+                'background-color': '#' + this.color,
+            }
+        },
+        spoolId() {
+            const object = this.$store.state.printer[this.objectName] ?? {}
 
-    get spoolId() {
-        const object = this.$store.state.printer[this.objectName] ?? {}
-
-        return object.spool_id ?? null
-    }
-
-    get spool() {
-        return this.spools.find((spool) => spool.id === this.spoolId) ?? null
-    }
-
-    get spools(): ServerSpoolmanStateSpool[] {
-        return this.$store.state.server.spoolman.spools ?? []
-    }
-}
+            return object.spool_id ?? null
+        },
+        spool() {
+            return this.spools.find((spool) => spool.id === this.spoolId) ?? null
+        },
+        spools(): ServerSpoolmanStateSpool[] {
+            return this.$store.state.server.spoolman.spools ?? []
+        },
+    },
+})
 </script>
 
 <style scoped>

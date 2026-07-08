@@ -17,19 +17,24 @@
     </panel>
 </template>
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { mdiStackOverflow } from '@mdi/js'
 import HeightmapProfilesPanelRow from '@/components/panels/Heightmap/HeightmapProfilesPanelRow.vue'
 
-@Component({
+export default defineComponent({
+    name: 'HeightmapProfilesPanel',
     components: { HeightmapProfilesPanelRow },
+    mixins: [BaseMixin],
+    data() {
+        return {
+            mdiStackOverflow: mdiStackOverflow,
+        }
+    },
+    computed: {
+        profiles() {
+            return this.$store.state.printer.bed_mesh?.profiles ?? {}
+        },
+    },
 })
-export default class HeightmapProfilesPanel extends Mixins(BaseMixin) {
-    mdiStackOverflow = mdiStackOverflow
-
-    get profiles() {
-        return this.$store.state.printer.bed_mesh?.profiles ?? {}
-    }
-}
 </script>

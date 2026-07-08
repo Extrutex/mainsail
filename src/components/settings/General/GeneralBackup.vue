@@ -1,6 +1,6 @@
 <template>
     <div>
-        <v-btn :loading="loadings.includes('backupDbButton')" small @click="openDialog">
+        <v-btn :loading="loadings.includes('backupDbButton')" size="small" @click="openDialog">
             {{ $t('Settings.GeneralTab.Backup') }}
         </v-btn>
         <v-dialog v-model="showDialog" persistent :width="360">
@@ -40,8 +40,7 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import SettingsRow from '@/components/settings/SettingsRow.vue'
 import Panel from '@/components/ui/Panel.vue'
@@ -50,39 +49,39 @@ import CheckboxList from '@/components/inputs/CheckboxList.vue'
 import { TranslateResult } from 'vue-i18n'
 import SettingsGeneralDatabase from '@/components/mixins/settingsGeneralDatabase'
 
-@Component({
+export default defineComponent({
+    name: 'SettingsGeneralTabBackupDatabase',
     components: { Panel, SettingsRow, CheckboxList },
-})
-export default class SettingsGeneralTabBackupDatabase extends Mixins(BaseMixin, SettingsGeneralDatabase) {
-    mdiHelpCircle = mdiHelpCircle
-    mdiCloseThick = mdiCloseThick
-
-    showDialog = false
-    backupableNamespaces: { value: string; label: string | TranslateResult }[] = []
-    backupCheckboxes: string[] = []
-
+    mixins: [BaseMixin, SettingsGeneralDatabase],
+    data() {
+        return {
+            mdiHelpCircle: mdiHelpCircle,
+            mdiCloseThick: mdiCloseThick,
+            showDialog: false,
+            backupableNamespaces: [] as { value: string; label: string | TranslateResult }[],
+            backupCheckboxes: [] as string[],
+        }
+    },
     async mounted() {
         this.backupableNamespaces = await this.loadBackupableNamespaces()
-    }
-
-    onSelectBackupCheckboxes(backupCheckboxes: string[]) {
-        this.backupCheckboxes = backupCheckboxes
-    }
-
-    async backupMainsail() {
-        await this.$store.dispatch('socket/addLoading', 'backupMainsail')
-        await this.$store.dispatch('gui/backupMoonrakerDB', this.backupCheckboxes)
-        await this.$store.dispatch('socket/removeLoading', 'backupMainsail')
-        this.closeDialog()
-    }
-
-    async openDialog() {
-        this.backupableNamespaces = await this.loadBackupableNamespaces()
-        this.showDialog = true
-    }
-
-    closeDialog() {
-        this.showDialog = false
-    }
-}
+    },
+    methods: {
+        onSelectBackupCheckboxes(backupCheckboxes: string[]) {
+            this.backupCheckboxes = backupCheckboxes
+        },
+        async backupMainsail() {
+            await this.$store.dispatch('socket/addLoading', 'backupMainsail')
+            await this.$store.dispatch('gui/backupMoonrakerDB', this.backupCheckboxes)
+            await this.$store.dispatch('socket/removeLoading', 'backupMainsail')
+            this.closeDialog()
+        },
+        async openDialog() {
+            this.backupableNamespaces = await this.loadBackupableNamespaces()
+            this.showDialog = true
+        },
+        closeDialog() {
+            this.showDialog = false
+        },
+    },
+})
 </script>

@@ -11,11 +11,13 @@
                     @edit-webcam="editWebcam" />
             </v-card-text>
             <v-card-actions>
-                <v-btn v-if="existCrowsnestConf" text color="primary" @click="openCrowsnestConf">
+                <v-btn v-if="existCrowsnestConf" variant="text" color="primary" @click="openCrowsnestConf">
                     {{ $t('Settings.WebcamsTab.EditCrowsnestConf') }}
                 </v-btn>
                 <v-spacer />
-                <v-btn text color="primary" @click="createWebcam">{{ $t('Settings.WebcamsTab.AddWebcam') }}</v-btn>
+                <v-btn variant="text" color="primary" @click="createWebcam">
+                    {{ $t('Settings.WebcamsTab.AddWebcam') }}
+                </v-btn>
             </v-card-actions>
         </v-card>
         <v-card v-else flat>
@@ -25,7 +27,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '../mixins/base'
 import SettingsRow from '@/components/settings/SettingsRow.vue'
 import { mdiDelete, mdiPencil } from '@mdi/js'
@@ -37,76 +39,75 @@ import { GuiWebcamStateWebcam } from '@/store/gui/webcams/types'
 
 const DEFAULT_ASPECT_RATIO = '16:9'
 
-@Component({
+export default defineComponent({
+    name: 'SettingsWebcamsTab',
     components: {
         SettingsRow,
         WebcamForm,
         WebcamListEntry,
     },
-})
-export default class SettingsWebcamsTab extends Mixins(BaseMixin, WebcamMixin) {
-    mdiPencil = mdiPencil
-    mdiDelete = mdiDelete
-
-    private boolForm = false
-    private typeForm: 'create' | 'edit' = 'create'
-    private formWebcam: GuiWebcamStateWebcam = {} as GuiWebcamStateWebcam
-
-    get webcams() {
-        return this.$store.state.gui.webcams.webcams ?? []
-    }
-
-    get configfiles() {
-        return this.$store.getters['files/getDirectory']('config')?.childrens ?? []
-    }
-
-    get crowsnestConf(): FileStateFile | null {
-        return this.configfiles.find((file: FileStateFile) => file.filename === 'crowsnest.conf')
-    }
-
-    get existCrowsnestConf(): boolean {
-        return this.configfiles.findIndex((file: FileStateFile) => file.filename === 'crowsnest.conf') !== -1
-    }
-
-    openCrowsnestConf() {
-        this.$store.dispatch('editor/openFile', {
-            root: 'config',
-            path: '/',
-            filename: this.crowsnestConf?.filename,
-            size: this.crowsnestConf?.size,
-            permissions: this.crowsnestConf?.permissions,
-        })
-    }
-
-    createWebcam() {
-        this.formWebcam = {
-            name: '',
-            enabled: true,
-            icon: 'mdiWebcam',
-            service: 'mjpegstreamer-adaptive',
-            target_fps: 15,
-            target_fps_idle: 15,
-            stream_url: '/webcam/?action=stream',
-            snapshot_url: '/webcam/?action=snapshot',
-            rotation: 0,
-            flip_horizontal: false,
-            flip_vertical: false,
-            aspect_ratio: DEFAULT_ASPECT_RATIO,
-            extra_data: {},
+    mixins: [BaseMixin, WebcamMixin],
+    data() {
+        return {
+            mdiPencil: mdiPencil,
+            mdiDelete: mdiDelete,
+            boolForm: false,
+            typeForm: 'create' as 'create' | 'edit',
+            formWebcam: {} as GuiWebcamStateWebcam as GuiWebcamStateWebcam,
         }
+    },
+    computed: {
+        webcams() {
+            return this.$store.state.gui.webcams.webcams ?? []
+        },
+        configfiles() {
+            return this.$store.getters['files/getDirectory']('config')?.childrens ?? []
+        },
+        crowsnestConf(): FileStateFile | null {
+            return this.configfiles.find((file: FileStateFile) => file.filename === 'crowsnest.conf')
+        },
+        existCrowsnestConf(): boolean {
+            return this.configfiles.findIndex((file: FileStateFile) => file.filename === 'crowsnest.conf') !== -1
+        },
+    },
+    methods: {
+        openCrowsnestConf() {
+            this.$store.dispatch('editor/openFile', {
+                root: 'config',
+                path: '/',
+                filename: this.crowsnestConf?.filename,
+                size: this.crowsnestConf?.size,
+                permissions: this.crowsnestConf?.permissions,
+            })
+        },
+        createWebcam() {
+            this.formWebcam = {
+                name: '',
+                enabled: true,
+                icon: 'mdiWebcam',
+                service: 'mjpegstreamer-adaptive',
+                target_fps: 15,
+                target_fps_idle: 15,
+                stream_url: '/webcam/?action=stream',
+                snapshot_url: '/webcam/?action=snapshot',
+                rotation: 0,
+                flip_horizontal: false,
+                flip_vertical: false,
+                aspect_ratio: DEFAULT_ASPECT_RATIO,
+                extra_data: {},
+            }
 
-        this.typeForm = 'create'
-        this.boolForm = true
-    }
-
-    closeForm() {
-        this.boolForm = false
-    }
-
-    editWebcam(webcam: GuiWebcamStateWebcam) {
-        this.formWebcam = { ...webcam }
-        this.typeForm = 'edit'
-        this.boolForm = true
-    }
-}
+            this.typeForm = 'create'
+            this.boolForm = true
+        },
+        closeForm() {
+            this.boolForm = false
+        },
+        editWebcam(webcam: GuiWebcamStateWebcam) {
+            this.formWebcam = { ...webcam }
+            this.typeForm = 'edit'
+            this.boolForm = true
+        },
+    },
+})
 </script>

@@ -26,8 +26,8 @@
             </v-card-text>
             <v-card-actions>
                 <v-spacer />
-                <v-btn text @click="closeDialog">{{ $t('Buttons.Cancel') }}</v-btn>
-                <v-btn :disabled="isInvalidName" color="primary" text @click="calibrateMesh">
+                <v-btn variant="text" @click="closeDialog">{{ $t('Buttons.Cancel') }}</v-btn>
+                <v-btn :disabled="isInvalidName" color="primary" variant="text" @click="calibrateMesh">
                     {{ $t('Heightmap.Calibrate') }}
                 </v-btn>
             </v-card-actions>
@@ -35,50 +35,68 @@
     </v-dialog>
 </template>
 <script lang="ts">
-import { Component, Mixins, Ref, VModel, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import type { FocusableRef } from '@/types/vuetify'
 import BaseMixin from '@/components/mixins/base'
 import { mdiCloseThick, mdiGrid } from '@mdi/js'
 
-@Component
-export default class HeightmapRenameProfileDialog extends Mixins(BaseMixin) {
-    mdiCloseThick = mdiCloseThick
-    mdiGrid = mdiGrid
+export default defineComponent({
+    name: 'HeightmapRenameProfileDialog',
+    mixins: [BaseMixin],
+    props: {
+        modelValue: { type: Boolean },
+    },
+    emits: ['update:modelValue'],
+    data() {
+        return {
+            mdiCloseThick: mdiCloseThick,
+            mdiGrid: mdiGrid,
+            isInvalidName: false,
+            name: '',
+            rules: [
+                (value: string) => !!value || this.$t('Heightmap.InvalidNameEmpty'),
 
-    @VModel({ type: Boolean }) showDialog!: boolean
-    @Ref() readonly input!: FocusableRef
+                // eslint-disable-next-line no-control-regex
+                (value: string) =>
+                    value === value.replace(/[^\x00-\x7F]/g, '') || this.$t('Heightmap.InvalidNameAscii'),
+            ],
+        }
+    },
+    computed: {
+        showDialog: {
+            get(): boolean {
+                return this.modelValue
+            },
+            set(value: boolean) {
+                this.$emit('update:modelValue', value)
+            },
+        },
+        input(): FocusableRef {
+            return this.$refs.input as FocusableRef
+        },
+    },
+    watch: {
+        showDialog(newVal: boolean) {
+            if (!newVal) return
 
-    isInvalidName = false
-    name = ''
+            this.name = 'default'
+            setTimeout(() => {
+                this.input?.focus()
+            })
+        },
+    },
+    methods: {
+        calibrateMesh(): void {
+            const gcode = `BED_MESH_CALIBRATE PROFILE="${this.name}"`
 
-    rules = [
-        (value: string) => !!value || this.$t('Heightmap.InvalidNameEmpty'),
+            this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
+            this.$socket.emit('printer.gcode.script', { script: gcode }, { loading: 'bedMeshCalibrate' })
 
-        // eslint-disable-next-line no-control-regex
-        (value: string) => value === value.replace(/[^\x00-\x7F]/g, '') || this.$t('Heightmap.InvalidNameAscii'),
-    ]
-
-    calibrateMesh(): void {
-        const gcode = `BED_MESH_CALIBRATE PROFILE="${this.name}"`
-
-        this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
-        this.$socket.emit('printer.gcode.script', { script: gcode }, { loading: 'bedMeshCalibrate' })
-
-        this.closeDialog()
-    }
-
-    closeDialog() {
-        this.showDialog = false
-    }
-
-    @Watch('showDialog')
-    onShowDialogChanged(newVal: boolean) {
-        if (!newVal) return
-
-        this.name = 'default'
-        setTimeout(() => {
-            this.input?.focus()
-        })
-    }
-}
+            this.closeDialog()
+        },
+        closeDialog() {
+            this.showDialog = false
+        },
+    },
+})
 </script>

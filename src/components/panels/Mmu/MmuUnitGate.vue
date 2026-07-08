@@ -26,20 +26,20 @@
             :position-y="menuY"
             :close-on-content-click="false"
             absolute
-            offset-y>
-            <v-list dense @mouseleave="closeContextMenu">
+            location="bottom">
+            <v-list density="compact" @mouseleave="closeContextMenu">
                 <v-subheader class="d-block text-subtitle-2 text-center mb-0 h-auto pb-2">
                     {{ $t('Panels.MmuPanel.Gate') }} {{ gateIndex }}
                 </v-subheader>
                 <v-divider class="mb-2" />
                 <v-list-item v-for="(button, index) in contextMenuButtons" :key="index">
                     <v-btn
-                        small
+                        size="small"
                         class="w-100"
                         :disabled="!canSend"
                         :loading="loadings.includes(button.command.toLowerCase())"
                         @click="gateCommand(button.command)">
-                        <v-icon left>{{ button.icon }}</v-icon>
+                        <v-icon start>{{ button.icon }}</v-icon>
                         {{ button.label }}
                     </v-btn>
                 </v-list-item>
@@ -49,129 +49,127 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent, PropType } from 'vue'
 import type { LongpressEvent } from '@/directives/longpress'
 import BaseMixin from '@/components/mixins/base'
 import MmuMixin, { MmuMachineUnit, TOOL_GATE_BYPASS } from '@/components/mixins/mmu'
 import { mdiSwapHorizontal, mdiDownloadOutline, mdiEject } from '@mdi/js'
 
-@Component
-export default class MmuUnitGate extends Mixins(BaseMixin, MmuMixin) {
-    mdiSwapHorizontal = mdiSwapHorizontal
-    mdiDownloadOutline = mdiDownloadOutline
-    mdiEject = mdiEject
-
-    @Prop({ required: true }) readonly gateIndex!: number
-    @Prop({ required: true }) readonly mmuMachineUnit!: MmuMachineUnit
-    @Prop({ default: false }) readonly showDetails!: boolean
-    @Prop({ default: false }) readonly showContextMenu!: boolean
-    @Prop({ required: true }) readonly selectedGate!: number
-    @Prop({ default: false }) readonly unhighlightSpools!: boolean
-    @Prop({ default: false }) readonly hasBypass!: boolean
-
-    closeTimeout: number | null = null
-    contextMenu = false
-    menuX = 0
-    menuY = 0
-
-    get gateName() {
-        if (this.gateIndex === TOOL_GATE_BYPASS) return 'Bypass'
-        return this.gateIndex
-    }
-
-    get gateStatus() {
-        return this.mmu?.gate_status[this.gateIndex] ?? 0
-    }
-
-    get gateNumberClass() {
+export default defineComponent({
+    name: 'MmuUnitGate',
+    mixins: [BaseMixin, MmuMixin],
+    props: {
+        gateIndex: { type: Number, required: true },
+        mmuMachineUnit: { type: Object as PropType<MmuMachineUnit>, required: true },
+        showDetails: { type: Boolean, default: false },
+        showContextMenu: { type: Boolean, default: false },
+        selectedGate: { type: Number, required: true },
+        unhighlightSpools: { type: Boolean, default: false },
+        hasBypass: { type: Boolean, default: false },
+    },
+    emits: ['select-gate'],
+    data() {
         return {
-            active: this.isSelected,
-            'border-unknown': this.gateStatus < 0,
-            'border-active': this.gateStatus > 0,
-            bypass: this.gateIndex === TOOL_GATE_BYPASS,
+            mdiSwapHorizontal: mdiSwapHorizontal,
+            mdiDownloadOutline: mdiDownloadOutline,
+            mdiEject: mdiEject,
+            closeTimeout: null as number | null,
+            contextMenu: false,
+            menuX: 0,
+            menuY: 0,
         }
-    }
+    },
+    computed: {
+        gateName() {
+            if (this.gateIndex === TOOL_GATE_BYPASS) return 'Bypass'
+            return this.gateIndex
+        },
+        gateStatus() {
+            return this.mmu?.gate_status[this.gateIndex] ?? 0
+        },
+        gateNumberClass() {
+            return {
+                active: this.isSelected,
+                'border-unknown': this.gateStatus < 0,
+                'border-active': this.gateStatus > 0,
+                bypass: this.gateIndex === TOOL_GATE_BYPASS,
+            }
+        },
+        isSelected() {
+            return this.selectedGate === this.gateIndex
+        },
+        contextMenuButtons() {
+            return [
+                { icon: this.mdiSwapHorizontal, command: 'MMU_SELECT', label: this.$t('Panels.MmuPanel.ButtonSelect') },
+                {
+                    icon: this.mdiDownloadOutline,
+                    command: 'MMU_PRELOAD',
+                    label: this.$t('Panels.MmuPanel.ButtonPreload'),
+                },
+                { icon: this.mdiEject, command: 'MMU_EJECT', label: this.$t('Panels.MmuPanel.ButtonEject') },
+            ]
+        },
+        gatePosition() {
+            const firstGateNumber = this.mmuMachineUnit?.first_gate ?? 0
 
-    get isSelected() {
-        return this.selectedGate === this.gateIndex
-    }
+            return this.gateIndex + 1 - firstGateNumber
+        },
+        firstGate() {
+            return this.gatePosition === 1
+        },
+        lastGate() {
+            if (this.gateIndex === TOOL_GATE_BYPASS) return true
 
-    get contextMenuButtons() {
-        return [
-            { icon: this.mdiSwapHorizontal, command: 'MMU_SELECT', label: this.$t('Panels.MmuPanel.ButtonSelect') },
-            { icon: this.mdiDownloadOutline, command: 'MMU_PRELOAD', label: this.$t('Panels.MmuPanel.ButtonPreload') },
-            { icon: this.mdiEject, command: 'MMU_EJECT', label: this.$t('Panels.MmuPanel.ButtonEject') },
-        ]
-    }
-
-    get gatePosition() {
-        const firstGateNumber = this.mmuMachineUnit?.first_gate ?? 0
-
-        return this.gateIndex + 1 - firstGateNumber
-    }
-
-    get firstGate() {
-        return this.gatePosition === 1
-    }
-
-    get lastGate() {
-        if (this.gateIndex === TOOL_GATE_BYPASS) return true
-
-        return this.gatePosition === this.mmuMachineUnit?.num_gates && !this.hasBypass
-    }
-
-    get gateClass() {
-        return {
-            'left-gate': this.firstGate,
-            'right-gate': this.lastGate,
-        }
-    }
-
-    selectGate() {
-        this.$emit('select-gate', this.gateIndex)
-    }
-
-    openContextMenu(e: MouseEvent | LongpressEvent) {
-        e.preventDefault()
-
-        if (this.gateIndex < 0 || this.gateIndex === this.selectedGate || !this.showContextMenu) return
-
-        this.menuX = e.clientX - 20
-        this.menuY = e.clientY - 20
-
-        this.closeContextMenu()
-
-        this.contextMenu = true
-        this.closeTimeout = window.setTimeout(() => {
-            this.closeContextMenu()
-        }, 8000)
-    }
-
-    closeContextMenu() {
-        this.clearCloseTimeout()
-        this.contextMenu = false
-    }
-
-    clearCloseTimeout() {
-        if (this.closeTimeout === null) return
-
-        clearTimeout(this.closeTimeout)
-        this.closeTimeout = null
-    }
-
+            return this.gatePosition === this.mmuMachineUnit?.num_gates && !this.hasBypass
+        },
+        gateClass() {
+            return {
+                'left-gate': this.firstGate,
+                'right-gate': this.lastGate,
+            }
+        },
+    },
     mounted() {
         addEventListener('mmu-close-gate-context-menus', this.closeContextMenu)
-    }
-
-    beforeDestroy() {
+    },
+    beforeUnmount() {
         removeEventListener('mmu-close-gate-context-menus', this.closeContextMenu)
         this.clearCloseTimeout()
-    }
+    },
+    methods: {
+        selectGate() {
+            this.$emit('select-gate', this.gateIndex)
+        },
+        openContextMenu(e: MouseEvent | LongpressEvent) {
+            e.preventDefault()
 
-    gateCommand(command: string) {
-        this.doSend(`${command} GATE=${this.gateIndex}`, command.toLowerCase())
-    }
-}
+            if (this.gateIndex < 0 || this.gateIndex === this.selectedGate || !this.showContextMenu) return
+
+            this.menuX = e.clientX - 20
+            this.menuY = e.clientY - 20
+
+            this.closeContextMenu()
+
+            this.contextMenu = true
+            this.closeTimeout = window.setTimeout(() => {
+                this.closeContextMenu()
+            }, 8000)
+        },
+        closeContextMenu() {
+            this.clearCloseTimeout()
+            this.contextMenu = false
+        },
+        clearCloseTimeout() {
+            if (this.closeTimeout === null) return
+
+            clearTimeout(this.closeTimeout)
+            this.closeTimeout = null
+        },
+        gateCommand(command: string) {
+            this.doSend(`${command} GATE=${this.gateIndex}`, command.toLowerCase())
+        },
+    },
+})
 </script>
 
 <style scoped>

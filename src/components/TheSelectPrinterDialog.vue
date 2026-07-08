@@ -45,10 +45,12 @@
                         }}
                     </p>
                     <div class="text-center">
-                        <v-btn text color="white" class="mr-3" @click="switchToChangePrinter">
+                        <v-btn variant="text" color="white" class="mr-3" @click="switchToChangePrinter">
                             {{ $t('SelectPrinterDialog.ChangePrinter') }}
                         </v-btn>
-                        <v-btn text color="primary" @click="reconnect">{{ $t('SelectPrinterDialog.TryAgain') }}</v-btn>
+                        <v-btn variant="text" color="primary" @click="reconnect">
+                            {{ $t('SelectPrinterDialog.TryAgain') }}
+                        </v-btn>
                     </div>
                 </v-card-text>
             </template>
@@ -56,7 +58,7 @@
                 <v-form v-model="addPrinterValid" @submit.prevent="addPrinter">
                     <v-card-text>
                         <v-row>
-                            <v-col class="col-8">
+                            <v-col cols="8">
                                 <v-text-field
                                     v-model="dialogAddPrinter.hostname"
                                     :rules="[
@@ -66,19 +68,19 @@
                                     ]"
                                     :label="$t('SelectPrinterDialog.HostnameIp')"
                                     required
-                                    outlined
+                                    variant="outlined"
                                     hide-details="auto"
-                                    dense />
+                                    density="compact" />
                             </v-col>
-                            <v-col class="col-4">
+                            <v-col cols="4">
                                 <v-text-field
                                     v-model="dialogAddPrinter.port"
                                     :rules="[(v) => !!v || $t('SelectPrinterDialog.PortRequired')]"
                                     :label="$t('SelectPrinterDialog.Port')"
                                     hide-details="auto"
                                     required
-                                    outlined
-                                    dense />
+                                    variant="outlined"
+                                    density="compact" />
                             </v-col>
                         </v-row>
                         <v-row v-if="showOptionalSettings">
@@ -88,16 +90,16 @@
                                     :rules="[(v) => !v || v.startsWith('/') || 'Path must start with /']"
                                     :label="$t('SelectPrinterDialog.Path')"
                                     hide-details="auto"
-                                    outlined
-                                    dense />
+                                    variant="outlined"
+                                    density="compact" />
                             </v-col>
                             <v-col :cols="6">
                                 <v-text-field
                                     v-model="dialogAddPrinter.name"
                                     :label="$t('SelectPrinterDialog.Name')"
-                                    outlined
+                                    variant="outlined"
                                     hide-details="auto"
-                                    dense />
+                                    density="compact" />
                             </v-col>
                         </v-row>
                     </v-card-text>
@@ -110,7 +112,7 @@
                             :true-value="false"
                             :false-value="true" />
                         <v-spacer />
-                        <v-btn color="primary" text class="middle" type="submit" :disabled="!addPrinterValid">
+                        <v-btn color="primary" variant="text" class="middle" type="submit" :disabled="!addPrinterValid">
                             {{ $t('SelectPrinterDialog.AddPrinter') }}
                         </v-btn>
                     </v-card-actions>
@@ -120,7 +122,7 @@
                 <v-form v-model="editPrinterValid" @submit.prevent="updatePrinter">
                     <v-card-text>
                         <v-row>
-                            <v-col class="col-8">
+                            <v-col cols="8">
                                 <v-text-field
                                     v-model="dialogEditPrinter.hostname"
                                     :rules="[
@@ -130,18 +132,18 @@
                                     ]"
                                     :label="$t('SelectPrinterDialog.HostnameIp')"
                                     required
-                                    outlined
-                                    dense
+                                    variant="outlined"
+                                    density="compact"
                                     hide-details="auto" />
                             </v-col>
-                            <v-col class="col-4">
+                            <v-col cols="4">
                                 <v-text-field
                                     v-model="dialogEditPrinter.port"
                                     :rules="[(v) => !!v || $t('SelectPrinterDialog.PortRequired')]"
                                     :label="$t('SelectPrinterDialog.Port')"
                                     required
-                                    outlined
-                                    dense
+                                    variant="outlined"
+                                    density="compact"
                                     hide-details="auto" />
                             </v-col>
                         </v-row>
@@ -152,22 +154,22 @@
                                     :rules="[(v) => !v || v.startsWith('/') || 'Path must start with /']"
                                     :label="$t('SelectPrinterDialog.Path')"
                                     hide-details="auto"
-                                    outlined
-                                    dense />
+                                    variant="outlined"
+                                    density="compact" />
                             </v-col>
                             <v-col :cols="6">
                                 <v-text-field
                                     v-model="dialogEditPrinter.name"
                                     :label="$t('SelectPrinterDialog.Name')"
-                                    outlined
+                                    variant="outlined"
                                     hide-details="auto"
-                                    dense />
+                                    density="compact" />
                             </v-col>
                         </v-row>
                     </v-card-text>
                     <v-card-actions>
                         <v-btn color="red" icon tile class="minwidth-0 rounded" @click="delPrinter">
-                            <v-icon small>{{ mdiDelete }}</v-icon>
+                            <v-icon size="small">{{ mdiDelete }}</v-icon>
                         </v-btn>
                         <v-checkbox
                             v-model="showOptionalSettings"
@@ -177,7 +179,7 @@
                             :true-value="false"
                             :false-value="true" />
                         <v-spacer />
-                        <v-btn color="primary" text type="submit" :disabled="!editPrinterValid">
+                        <v-btn color="primary" variant="text" type="submit" :disabled="!editPrinterValid">
                             {{ $t('SelectPrinterDialog.UpdatePrinter') }}
                         </v-btn>
                     </v-card-actions>
@@ -193,7 +195,7 @@
                                     style="cursor: pointer"
                                     @click="connect(printer)">
                                     <v-row align="center">
-                                        <v-col class="col-auto pr-0">
+                                        <v-col cols="auto" class="pr-0">
                                             <v-progress-circular
                                                 v-if="printer.socket.isConnecting"
                                                 indeterminate
@@ -207,15 +209,15 @@
                                             </v-icon>
                                         </v-col>
                                         <v-col>{{ getPrinterName(printer.id) }}</v-col>
-                                        <v-col v-if="canAddPrinters" class="col-auto pa-0">
+                                        <v-col v-if="canAddPrinters" cols="auto" class="pa-0">
                                             <v-btn
                                                 tile
-                                                text
+                                                variant="text"
                                                 icon
-                                                large
+                                                size="large"
                                                 class="mr-1"
                                                 @click.stop.prevent="editPrinter(printer)">
-                                                <v-icon small>{{ mdiPencil }}</v-icon>
+                                                <v-icon size="small">{{ mdiPencil }}</v-icon>
                                             </v-btn>
                                         </v-col>
                                     </v-row>
@@ -244,7 +246,7 @@
                         </v-row>
                         <v-row>
                             <v-col class="text-center mt-0">
-                                <v-btn text color="primary" @click="createPrinter">
+                                <v-btn variant="text" color="primary" @click="createPrinter">
                                     {{ $t('SelectPrinterDialog.AddPrinter') }}
                                 </v-btn>
                             </v-col>
@@ -264,7 +266,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from './mixins/base'
 import { FarmPrinterState } from '@/store/farm/printer/types'
 import Panel from '@/components/ui/Panel.vue'
@@ -281,216 +283,112 @@ import {
     mdiSync,
 } from '@mdi/js'
 
-@Component({
+export default defineComponent({
+    name: 'TheSelectPrinterDialog',
     components: { Panel },
-})
-export default class TheSelectPrinterDialog extends Mixins(BaseMixin) {
-    addPrinterValid = false
-    dialogAddPrinter = {
-        bool: false,
-        hostname: '',
-        port: 7125,
-        path: '/',
-        name: '',
-    }
-    editPrinterValid = false
-    dialogEditPrinter = {
-        bool: false,
-        id: '',
-        hostname: '',
-        port: 0,
-        path: '/',
-        name: '',
-    }
-    showOptionalSettings = false
-
-    /**
-     * Icons
-     */
-    mdiConnection = mdiConnection
-    mdiCloseThick = mdiCloseThick
-    mdiSync = mdiSync
-    mdiDelete = mdiDelete
-    mdiPencil = mdiPencil
-    mdiCheckboxMarkedCircle = mdiCheckboxMarkedCircle
-    mdiCancel = mdiCancel
-    mdiShowOptional = mdiCog
-    mdiHideOptional = mdiCogOff
-
-    get printers() {
-        return this.$store.getters['gui/remoteprinters/getRemoteprinters'] ?? []
-    }
-
-    get canAddPrinters() {
-        return this.instancesDB !== 'json'
-    }
-
-    get protocol() {
-        return this.$store.state.socket.protocol
-    }
-
-    get defaultMoonrakerPort() {
-        return this.protocol === 'wss' ? 7130 : 7125
-    }
-
-    get hostname() {
-        return this.$store.state.socket.hostname
-    }
-
-    get port() {
-        return this.$store.state.socket.port
-    }
-
-    get path() {
-        return this.$store.state.socket.path
-    }
-
-    get name() {
-        return this.$store.state.printer
-    }
-
-    get formatHostname() {
-        return this.hostname + (this.port !== '' ? ':' + this.port : '') + (this.path !== '' ? this.path : '')
-    }
-
-    get isConnected() {
-        return this.$store.state.socket.isConnected
-    }
-
-    get isConnecting() {
-        return this.$store.state.socket.isConnecting
-    }
-
-    get connectingFailed() {
-        return this.$store.state.socket.connectingFailed
-    }
-
-    get showDialog() {
-        return !this.isConnected || (this.isConnected && !this.guiIsReady)
-    }
-
-    get currentUrl() {
-        let output = document.location.protocol + '//' + window.location.hostname
-        if (parseInt(window.location.port) !== 80 && window.location.port !== '') output += ':' + window.location.port
-
-        return output
-    }
-
-    get showCorsInfo() {
-        if (this.printers.length) {
-            this.printers.forEach((printer: GuiRemoteprintersStatePrinter) => {
-                if (printer && !printer.socket?.isConnected) return true
-            })
-
-            return false
+    mixins: [BaseMixin],
+    data() {
+        return {
+            addPrinterValid: false,
+            dialogAddPrinter: {
+                bool: false,
+                hostname: '',
+                port: 7125,
+                path: '/',
+                name: '',
+            },
+            editPrinterValid: false,
+            dialogEditPrinter: {
+                bool: false,
+                id: '',
+                hostname: '',
+                port: 0,
+                path: '/',
+                name: '',
+            },
+            showOptionalSettings: false,
+            /**
+             * Icons
+             */
+            mdiConnection: mdiConnection,
+            mdiCloseThick: mdiCloseThick,
+            mdiSync: mdiSync,
+            mdiDelete: mdiDelete,
+            mdiPencil: mdiPencil,
+            mdiCheckboxMarkedCircle: mdiCheckboxMarkedCircle,
+            mdiCancel: mdiCancel,
+            mdiShowOptional: mdiCog,
+            mdiHideOptional: mdiCogOff,
         }
+    },
+    computed: {
+        printers() {
+            return this.$store.getters['gui/remoteprinters/getRemoteprinters'] ?? []
+        },
+        canAddPrinters() {
+            return this.instancesDB !== 'json'
+        },
+        protocol() {
+            return this.$store.state.socket.protocol
+        },
+        defaultMoonrakerPort() {
+            return this.protocol === 'wss' ? 7130 : 7125
+        },
+        hostname() {
+            return this.$store.state.socket.hostname
+        },
+        port() {
+            return this.$store.state.socket.port
+        },
+        path() {
+            return this.$store.state.socket.path
+        },
+        name() {
+            return this.$store.state.printer
+        },
+        formatHostname() {
+            return this.hostname + (this.port !== '' ? ':' + this.port : '') + (this.path !== '' ? this.path : '')
+        },
+        isConnected() {
+            return this.$store.state.socket.isConnected
+        },
+        isConnecting() {
+            return this.$store.state.socket.isConnecting
+        },
+        connectingFailed() {
+            return this.$store.state.socket.connectingFailed
+        },
+        showDialog() {
+            return !this.isConnected || (this.isConnected && !this.guiIsReady)
+        },
+        currentUrl() {
+            let output = document.location.protocol + '//' + window.location.hostname
+            if (parseInt(window.location.port) !== 80 && window.location.port !== '')
+                output += ':' + window.location.port
 
-        return true
-    }
+            return output
+        },
+        showCorsInfo() {
+            if (this.printers.length) {
+                this.printers.forEach((printer: GuiRemoteprintersStatePrinter) => {
+                    if (printer && !printer.socket?.isConnected) return true
+                })
 
-    get panelTitle() {
-        if (this.dialogAddPrinter.bool) return this.$t('SelectPrinterDialog.AddPrinter')
-        else if (this.dialogEditPrinter.bool) return this.$t('SelectPrinterDialog.EditPrinter')
-        else if (this.isConnecting) return this.$t('SelectPrinterDialog.Connecting', { host: this.formatHostname })
-        else if (this.isConnected && !this.guiIsReady) return this.$t('ConnectionDialog.Initializing')
-        else if (this.connectingFailed)
-            return this.$t('SelectPrinterDialog.ConnectionFailed', { host: this.formatHostname })
-        else return this.$t('SelectPrinterDialog.SelectPrinter')
-    }
-
-    getPrinterName(namespace: string) {
-        return this.$store.getters['farm/getPrinterName'](namespace)
-    }
-
-    createPrinter() {
-        this.dialogAddPrinter.hostname = ''
-        this.dialogAddPrinter.port = this.defaultMoonrakerPort
-        this.dialogAddPrinter.bool = true
-    }
-
-    addPrinter() {
-        const values = {
-            hostname: this.dialogAddPrinter.hostname,
-            port: this.dialogAddPrinter.port,
-            path: this.dialogAddPrinter.path,
-            name: this.dialogAddPrinter.name,
-        }
-        this.$store.dispatch('gui/remoteprinters/store', { values })
-
-        this.dialogAddPrinter.hostname = ''
-        this.dialogAddPrinter.bool = false
-        this.dialogAddPrinter.path = '/'
-        this.dialogAddPrinter.name = ''
-    }
-
-    editPrinter(printer: GuiRemoteprintersStatePrinter) {
-        this.dialogEditPrinter.hostname = printer.hostname
-        this.dialogEditPrinter.port = printer.port
-        this.dialogEditPrinter.id = printer.id ?? ''
-        this.dialogEditPrinter.path = printer.path ?? '/'
-        this.dialogEditPrinter.name = printer.name ?? ''
-        this.dialogEditPrinter.bool = true
-
-        this.showOptionalSettings = printer.name ? printer.name.length > 0 : false
-    }
-
-    updatePrinter() {
-        const values = {
-            hostname: this.dialogEditPrinter.hostname,
-            port: this.dialogEditPrinter.port,
-            path: this.dialogEditPrinter.path,
-            id: this.dialogEditPrinter.id,
-            name: this.dialogEditPrinter.name,
-        }
-        this.$store.dispatch('gui/remoteprinters/update', {
-            id: this.dialogEditPrinter.id,
-            values,
-        })
-
-        this.dialogEditPrinter.bool = false
-    }
-
-    delPrinter() {
-        this.$store.dispatch('gui/remoteprinters/delete', this.dialogEditPrinter.id)
-        this.dialogEditPrinter.bool = false
-    }
-
-    connect(printer: FarmPrinterState) {
-        this.$store.dispatch('socket/setData', {
-            hostname: printer.socket.hostname,
-            port: printer.socket.port,
-            path: printer.socket.path,
-        })
-        const normPath = printer.socket.path.replaceAll(/(^\/*)|(\/*$)/g, '')
-        const url =
-            this.protocol +
-            '://' +
-            printer.socket.hostname +
-            ':' +
-            printer.socket.port +
-            (normPath.length > 0 ? `/${normPath}` : '') +
-            '/websocket'
-        this.$socket.setUrl(url)
-        this.$socket.connect()
-    }
-
-    reconnect() {
-        this.$store.dispatch('socket/setData', { connectingFailed: false })
-        this.$socket.connect()
-    }
-
-    switchToChangePrinter() {
-        this.$store.dispatch('socket/setData', { connectingFailed: false })
-    }
-
-    checkPrinters() {
-        this.printers.forEach((printer: GuiRemoteprintersStatePrinter) => {
-            if (printer && !printer.socket?.isConnected && !printer.socket?.isConnecting) {
-                this.$store.dispatch('farm/' + printer.id + '/connect')
+                return false
             }
-        })
-    }
 
+            return true
+        },
+        panelTitle() {
+            if (this.dialogAddPrinter.bool) return this.$t('SelectPrinterDialog.AddPrinter')
+            else if (this.dialogEditPrinter.bool) return this.$t('SelectPrinterDialog.EditPrinter')
+            else if (this.isConnecting) return this.$t('SelectPrinterDialog.Connecting', { host: this.formatHostname })
+            else if (this.isConnected && !this.guiIsReady) return this.$t('ConnectionDialog.Initializing')
+            else if (this.connectingFailed)
+                return this.$t('SelectPrinterDialog.ConnectionFailed', { host: this.formatHostname })
+            else return this.$t('SelectPrinterDialog.SelectPrinter')
+        },
+    },
     mounted() {
         this.$store.dispatch('gui/remoteprinters/initFromLocalstorage').then(() => {
             if (!('printer' in this.$route.query)) return
@@ -514,6 +412,91 @@ export default class TheSelectPrinterDialog extends Mixins(BaseMixin) {
 
             this.connect(matching[0])
         })
-    }
-}
+    },
+    methods: {
+        getPrinterName(namespace: string) {
+            return this.$store.getters['farm/getPrinterName'](namespace)
+        },
+        createPrinter() {
+            this.dialogAddPrinter.hostname = ''
+            this.dialogAddPrinter.port = this.defaultMoonrakerPort
+            this.dialogAddPrinter.bool = true
+        },
+        addPrinter() {
+            const values = {
+                hostname: this.dialogAddPrinter.hostname,
+                port: this.dialogAddPrinter.port,
+                path: this.dialogAddPrinter.path,
+                name: this.dialogAddPrinter.name,
+            }
+            this.$store.dispatch('gui/remoteprinters/store', { values })
+
+            this.dialogAddPrinter.hostname = ''
+            this.dialogAddPrinter.bool = false
+            this.dialogAddPrinter.path = '/'
+            this.dialogAddPrinter.name = ''
+        },
+        editPrinter(printer: GuiRemoteprintersStatePrinter) {
+            this.dialogEditPrinter.hostname = printer.hostname
+            this.dialogEditPrinter.port = printer.port
+            this.dialogEditPrinter.id = printer.id ?? ''
+            this.dialogEditPrinter.path = printer.path ?? '/'
+            this.dialogEditPrinter.name = printer.name ?? ''
+            this.dialogEditPrinter.bool = true
+
+            this.showOptionalSettings = printer.name ? printer.name.length > 0 : false
+        },
+        updatePrinter() {
+            const values = {
+                hostname: this.dialogEditPrinter.hostname,
+                port: this.dialogEditPrinter.port,
+                path: this.dialogEditPrinter.path,
+                id: this.dialogEditPrinter.id,
+                name: this.dialogEditPrinter.name,
+            }
+            this.$store.dispatch('gui/remoteprinters/update', {
+                id: this.dialogEditPrinter.id,
+                values,
+            })
+
+            this.dialogEditPrinter.bool = false
+        },
+        delPrinter() {
+            this.$store.dispatch('gui/remoteprinters/delete', this.dialogEditPrinter.id)
+            this.dialogEditPrinter.bool = false
+        },
+        connect(printer: FarmPrinterState) {
+            this.$store.dispatch('socket/setData', {
+                hostname: printer.socket.hostname,
+                port: printer.socket.port,
+                path: printer.socket.path,
+            })
+            const normPath = printer.socket.path.replaceAll(/(^\/*)|(\/*$)/g, '')
+            const url =
+                this.protocol +
+                '://' +
+                printer.socket.hostname +
+                ':' +
+                printer.socket.port +
+                (normPath.length > 0 ? `/${normPath}` : '') +
+                '/websocket'
+            this.$socket.setUrl(url)
+            this.$socket.connect()
+        },
+        reconnect() {
+            this.$store.dispatch('socket/setData', { connectingFailed: false })
+            this.$socket.connect()
+        },
+        switchToChangePrinter() {
+            this.$store.dispatch('socket/setData', { connectingFailed: false })
+        },
+        checkPrinters() {
+            this.printers.forEach((printer: GuiRemoteprintersStatePrinter) => {
+                if (printer && !printer.socket?.isConnected && !printer.socket?.isConnecting) {
+                    this.$store.dispatch('farm/' + printer.id + '/connect')
+                }
+            })
+        },
+    },
+})
 </script>

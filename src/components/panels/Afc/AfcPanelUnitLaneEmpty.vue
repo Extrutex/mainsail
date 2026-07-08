@@ -10,9 +10,14 @@
         <v-row v-if="prep" class="mt-0 flex-grow-0">
             <v-col class="px-6 pb-6">
                 <v-tooltip top>
-                    <template #activator="{ on, attrs }">
-                        <v-btn dense small class="w-100 elevation-0" v-bind="attrs" v-on="on" @click="ejectLane">
-                            <v-icon small>{{ mdiEject }}</v-icon>
+                    <template #activator="{ props }">
+                        <v-btn
+                            density="compact"
+                            size="small"
+                            class="w-100 elevation-0"
+                            v-bind="props"
+                            @click="ejectLane">
+                            <v-icon size="small">{{ mdiEject }}</v-icon>
                         </v-btn>
                     </template>
                     <span>{{ $t('Panels.AfcPanel.EjectFilament') }}</span>
@@ -22,36 +27,42 @@
     </div>
 </template>
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import AfcMixin from '@/components/mixins/afc'
 import { mdiEject } from '@mdi/js'
 
-@Component
-export default class AfcPanelUnitLaneEmpty extends Mixins(BaseMixin, AfcMixin) {
-    mdiEject = mdiEject
+export default defineComponent({
+    name: 'AfcPanelUnitLaneEmpty',
+    mixins: [BaseMixin, AfcMixin],
+    props: {
+        name: { type: String, required: true },
+    },
+    data() {
+        return {
+            mdiEject: mdiEject,
+        }
+    },
+    computed: {
+        lane() {
+            return this.getAfcLaneObject(this.name)
+        },
+        prep() {
+            return this.lane?.prep ?? false
+        },
+        text() {
+            if (this.prep) return this.$t('Panels.AfcPanel.PrepDetected')
 
-    @Prop({ type: String, required: true }) readonly name!: string
+            return this.$t('Panels.AfcPanel.Empty')
+        },
+    },
+    methods: {
+        ejectLane() {
+            const gcode = `LANE_UNLOAD LANE=${this.name}`
 
-    get lane() {
-        return this.getAfcLaneObject(this.name)
-    }
-
-    get prep() {
-        return this.lane?.prep ?? false
-    }
-
-    get text() {
-        if (this.prep) return this.$t('Panels.AfcPanel.PrepDetected')
-
-        return this.$t('Panels.AfcPanel.Empty')
-    }
-
-    ejectLane() {
-        const gcode = `LANE_UNLOAD LANE=${this.name}`
-
-        this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
-        this.$socket.emit('printer.gcode.script', { script: gcode })
-    }
-}
+            this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
+            this.$socket.emit('printer.gcode.script', { script: gcode })
+        },
+    },
+})
 </script>

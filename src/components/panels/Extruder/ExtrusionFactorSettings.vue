@@ -15,13 +15,18 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { mdiPrinter3dNozzleOutline } from '@mdi/js'
 import ExtruderMixin from '@/components/mixins/extruder'
 
-@Component({})
-export default class PressureAdvanceSettings extends Mixins(BaseMixin, ExtruderMixin) {
-    mdiPrinter3dNozzleOutline = mdiPrinter3dNozzleOutline
-}
+export default defineComponent({
+    name: 'PressureAdvanceSettings',
+    mixins: [BaseMixin, ExtruderMixin],
+    data() {
+        return {
+            mdiPrinter3dNozzleOutline: mdiPrinter3dNozzleOutline,
+        }
+    },
+})
 </script>

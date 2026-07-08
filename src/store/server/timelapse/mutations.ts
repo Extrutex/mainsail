@@ -1,4 +1,3 @@
-
 import { getDefaultState } from './index'
 import { MutationTree } from 'vuex'
 import { ServerTimelapseState } from '@/store/server/timelapse/types'
@@ -10,8 +9,7 @@ export const mutations: MutationTree<ServerTimelapseState> = {
 
     setSettings(state, payload) {
         Object.keys(payload).forEach((key) => {
-            if (key in state.settings && state.settings[key] !== payload[key])
-                state.settings[key] = payload[key]
+            if (key in state.settings && state.settings[key] !== payload[key]) state.settings[key] = payload[key]
         })
     },
 

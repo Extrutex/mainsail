@@ -7,7 +7,7 @@
             :collapsible="true">
             <template #buttons>
                 <v-tooltip top>
-                    <template #activator="{ on, attrs }">
+                    <template #activator="{ props }">
                         <v-btn
                             icon
                             tile
@@ -15,8 +15,7 @@
                             :ripple="true"
                             :loading="loadings.includes('loadingBtnRolloverLogs')"
                             :disabled="['printing', 'paused'].includes(printer_state)"
-                            v-bind="attrs"
-                            v-on="on"
+                            v-bind="props"
                             @click="showRolloverDialog = true">
                             <v-icon>{{ mdiFileSyncOutline }}</v-icon>
                         </v-btn>
@@ -35,21 +34,24 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import Panel from '@/components/ui/Panel.vue'
 import { mdiFileDocumentEdit, mdiFileSyncOutline } from '@mdi/js'
 import { genericLogfiles } from '@/store/variables'
 import LogfilesPanelGenericLog from '@/components/panels/Machine/LogfilesPanel/LogfilesPanelGenericLog.vue'
-@Component({
+
+export default defineComponent({
+    name: 'LogfilesPanel',
     components: { LogfilesPanelGenericLog, Panel },
+    mixins: [BaseMixin],
+    data() {
+        return {
+            mdiFileDocumentEdit: mdiFileDocumentEdit,
+            mdiFileSyncOutline: mdiFileSyncOutline,
+            genericLogfiles: genericLogfiles,
+            showRolloverDialog: false,
+        }
+    },
 })
-export default class LogfilesPanel extends Mixins(BaseMixin) {
-    mdiFileDocumentEdit = mdiFileDocumentEdit
-    mdiFileSyncOutline = mdiFileSyncOutline
-
-    genericLogfiles = genericLogfiles
-
-    showRolloverDialog = false
-}
 </script>

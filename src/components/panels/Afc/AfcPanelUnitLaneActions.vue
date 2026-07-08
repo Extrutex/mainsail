@@ -3,43 +3,40 @@
         <v-col class="px-6 pt-3 pb-6 d-flex flex-row justify-space-between">
             <v-item-group class="_btn-group d-flex flex-nowrap w-100 py-0">
                 <v-tooltip v-if="toolLoaded" top>
-                    <template #activator="{ on, attrs }">
+                    <template #activator="{ props }">
                         <v-btn
                             :disabled="printerIsPrintingOnly"
-                            dense
+                            density="compact"
                             class="flex-grow-1 px-0 first-btn"
-                            v-bind="attrs"
-                            v-on="on"
+                            v-bind="props"
                             @click="unloadLane">
-                            <v-icon small>{{ mdiArrowUpBold }}</v-icon>
+                            <v-icon size="small">{{ mdiArrowUpBold }}</v-icon>
                         </v-btn>
                     </template>
                     <span>{{ $t('Panels.AfcPanel.UnloadLane') }}</span>
                 </v-tooltip>
                 <v-tooltip v-else top>
-                    <template #activator="{ on, attrs }">
+                    <template #activator="{ props }">
                         <v-btn
                             :disabled="printerIsPrintingOnly"
-                            dense
+                            density="compact"
                             class="flex-grow-1 px-0 first-btn"
-                            v-bind="attrs"
-                            v-on="on"
+                            v-bind="props"
                             @click="loadLane">
-                            <v-icon small>{{ mdiArrowDownBold }}</v-icon>
+                            <v-icon size="small">{{ mdiArrowDownBold }}</v-icon>
                         </v-btn>
                     </template>
                     <span>{{ $t('Panels.AfcPanel.LoadLane') }}</span>
                 </v-tooltip>
                 <v-tooltip top>
-                    <template #activator="{ on, attrs }">
+                    <template #activator="{ props }">
                         <v-btn
                             :disabled="toolLoaded || (!laneRunout && toolLoaded)"
-                            dense
+                            density="compact"
                             class="flex-grow-1 px-0 last-btn"
-                            v-bind="attrs"
-                            v-on="on"
+                            v-bind="props"
                             @click="ejectLane">
-                            <v-icon small>{{ mdiEject }}</v-icon>
+                            <v-icon size="small">{{ mdiEject }}</v-icon>
                         </v-btn>
                     </template>
                     <span>{{ $t('Panels.AfcPanel.EjectFilament') }}</span>
@@ -49,55 +46,57 @@
     </v-row>
 </template>
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import AfcMixin from '@/components/mixins/afc'
 import ExtruderMixin from '@/components/mixins/extruder'
 import { mdiArrowDownBold, mdiArrowUpBold, mdiEject } from '@mdi/js'
 
-@Component
-export default class AfcPanelUnitLaneActions extends Mixins(BaseMixin, AfcMixin, ExtruderMixin) {
-    mdiArrowUpBold = mdiArrowUpBold
-    mdiArrowDownBold = mdiArrowDownBold
-    mdiEject = mdiEject
+export default defineComponent({
+    name: 'AfcPanelUnitLaneActions',
+    mixins: [BaseMixin, AfcMixin, ExtruderMixin],
+    props: {
+        name: { type: String, required: true },
+    },
+    data() {
+        return {
+            mdiArrowUpBold: mdiArrowUpBold,
+            mdiArrowDownBold: mdiArrowDownBold,
+            mdiEject: mdiEject,
+        }
+    },
+    computed: {
+        lane() {
+            return this.getAfcLaneObject(this.name)
+        },
+        laneActive() {
+            const activeLaneName = this.afcCurrentLane?.name ?? ''
 
-    @Prop({ type: String, required: true }) readonly name!: string
-
-    get lane() {
-        return this.getAfcLaneObject(this.name)
-    }
-
-    get laneActive() {
-        const activeLaneName = this.afcCurrentLane?.name ?? ''
-
-        return this.name === activeLaneName
-    }
-
-    get laneRunout() {
-        return this.laneActive && !this.lane.prep
-    }
-
-    get toolLoaded() {
-        return this.lane.tool_loaded ?? false
-    }
-
-    loadLane() {
-        this.doSend(`CHANGE_TOOL LANE=${this.name}`)
-    }
-
-    unloadLane() {
-        this.doSend(`TOOL_UNLOAD LANE=${this.name}`)
-    }
-
-    ejectLane() {
-        this.doSend(`LANE_UNLOAD LANE=${this.name}`)
-    }
-
-    doSend(gcode: string) {
-        this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
-        this.$socket.emit('printer.gcode.script', { script: gcode })
-    }
-}
+            return this.name === activeLaneName
+        },
+        laneRunout() {
+            return this.laneActive && !this.lane.prep
+        },
+        toolLoaded() {
+            return this.lane.tool_loaded ?? false
+        },
+    },
+    methods: {
+        loadLane() {
+            this.doSend(`CHANGE_TOOL LANE=${this.name}`)
+        },
+        unloadLane() {
+            this.doSend(`TOOL_UNLOAD LANE=${this.name}`)
+        },
+        ejectLane() {
+            this.doSend(`LANE_UNLOAD LANE=${this.name}`)
+        },
+        doSend(gcode: string) {
+            this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
+            this.$socket.emit('printer.gcode.script', { script: gcode })
+        },
+    },
+})
 </script>
 
 <style scoped>

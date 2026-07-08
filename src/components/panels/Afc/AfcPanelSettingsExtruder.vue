@@ -4,47 +4,53 @@
     </v-list-item>
 </template>
 <script lang="ts">
-import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import AfcMixin from '@/components/mixins/afc'
 
-@Component
-export default class AfcPanelSettingsExtruder extends Mixins(BaseMixin, AfcMixin) {
-    @Prop({ type: String, required: true }) readonly name!: string
+export default defineComponent({
+    name: 'AfcPanelSettingsExtruder',
+    mixins: [BaseMixin, AfcMixin],
+    props: {
+        name: { type: String, required: true },
+    },
+    data() {
+        return {
+            value: true,
+        }
+    },
+    computed: {
+        label() {
+            return this.$t(`Panels.AfcPanel.ShowTool`, { name: this.name }) as string
+        },
+    },
+    watch: {
+        value(newValue: boolean) {
+            if (newValue) {
+                this.removeFromHiddenExtruders(this.name)
+                return
+            }
 
-    value = true
-
-    get label() {
-        return this.$t(`Panels.AfcPanel.ShowTool`, { name: this.name }) as string
-    }
-
+            this.addToHiddenExtruders(this.name)
+        },
+    },
     mounted() {
         this.value = !this.afcHiddenExtruders.includes(this.name)
-    }
+    },
+    methods: {
+        removeFromHiddenExtruders(name: string) {
+            const hiddenExtruders = [...this.afcHiddenExtruders]
+            const index = hiddenExtruders.indexOf(name)
+            if (index > -1) hiddenExtruders.splice(index, 1)
 
-    @Watch('value')
-    onValueChange(newValue: boolean) {
-        if (newValue) {
-            this.removeFromHiddenExtruders(this.name)
-            return
-        }
+            this.$store.dispatch('gui/saveSetting', { name: 'view.afc.hiddenExtruders', value: hiddenExtruders })
+        },
+        addToHiddenExtruders(name: string) {
+            const hiddenExtruders = [...this.afcHiddenExtruders]
+            if (!hiddenExtruders.includes(name)) hiddenExtruders.push(name)
 
-        this.addToHiddenExtruders(this.name)
-    }
-
-    private removeFromHiddenExtruders(name: string) {
-        const hiddenExtruders = [...this.afcHiddenExtruders]
-        const index = hiddenExtruders.indexOf(name)
-        if (index > -1) hiddenExtruders.splice(index, 1)
-
-        this.$store.dispatch('gui/saveSetting', { name: 'view.afc.hiddenExtruders', value: hiddenExtruders })
-    }
-
-    private addToHiddenExtruders(name: string) {
-        const hiddenExtruders = [...this.afcHiddenExtruders]
-        if (!hiddenExtruders.includes(name)) hiddenExtruders.push(name)
-
-        this.$store.dispatch('gui/saveSetting', { name: 'view.afc.hiddenExtruders', value: hiddenExtruders })
-    }
-}
+            this.$store.dispatch('gui/saveSetting', { name: 'view.afc.hiddenExtruders', value: hiddenExtruders })
+        },
+    },
+})
 </script>

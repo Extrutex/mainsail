@@ -16,52 +16,56 @@
     </tr>
 </template>
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import GcodefilesMixin from '@/components/mixins/gcodefiles'
 import { mdiFolderUpload } from '@mdi/js'
 
-@Component
-export default class GcodefilesPanelTableRowBack extends Mixins(BaseMixin, GcodefilesMixin) {
-    mdiFolderUpload = mdiFolderUpload
-
-    isHover = false
-
-    get trClasses() {
+export default defineComponent({
+    name: 'GcodefilesPanelTableRowBack',
+    mixins: [BaseMixin, GcodefilesMixin],
+    data() {
         return {
-            'file-list-cursor': true,
-            'file-list-row-hover': this.isHover,
+            mdiFolderUpload: mdiFolderUpload,
+            isHover: false,
         }
-    }
+    },
+    computed: {
+        trClasses() {
+            return {
+                'file-list-cursor': true,
+                'file-list-row-hover': this.isHover,
+            }
+        },
+    },
+    methods: {
+        goBackAction() {
+            this.currentPath = this.currentPath.substring(0, this.currentPath.lastIndexOf('/'))
+        },
+        onDrop(e: DragEvent) {
+            e.preventDefault()
+            this.isHover = false
 
-    goBackAction() {
-        this.currentPath = this.currentPath.substring(0, this.currentPath.lastIndexOf('/'))
-    }
+            const dragFilename = e.dataTransfer?.getData('filename')
 
-    onDrop(e: DragEvent) {
-        e.preventDefault()
-        this.isHover = false
+            const source = [this.currentPath, dragFilename].join('/')
+            const dest = [this.currentPath, '..', dragFilename].join('/')
 
-        const dragFilename = e.dataTransfer?.getData('filename')
-
-        const source = [this.currentPath, dragFilename].join('/')
-        const dest = [this.currentPath, '..', dragFilename].join('/')
-
-        this.$socket.emit(
-            'server.files.move',
-            {
-                source: 'gcodes' + source,
-                dest: 'gcodes' + dest,
-            },
-            { action: 'files/getMove' }
-        )
-    }
-
-    // this function is important to disable the browser default function to activate the onDrop function
-    onDragOver(e: DragEvent) {
-        e.preventDefault()
-    }
-}
+            this.$socket.emit(
+                'server.files.move',
+                {
+                    source: 'gcodes' + source,
+                    dest: 'gcodes' + dest,
+                },
+                { action: 'files/getMove' }
+            )
+        },
+        // this function is important to disable the browser default function to activate the onDrop function
+        onDragOver(e: DragEvent) {
+            e.preventDefault()
+        },
+    },
+})
 </script>
 
 <style scoped>

@@ -3,12 +3,12 @@
         <v-row class="pt-3">
             <v-col class="text-center">
                 <v-btn
-                    text
+                    variant="text"
                     color="primary"
-                    small
+                    size="small"
                     :disabled="['printing', 'paused'].includes(printer_state)"
                     @click="clickUpdate">
-                    <v-icon left>{{ mdiProgressUpload }}</v-icon>
+                    <v-icon start>{{ mdiProgressUpload }}</v-icon>
                     {{ $t('Machine.UpdatePanel.UpdateAll') }}
                 </v-btn>
             </v-col>
@@ -18,35 +18,40 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { mdiProgressUpload } from '@mdi/js'
 import UpdateHintAll from '@/components/panels/Machine/UpdatePanel/UpdateHintAll.vue'
-@Component({
+
+export default defineComponent({
+    name: 'UpdatePanelEntryAll',
     components: { UpdateHintAll },
-})
-export default class UpdatePanelEntryAll extends Mixins(BaseMixin) {
-    mdiProgressUpload = mdiProgressUpload
-
-    boolShowDialog = false
-
-    get hideUpdateWarning() {
-        return this.$store.state.gui.uiSettings.hideUpdateWarnings ?? false
-    }
-
-    clickUpdate() {
-        if (this.hideUpdateWarning) {
-            this.updateAll()
-            return
+    mixins: [BaseMixin],
+    data() {
+        return {
+            mdiProgressUpload: mdiProgressUpload,
+            boolShowDialog: false,
         }
+    },
+    computed: {
+        hideUpdateWarning() {
+            return this.$store.state.gui.uiSettings.hideUpdateWarnings ?? false
+        },
+    },
+    methods: {
+        clickUpdate() {
+            if (this.hideUpdateWarning) {
+                this.updateAll()
+                return
+            }
 
-        this.boolShowDialog = true
-    }
-
-    updateAll() {
-        this.$socket.emit('machine.update.full', {})
-    }
-}
+            this.boolShowDialog = true
+        },
+        updateAll() {
+            this.$socket.emit('machine.update.full', {})
+        },
+    },
+})
 </script>
 
 <style scoped></style>

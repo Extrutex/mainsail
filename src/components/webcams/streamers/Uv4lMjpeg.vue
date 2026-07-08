@@ -12,97 +12,97 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop, Ref, Watch } from 'vue-property-decorator'
+import { defineComponent, PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { GuiWebcamStateWebcam } from '@/store/gui/webcams/types'
 import WebcamMixin from '@/components/mixins/webcam'
 
-@Component
-export default class Uv4lMjpeg extends Mixins(BaseMixin, WebcamMixin) {
-    aspectRatio: null | number = null
-    isVisible = false
-    isVisibleViewport = false
-    isVisibleDocument = true
-
-    @Prop({ required: true }) readonly camSettings!: GuiWebcamStateWebcam
-    @Prop({ default: null }) readonly printerUrl!: string | null
-
-    @Ref('image') readonly image!: HTMLImageElement
-
-    get url() {
-        return this.convertUrl(this.camSettings?.stream_url, this.printerUrl)
-    }
-
-    get wrapperStyle() {
-        return this.getWrapperStyle(this.aspectRatio, this.camSettings.rotation)
-    }
-
-    get webcamStyle() {
+export default defineComponent({
+    name: 'Uv4lMjpeg',
+    mixins: [BaseMixin, WebcamMixin],
+    props: {
+        camSettings: { type: Object as PropType<GuiWebcamStateWebcam>, required: true },
+        printerUrl: { type: String, default: null },
+    },
+    data() {
         return {
-            transform: this.generateTransform(
-                this.camSettings.flip_horizontal ?? false,
-                this.camSettings.flip_vertical ?? false,
-                this.camSettings.rotation ?? 0,
-                this.aspectRatio ?? 1
-            ),
+            aspectRatio: null as null | number,
+            isVisible: false,
+            isVisibleViewport: false,
+            isVisibleDocument: true,
         }
-    }
-
+    },
+    computed: {
+        image(): HTMLImageElement {
+            return this.$refs.image as HTMLImageElement
+        },
+        url() {
+            return this.convertUrl(this.camSettings?.stream_url, this.printerUrl)
+        },
+        wrapperStyle() {
+            return this.getWrapperStyle(this.aspectRatio, this.camSettings.rotation)
+        },
+        webcamStyle() {
+            return {
+                transform: this.generateTransform(
+                    this.camSettings.flip_horizontal ?? false,
+                    this.camSettings.flip_vertical ?? false,
+                    this.camSettings.rotation ?? 0,
+                    this.aspectRatio ?? 1
+                ),
+            }
+        },
+    },
+    watch: {
+        async url() {
+            this.stopStream()
+            this.startStream()
+        },
+    },
     mounted() {
         document.addEventListener('visibilitychange', this.documentVisibilityChanged)
-    }
-
-    beforeDestroy() {
+    },
+    beforeUnmount() {
         document.removeEventListener('visibilitychange', this.documentVisibilityChanged)
         this.stopStream()
-    }
+    },
+    methods: {
+        startStream() {
+            if (this.isVisible) return
 
-    startStream() {
-        if (this.isVisible) return
+            this.image?.setAttribute('src', this.url)
+        },
+        stopStream() {
+            if (!this.image) return
 
-        this.image?.setAttribute('src', this.url)
-    }
+            this.image.removeAttribute('src')
+            URL.revokeObjectURL(this.url)
+        },
+        // this function checks if the browser tab was changed
+        documentVisibilityChanged() {
+            const visibility = document.visibilityState
+            this.isVisibleDocument = visibility === 'visible'
+            if (!this.isVisibleDocument) this.stopStream()
+            this.visibilityChanged()
+        },
+        // this function checks if the webcam is in the viewport
+        viewportVisibilityChanged(newVal: boolean) {
+            this.isVisibleViewport = newVal
+            this.visibilityChanged()
+        },
+        visibilityChanged() {
+            if (this.isVisibleViewport && this.isVisibleDocument) {
+                this.startStream()
+                return
+            }
 
-    stopStream() {
-        if (!this.image) return
+            this.stopStream()
+        },
+        onload() {
+            if (this.aspectRatio !== null) return
 
-        this.image.removeAttribute('src')
-        URL.revokeObjectURL(this.url)
-    }
-
-    // this function checks if the browser tab was changed
-    documentVisibilityChanged() {
-        const visibility = document.visibilityState
-        this.isVisibleDocument = visibility === 'visible'
-        if (!this.isVisibleDocument) this.stopStream()
-        this.visibilityChanged()
-    }
-
-    // this function checks if the webcam is in the viewport
-    viewportVisibilityChanged(newVal: boolean) {
-        this.isVisibleViewport = newVal
-        this.visibilityChanged()
-    }
-
-    visibilityChanged() {
-        if (this.isVisibleViewport && this.isVisibleDocument) {
-            this.startStream()
-            return
-        }
-
-        this.stopStream()
-    }
-
-    onload() {
-        if (this.aspectRatio !== null) return
-
-        this.aspectRatio = this.updateAspectRatioFromImage(this.image)
-    }
-
-    @Watch('url')
-    async urlChanged() {
-        this.stopStream()
-        this.startStream()
-    }
-}
+            this.aspectRatio = this.updateAspectRatioFromImage(this.image)
+        },
+    },
+})
 </script>

@@ -6,22 +6,22 @@
                 <br />
                 <template v-if="package_count">
                     <a class="info--text cursor--pointer" @click="boolShowPackageList = true">
-                        <v-icon small color="info" class="mr-1">{{ mdiInformation }}</v-icon>
+                        <v-icon size="small" color="info" class="mr-1">{{ mdiInformation }}</v-icon>
                         {{ $t('Machine.UpdatePanel.CountPackagesCanBeUpgraded', { count: package_count }) }}
                     </a>
                 </template>
                 <span v-else>{{ $t('Machine.UpdatePanel.OSPackages') }}</span>
             </v-col>
-            <v-col class="col-auto pr-6 text-right" align-self="center">
+            <v-col cols="auto" class="pr-6 text-right" align-self="center">
                 <v-chip
-                    small
+                    size="small"
                     label
-                    outlined
+                    variant="outlined"
                     :color="btnColor"
                     :disabled="btnDisabled"
                     class="minwidth-0 px-2 text-uppercase"
                     @click="doUpdate">
-                    <v-icon small class="mr-1">{{ btnIcon }}</v-icon>
+                    <v-icon size="small" class="mr-1">{{ btnIcon }}</v-icon>
                     {{ btnText }}
                 </v-chip>
             </v-col>
@@ -31,59 +31,60 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { mdiCheck, mdiInformation, mdiProgressUpload } from '@mdi/js'
-@Component
-export default class UpdatePanelEntrySystem extends Mixins(BaseMixin) {
-    mdiInformation = mdiInformation
 
-    // to display the dialog for packages
-    boolShowPackageList = false
+export default defineComponent({
+    name: 'UpdatePanelEntrySystem',
+    mixins: [BaseMixin],
+    data() {
+        return {
+            mdiInformation: mdiInformation,
+            // to display the dialog for packages
+            boolShowPackageList: false,
+        }
+    },
+    computed: {
+        package_count() {
+            return this.$store.state.server.updateManager?.system?.package_count ?? 0
+        },
+        package_list() {
+            return this.$store.state.server.updateManager?.system?.package_list ?? []
+        },
+        btnDisabled() {
+            // disable button if the printer is printing
+            if (['printing', 'paused'].includes(this.printer_state)) return true
 
-    get package_count() {
-        return this.$store.state.server.updateManager?.system?.package_count ?? 0
-    }
+            // disable button if no package is available to update
+            return this.package_count === 0
+        },
+        btnIcon() {
+            if (this.package_count) return mdiProgressUpload
 
-    get package_list() {
-        return this.$store.state.server.updateManager?.system?.package_list ?? []
-    }
+            return mdiCheck
+        },
+        btnColor() {
+            // set button to primary, if updates are available
+            if (this.package_count) return 'primary'
 
-    get btnDisabled() {
-        // disable button if the printer is printing
-        if (['printing', 'paused'].includes(this.printer_state)) return true
+            return 'green'
+        },
+        btnText() {
+            if (this.package_count) return this.$t('Machine.UpdatePanel.Upgrade')
 
-        // disable button if no package is available to update
-        return this.package_count === 0
-    }
-
-    get btnIcon() {
-        if (this.package_count) return mdiProgressUpload
-
-        return mdiCheck
-    }
-
-    get btnColor() {
-        // set button to primary, if updates are available
-        if (this.package_count) return 'primary'
-
-        return 'green'
-    }
-
-    get btnText() {
-        if (this.package_count) return this.$t('Machine.UpdatePanel.Upgrade')
-
-        return this.$t('Machine.UpdatePanel.UpToDate')
-    }
-
-    doUpdate() {
-        this.$socket.emit('machine.update.system', {})
-    }
-
-    closePackagesList() {
-        this.boolShowPackageList = false
-    }
-}
+            return this.$t('Machine.UpdatePanel.UpToDate')
+        },
+    },
+    methods: {
+        doUpdate() {
+            this.$socket.emit('machine.update.system', {})
+        },
+        closePackagesList() {
+            this.boolShowPackageList = false
+        },
+    },
+})
 </script>
 
 <style scoped></style>

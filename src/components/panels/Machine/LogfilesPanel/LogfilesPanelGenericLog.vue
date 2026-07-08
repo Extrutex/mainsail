@@ -8,59 +8,63 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import Panel from '@/components/ui/Panel.vue'
 import { FileStateFile } from '@/store/files/types'
 import { mdiDownload } from '@mdi/js'
-@Component({
+
+export default defineComponent({
+    name: 'LogfilesPanel',
     components: { Panel },
-})
-export default class LogfilesPanel extends Mixins(BaseMixin) {
-    mdiDownload = mdiDownload
-
-    @Prop({ type: String, required: true }) name!: string
-
-    get logfiles() {
-        return this.$store.getters['files/getDirectory']('logs')?.childrens ?? []
-    }
-
-    get filename() {
-        return this.name + '.log'
-    }
-
-    get exists(): boolean {
-        if (['klippy', 'moonraker'].includes(this.name)) return true
-
-        return this.logfiles.findIndex((log: FileStateFile) => log.filename === this.filename) !== -1
-    }
-
-    get href() {
-        let path = '/server/files/logs/'
-        if (['klippy', 'moonraker'].includes(this.name)) path = '/server/files/'
-
-        return this.apiUrl + path + this.filename
-    }
-
-    get classes() {
-        const output = ['col-12', 'pt-0']
-
-        if (this.klipperState !== 'ready') {
-            output.push('col-md-6')
-            output.push('mt-md-3')
-        } else {
-            output.push('col-md-12')
+    mixins: [BaseMixin],
+    props: {
+        name: { type: String, required: true },
+    },
+    data() {
+        return {
+            mdiDownload: mdiDownload,
         }
+    },
+    computed: {
+        logfiles() {
+            return this.$store.getters['files/getDirectory']('logs')?.childrens ?? []
+        },
+        filename() {
+            return this.name + '.log'
+        },
+        exists(): boolean {
+            if (['klippy', 'moonraker'].includes(this.name)) return true
 
-        return output
-    }
+            return this.logfiles.findIndex((log: FileStateFile) => log.filename === this.filename) !== -1
+        },
+        href() {
+            let path = '/server/files/logs/'
+            if (['klippy', 'moonraker'].includes(this.name)) path = '/server/files/'
 
-    downloadLog(event: MouseEvent) {
-        event.preventDefault()
+            return this.apiUrl + path + this.filename
+        },
+        classes() {
+            const output = ['col-12', 'pt-0']
 
-        const target = event.target as HTMLElement | null
-        const href = target?.closest('a')?.href ?? ''
-        if (href) window.open(href)
-    }
-}
+            if (this.klipperState !== 'ready') {
+                output.push('col-md-6')
+                output.push('mt-md-3')
+            } else {
+                output.push('col-md-12')
+            }
+
+            return output
+        },
+    },
+    methods: {
+        downloadLog(event: MouseEvent) {
+            event.preventDefault()
+
+            const target = event.target as HTMLElement | null
+            const href = target?.closest('a')?.href ?? ''
+            if (href) window.open(href)
+        },
+    },
+})
 </script>

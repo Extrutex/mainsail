@@ -20,32 +20,49 @@
             </v-card-text>
             <v-card-actions>
                 <v-spacer />
-                <v-btn text color="primary" @click="closeDialog">{{ $t('Buttons.Close') }}</v-btn>
+                <v-btn variant="text" color="primary" @click="closeDialog">{{ $t('Buttons.Close') }}</v-btn>
             </v-card-actions>
         </panel>
     </v-dialog>
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop, VModel } from 'vue-property-decorator'
+import { defineComponent, PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { mdiCloseThick, mdiPackageVariantClosed } from '@mdi/js'
 import Panel from '@/components/ui/Panel.vue'
 
-@Component({
+export default defineComponent({
+    name: 'SystemPackagesList',
     components: { Panel },
+    mixins: [BaseMixin],
+    props: {
+        modelValue: { type: Boolean },
+        packagesList: { type: Array as PropType<string[]>, required: true },
+    },
+    emits: ['update:modelValue'],
+    data() {
+        return {
+            mdiCloseThick: mdiCloseThick,
+            mdiPackageVariantClosed: mdiPackageVariantClosed,
+        }
+    },
+    computed: {
+        showDialog: {
+            get(): boolean {
+                return this.modelValue
+            },
+            set(value: boolean) {
+                this.$emit('update:modelValue', value)
+            },
+        },
+    },
+    methods: {
+        closeDialog() {
+            this.showDialog = false
+        },
+    },
 })
-export default class SystemPackagesList extends Mixins(BaseMixin) {
-    mdiCloseThick = mdiCloseThick
-    mdiPackageVariantClosed = mdiPackageVariantClosed
-
-    @VModel({ type: Boolean }) showDialog!: boolean
-    @Prop({ required: true }) readonly packagesList!: string[]
-
-    closeDialog() {
-        this.showDialog = false
-    }
-}
 </script>
 
 <style scoped>

@@ -1,17 +1,20 @@
 <template>
-    <v-alert v-if="bypassState" type="warning" class="mt-3" dense text>
+    <v-alert v-if="bypassState" type="warning" class="mt-3" density="compact" text>
         {{ $t('Panels.AfcPanel.BypassActive') }}
     </v-alert>
 </template>
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import AfcMixin from '@/components/mixins/afc'
 
-@Component
-export default class AfcPanelBypass extends Mixins(BaseMixin, AfcMixin) {
-    get bypassState() {
-        return this.afc.bypass_state ?? false
-    }
-}
+export default defineComponent({
+    name: 'AfcPanelBypass',
+    mixins: [BaseMixin, AfcMixin],
+    computed: {
+        bypassState() {
+            return this.afc.bypass_state ?? false
+        },
+    },
+})
 </script>

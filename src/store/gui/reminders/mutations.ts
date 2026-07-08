@@ -1,4 +1,3 @@
-
 import { MutationTree } from 'vuex'
 import { GuiRemindersState } from '@/store/gui/reminders/types'
 import { getDefaultState } from './index'

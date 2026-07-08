@@ -8,12 +8,15 @@
     </td>
 </template>
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { FileStateGcodefile } from '@/store/files/types'
 
-@Component
-export default class GcodefilesPanelTableRowFileMetadataSlicer extends Mixins(BaseMixin) {
-    @Prop({ type: Object, required: true }) readonly item!: FileStateGcodefile
-}
+export default defineComponent({
+    name: 'GcodefilesPanelTableRowFileMetadataSlicer',
+    mixins: [BaseMixin],
+    props: {
+        item: { type: Object, required: true },
+    },
+})
 </script>

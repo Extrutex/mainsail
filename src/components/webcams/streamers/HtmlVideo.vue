@@ -11,40 +11,48 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop, Ref } from 'vue-property-decorator'
+import { defineComponent, PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { GuiWebcamStateWebcam } from '@/store/gui/webcams/types'
 import WebcamMixin from '@/components/mixins/webcam'
 
-@Component
-export default class HtmlVideo extends Mixins(BaseMixin, WebcamMixin) {
-    aspectRatio: number | null = null
-
-    @Prop({ required: true }) readonly camSettings!: GuiWebcamStateWebcam
-    @Prop({ default: null }) readonly printerUrl!: string | null
-
-    @Ref('video') readonly video!: HTMLVideoElement
-    get url() {
-        return this.convertUrl(this.camSettings?.stream_url, this.printerUrl)
-    }
-
-    get wrapperStyle() {
-        return this.getWrapperStyle(this.aspectRatio, this.camSettings.rotation)
-    }
-
-    get webcamStyle() {
+export default defineComponent({
+    name: 'HtmlVideo',
+    mixins: [BaseMixin, WebcamMixin],
+    props: {
+        camSettings: { type: Object as PropType<GuiWebcamStateWebcam>, required: true },
+        printerUrl: { type: String, default: null },
+    },
+    data() {
         return {
-            transform: this.generateTransform(
-                this.camSettings.flip_horizontal ?? false,
-                this.camSettings.flip_vertical ?? false,
-                this.camSettings.rotation ?? 0,
-                this.aspectRatio ?? 1
-            ),
+            aspectRatio: null as number | null,
         }
-    }
-
-    onLoadedMetadata() {
-        this.aspectRatio = this.updateAspectRatioFromVideo(this.video)
-    }
-}
+    },
+    computed: {
+        video(): HTMLVideoElement {
+            return this.$refs.video as HTMLVideoElement
+        },
+        url() {
+            return this.convertUrl(this.camSettings?.stream_url, this.printerUrl)
+        },
+        wrapperStyle() {
+            return this.getWrapperStyle(this.aspectRatio, this.camSettings.rotation)
+        },
+        webcamStyle() {
+            return {
+                transform: this.generateTransform(
+                    this.camSettings.flip_horizontal ?? false,
+                    this.camSettings.flip_vertical ?? false,
+                    this.camSettings.rotation ?? 0,
+                    this.aspectRatio ?? 1
+                ),
+            }
+        },
+    },
+    methods: {
+        onLoadedMetadata() {
+            this.aspectRatio = this.updateAspectRatioFromVideo(this.video)
+        },
+    },
+})
 </script>

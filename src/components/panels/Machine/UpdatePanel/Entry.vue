@@ -6,82 +6,77 @@
                 <br />
                 <template v-if="type === 'git_repo' && commitsBehind.length">
                     <a class="info--text cursor--pointer" @click="boolShowCommitList = true">
-                        <v-icon small color="info" class="mr-1">{{ mdiUpdate }}</v-icon>
+                        <v-icon size="small" color="info" class="mr-1">{{ mdiUpdate }}</v-icon>
                         {{ versionOutput }}
                     </a>
                 </template>
                 <template v-else-if="type === 'web' && semverUpdatable">
                     <a class="info--text text-decoration-none" :href="webLinkRelease" target="_blank">
-                        <v-icon small color="info" class="mr-1">{{ mdiUpdate }}</v-icon>
+                        <v-icon size="small" color="info" class="mr-1">{{ mdiUpdate }}</v-icon>
                         {{ versionOutput }}
                     </a>
                 </template>
                 <template v-else-if="type === 'python' && semverUpdatable">
                     <a class="info--text text-decoration-none" :href="pythonChangelog" target="_blank">
-                        <v-icon small color="info" class="mr-1">{{ mdiUpdate }}</v-icon>
+                        <v-icon size="small" color="info" class="mr-1">{{ mdiUpdate }}</v-icon>
                         {{ versionOutput }}
                     </a>
                 </template>
                 <span v-else>{{ versionOutput }}</span>
             </v-col>
-            <v-col class="col-auto pr-6 text-right" align-self="center">
+            <v-col cols="auto" class="pr-6 text-right" align-self="center">
                 <v-chip
                     v-if="anomalies.length > 0"
-                    small
+                    size="small"
                     label
                     :outlined="!toggleAnomalies"
                     color="grey"
                     class="minwidth-0 px-1 mr-2"
                     @click="toggleAnomalies = !toggleAnomalies">
-                    <v-icon small>{{ toggleAnomalies ? mdiInformationOutline : mdiInformation }}</v-icon>
+                    <v-icon size="small">{{ toggleAnomalies ? mdiInformationOutline : mdiInformation }}</v-icon>
                 </v-chip>
                 <template v-if="!isValid">
                     <v-menu :offset-y="true">
-                        <template #activator="{ on, attrs }">
+                        <template #activator="{ props }">
                             <v-chip
-                                small
+                                size="small"
                                 label
-                                outlined
+                                variant="outlined"
                                 :color="btnColor"
                                 :disabled="btnDisabled"
                                 class="minwidth-0 px-2 text-uppercase"
-                                v-bind="attrs"
-                                v-on="on">
-                                <v-icon small class="mr-1">{{ btnIcon }}</v-icon>
+                                v-bind="props">
+                                <v-icon size="small" class="mr-1">{{ btnIcon }}</v-icon>
                                 {{ btnText }}
-                                <v-icon small>{{ mdiMenuDown }}</v-icon>
+                                <v-icon size="small">{{ mdiMenuDown }}</v-icon>
                             </v-chip>
                         </template>
-                        <v-list dense class="py-0">
+                        <v-list density="compact" class="py-0">
                             <v-list-item v-if="!isCorrupt" @click="doRecovery(false)">
                                 <v-list-item-icon class="mr-0 pt-1">
-                                    <v-icon small>{{ mdiReload }}</v-icon>
+                                    <v-icon size="small">{{ mdiReload }}</v-icon>
                                 </v-list-item-icon>
-                                <v-list-item-content>
-                                    <v-list-item-title>{{ $t('Machine.UpdatePanel.SoftRecovery') }}</v-list-item-title>
-                                </v-list-item-content>
+                                <v-list-item-title>{{ $t('Machine.UpdatePanel.SoftRecovery') }}</v-list-item-title>
                             </v-list-item>
                             <v-list-item :disabled="!existsRecoveryUrl" @click="doRecovery(true)">
                                 <v-list-item-icon class="mr-0 pt-1">
-                                    <v-icon small>{{ mdiReload }}</v-icon>
+                                    <v-icon size="small">{{ mdiReload }}</v-icon>
                                 </v-list-item-icon>
-                                <v-list-item-content>
-                                    <v-list-item-title>{{ $t('Machine.UpdatePanel.HardRecovery') }}</v-list-item-title>
-                                </v-list-item-content>
+                                <v-list-item-title>{{ $t('Machine.UpdatePanel.HardRecovery') }}</v-list-item-title>
                             </v-list-item>
                         </v-list>
                     </v-menu>
                 </template>
                 <v-chip
                     v-else
-                    small
+                    size="small"
                     label
-                    outlined
+                    variant="outlined"
                     :color="btnColor"
                     :disabled="btnDisabled"
                     class="minwidth-0 px-2 text-uppercase"
                     @click="clickUpdate">
-                    <v-icon small class="mr-1">{{ btnIcon }}</v-icon>
+                    <v-icon size="small" class="mr-1">{{ btnIcon }}</v-icon>
                     {{ btnText }}
                 </v-chip>
             </v-col>
@@ -91,7 +86,7 @@
                 <v-alert
                     v-for="(message, index) in warnings"
                     :key="'warnings_' + index"
-                    dense
+                    density="compact"
                     text
                     color="orange"
                     border="left"
@@ -105,7 +100,7 @@
                 <v-alert
                     v-for="(message, index) in anomalies"
                     :key="'anomalies_' + index"
-                    dense
+                    density="compact"
                     text
                     color="grey"
                     border="left"
@@ -124,7 +119,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent, PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { ServerUpdateManagerStateGitRepo } from '@/store/server/updateManager/types'
 import {
@@ -141,250 +136,224 @@ import {
 import semver from 'semver'
 import GitCommitsList from '@/components/panels/Machine/UpdatePanel/GitCommitsList.vue'
 import UpdateHint from '@/components/panels/Machine/UpdatePanel/UpdateHint.vue'
-@Component({
+
+export default defineComponent({
+    name: 'UpdatePanelEntry',
     components: { GitCommitsList, UpdateHint },
+    mixins: [BaseMixin],
+    props: {
+        repo: { type: Object as PropType<ServerUpdateManagerStateGitRepo>, required: true },
+    },
+    data() {
+        return {
+            mdiInformation: mdiInformation,
+            mdiMenuDown: mdiMenuDown,
+            mdiReload: mdiReload,
+            mdiCloseCircle: mdiCloseCircle,
+            mdiUpdate: mdiUpdate,
+            mdiInformationOutline: mdiInformationOutline,
+            boolShowCommitList: false,
+            boolShowUpdateHint: false,
+            toggleAnomalies: false,
+        }
+    },
+    computed: {
+        name() {
+            const info_tags = this.repo.info_tags ?? []
+            const description = info_tags.find((tag) => tag.startsWith('desc='))
+
+            if (description && description.trim() !== 'desc=') return description.replace('desc=', '').trim()
+
+            return this.repo.name ?? 'UNKNOWN'
+        },
+        type() {
+            return this.repo.configured_type
+        },
+        localVersion() {
+            const version = this.repo.version ?? '?'
+            if (!semver.valid(version, { loose: true })) return null
+
+            return version
+        },
+        remoteVersion() {
+            const version = this.repo.remote_version ?? '?'
+            if (!semver.valid(version, { loose: true })) return null
+
+            return version
+        },
+        branch() {
+            return this.repo.branch ?? 'master'
+        },
+        remoteAlias() {
+            return this.repo.remote_alias ?? 'origin'
+        },
+        branchOutput() {
+            if (this.remoteAlias !== 'origin') return `${this.remoteAlias}/${this.branch}`
+            if (!['master', 'main'].includes(this.branch)) return this.branch
+
+            return null
+        },
+        commitsBehind() {
+            return this.repo.commits_behind ?? []
+        },
+        fullVersionString() {
+            return this.repo.full_version_string ?? null
+        },
+        versionOutput() {
+            const output = this.branchOutput ? `${this.branchOutput}: ` : ''
+
+            if (this.semverUpdatable) {
+                return `${output}${this.localVersion} > ${this.remoteVersion}`
+            }
+
+            if (this.commitsBehind.length) {
+                const tmp = this.$tc('Machine.UpdatePanel.CommitsAvailable', this.commitsBehind.length, {
+                    count: this.commitsBehind.length,
+                }).toString()
+
+                if (this.localVersion) return `${output}${this.localVersion} > ${tmp}`
+
+                return `${output}${tmp}`
+            }
+
+            if (this.fullVersionString) return this.fullVersionString
+            if (this.localVersion) return this.localVersion
+
+            return 'UNKNOWN'
+        },
+        configuredType() {
+            return this.repo.configured_type ?? 'git_repo'
+        },
+        isValid() {
+            return this.repo.is_valid ?? true
+        },
+        isDirty() {
+            return this.repo.is_dirty ?? false
+        },
+        isCorrupt() {
+            // Only git repos can be corrupt
+            if (this.configuredType !== 'git_repo') return false
+
+            return this.repo.corrupt ?? false
+        },
+        debugEnabled() {
+            return this.repo.debug_enabled ?? false
+        },
+        isDetached() {
+            if (this.configuredType !== 'git_repo') return false
+
+            return !this.debugEnabled && (this.repo.detached ?? false)
+        },
+        existsRecoveryUrl() {
+            const url = this.repo.recovery_url ?? '?'
+
+            return url !== '?'
+        },
+        btnDisabled() {
+            if (['printing', 'paused'].includes(this.printer_state)) return true
+            if (!this.isValid || this.isCorrupt || this.isDirty || this.commitsBehind.length) return false
+
+            if (['python', 'web'].includes(this.type)) return !this.semverUpdatable
+
+            return this.commitsBehind.length === 0
+        },
+        btnIcon() {
+            if (this.isDetached || !this.isValid || this.isCorrupt || this.isDirty) return mdiCloseCircle
+
+            if (['python', 'web'].includes(this.type)) {
+                if (this.semverUpdatable) return mdiProgressUpload
+                else if (this.localVersion === null || this.remoteVersion === null) return mdiHelpCircleOutline
+            }
+
+            if (this.type === 'git_repo' && this.commitsBehind.length) return mdiProgressUpload
+
+            return mdiCheck
+        },
+        btnColor() {
+            if (this.isCorrupt || this.isDetached || this.isDirty || !this.isValid) return 'orange'
+
+            if (['python', 'web'].includes(this.type) && this.semverUpdatable) return 'primary'
+            if (this.type === 'git_repo' && this.commitsBehind.length) return 'primary'
+
+            return 'green'
+        },
+        btnText() {
+            if (this.isCorrupt) return this.$t('Machine.UpdatePanel.Corrupt')
+            if (this.isDetached) return this.$t('Machine.UpdatePanel.Detached')
+            if (this.isDirty) return this.$t('Machine.UpdatePanel.Dirty')
+            if (!this.isValid) return this.$t('Machine.UpdatePanel.Invalid')
+
+            if (['python', 'web'].includes(this.type)) {
+                if (this.semverUpdatable) return this.$t('Machine.UpdatePanel.Update')
+                else if (this.localVersion === null || this.remoteVersion === null)
+                    return this.$t('Machine.UpdatePanel.Unknown')
+            }
+
+            if (this.type === 'git_repo' && this.commitsBehind.length) return this.$t('Machine.UpdatePanel.Update')
+
+            return this.$t('Machine.UpdatePanel.UpToDate')
+        },
+        anomalies() {
+            return this.repo.anomalies ?? []
+        },
+        warnings() {
+            return this.repo.warnings ?? []
+        },
+        semverUpdatable() {
+            if (!this.localVersion) return false
+            if (!this.remoteVersion) return false
+
+            return semver.gt(this.remoteVersion, this.localVersion, { loose: true })
+        },
+        repo_name() {
+            return this.repo.repo_name ?? this.repo.name ?? ''
+        },
+        githubRepoUrl() {
+            return `https://github.com/${this.repo.owner}/${this.repo_name}`
+        },
+        webLinkRelease() {
+            return `${this.githubRepoUrl}/releases/tag/${this.repo.remote_version}`
+        },
+        pythonChangelog() {
+            if (this.repo.channel === 'dev')
+                return `${this.githubRepoUrl}/compare/${this.repo.current_hash}..${this.repo.remote_hash}`
+
+            if (this.repo.changelog_url) return this.repo.changelog_url
+
+            return this.webLinkRelease
+        },
+        hideUpdateWarning() {
+            return this.$store.state.gui.uiSettings.hideUpdateWarnings ?? false
+        },
+    },
+    methods: {
+        clickUpdate() {
+            if (this.hideUpdateWarning) {
+                this.doUpdate()
+                return
+            }
+
+            this.boolShowUpdateHint = true
+        },
+        doUpdate() {
+            if (['klipper', 'moonraker'].includes(this.repo.name)) {
+                this.$socket.emit('machine.update.' + this.repo.name, {})
+                return
+            }
+
+            this.$socket.emit('machine.update.client', { name: this.repo.name })
+        },
+        doRecovery(hard: boolean) {
+            this.$socket.emit('machine.update.recover', { name: this.repo.name, hard: hard })
+        },
+        closeCommitList() {
+            this.boolShowCommitList = false
+        },
+        closeShowUpdateHint() {
+            this.boolShowUpdateHint = false
+        },
+    },
 })
-export default class UpdatePanelEntry extends Mixins(BaseMixin) {
-    mdiInformation = mdiInformation
-    mdiMenuDown = mdiMenuDown
-    mdiReload = mdiReload
-    mdiCloseCircle = mdiCloseCircle
-    mdiUpdate = mdiUpdate
-    mdiInformationOutline = mdiInformationOutline
-
-    boolShowCommitList = false
-    boolShowUpdateHint = false
-
-    toggleAnomalies = false
-
-    @Prop({ required: true }) readonly repo!: ServerUpdateManagerStateGitRepo
-
-    get name() {
-        const info_tags = this.repo.info_tags ?? []
-        const description = info_tags.find((tag) => tag.startsWith('desc='))
-
-        if (description && description.trim() !== 'desc=') return description.replace('desc=', '').trim()
-
-        return this.repo.name ?? 'UNKNOWN'
-    }
-
-    get type() {
-        return this.repo.configured_type
-    }
-
-    get localVersion() {
-        const version = this.repo.version ?? '?'
-        if (!semver.valid(version, { loose: true })) return null
-
-        return version
-    }
-
-    get remoteVersion() {
-        const version = this.repo.remote_version ?? '?'
-        if (!semver.valid(version, { loose: true })) return null
-
-        return version
-    }
-
-    get branch() {
-        return this.repo.branch ?? 'master'
-    }
-
-    get remoteAlias() {
-        return this.repo.remote_alias ?? 'origin'
-    }
-
-    get branchOutput() {
-        if (this.remoteAlias !== 'origin') return `${this.remoteAlias}/${this.branch}`
-        if (!['master', 'main'].includes(this.branch)) return this.branch
-
-        return null
-    }
-
-    get commitsBehind() {
-        return this.repo.commits_behind ?? []
-    }
-
-    get fullVersionString() {
-        return this.repo.full_version_string ?? null
-    }
-
-    get versionOutput() {
-        const output = this.branchOutput ? `${this.branchOutput}: ` : ''
-
-        if (this.semverUpdatable) {
-            return `${output}${this.localVersion} > ${this.remoteVersion}`
-        }
-
-        if (this.commitsBehind.length) {
-            const tmp = this.$tc('Machine.UpdatePanel.CommitsAvailable', this.commitsBehind.length, {
-                count: this.commitsBehind.length,
-            }).toString()
-
-            if (this.localVersion) return `${output}${this.localVersion} > ${tmp}`
-
-            return `${output}${tmp}`
-        }
-
-        if (this.fullVersionString) return this.fullVersionString
-        if (this.localVersion) return this.localVersion
-
-        return 'UNKNOWN'
-    }
-
-    get configuredType() {
-        return this.repo.configured_type ?? 'git_repo'
-    }
-
-    get isValid() {
-        return this.repo.is_valid ?? true
-    }
-
-    get isDirty() {
-        return this.repo.is_dirty ?? false
-    }
-
-    get isCorrupt() {
-        // Only git repos can be corrupt
-        if (this.configuredType !== 'git_repo') return false
-
-        return this.repo.corrupt ?? false
-    }
-
-    get debugEnabled() {
-        return this.repo.debug_enabled ?? false
-    }
-
-    get isDetached() {
-        if (this.configuredType !== 'git_repo') return false
-
-        return !this.debugEnabled && (this.repo.detached ?? false)
-    }
-
-    get existsRecoveryUrl() {
-        const url = this.repo.recovery_url ?? '?'
-
-        return url !== '?'
-    }
-
-    get btnDisabled() {
-        if (['printing', 'paused'].includes(this.printer_state)) return true
-        if (!this.isValid || this.isCorrupt || this.isDirty || this.commitsBehind.length) return false
-
-        if (['python', 'web'].includes(this.type)) return !this.semverUpdatable
-
-        return this.commitsBehind.length === 0
-    }
-
-    get btnIcon() {
-        if (this.isDetached || !this.isValid || this.isCorrupt || this.isDirty) return mdiCloseCircle
-
-        if (['python', 'web'].includes(this.type)) {
-            if (this.semverUpdatable) return mdiProgressUpload
-            else if (this.localVersion === null || this.remoteVersion === null) return mdiHelpCircleOutline
-        }
-
-        if (this.type === 'git_repo' && this.commitsBehind.length) return mdiProgressUpload
-
-        return mdiCheck
-    }
-
-    get btnColor() {
-        if (this.isCorrupt || this.isDetached || this.isDirty || !this.isValid) return 'orange'
-
-        if (['python', 'web'].includes(this.type) && this.semverUpdatable) return 'primary'
-        if (this.type === 'git_repo' && this.commitsBehind.length) return 'primary'
-
-        return 'green'
-    }
-
-    get btnText() {
-        if (this.isCorrupt) return this.$t('Machine.UpdatePanel.Corrupt')
-        if (this.isDetached) return this.$t('Machine.UpdatePanel.Detached')
-        if (this.isDirty) return this.$t('Machine.UpdatePanel.Dirty')
-        if (!this.isValid) return this.$t('Machine.UpdatePanel.Invalid')
-
-        if (['python', 'web'].includes(this.type)) {
-            if (this.semverUpdatable) return this.$t('Machine.UpdatePanel.Update')
-            else if (this.localVersion === null || this.remoteVersion === null)
-                return this.$t('Machine.UpdatePanel.Unknown')
-        }
-
-        if (this.type === 'git_repo' && this.commitsBehind.length) return this.$t('Machine.UpdatePanel.Update')
-
-        return this.$t('Machine.UpdatePanel.UpToDate')
-    }
-
-    get anomalies() {
-        return this.repo.anomalies ?? []
-    }
-
-    get warnings() {
-        return this.repo.warnings ?? []
-    }
-
-    get semverUpdatable() {
-        if (!this.localVersion) return false
-        if (!this.remoteVersion) return false
-
-        return semver.gt(this.remoteVersion, this.localVersion, { loose: true })
-    }
-
-    get repo_name() {
-        return this.repo.repo_name ?? this.repo.name ?? ''
-    }
-
-    get githubRepoUrl() {
-        return `https://github.com/${this.repo.owner}/${this.repo_name}`
-    }
-
-    get webLinkRelease() {
-        return `${this.githubRepoUrl}/releases/tag/${this.repo.remote_version}`
-    }
-
-    get pythonChangelog() {
-        if (this.repo.channel === 'dev')
-            return `${this.githubRepoUrl}/compare/${this.repo.current_hash}..${this.repo.remote_hash}`
-
-        if (this.repo.changelog_url) return this.repo.changelog_url
-
-        return this.webLinkRelease
-    }
-
-    get hideUpdateWarning() {
-        return this.$store.state.gui.uiSettings.hideUpdateWarnings ?? false
-    }
-
-    clickUpdate() {
-        if (this.hideUpdateWarning) {
-            this.doUpdate()
-            return
-        }
-
-        this.boolShowUpdateHint = true
-    }
-
-    doUpdate() {
-        if (['klipper', 'moonraker'].includes(this.repo.name)) {
-            this.$socket.emit('machine.update.' + this.repo.name, {})
-            return
-        }
-
-        this.$socket.emit('machine.update.client', { name: this.repo.name })
-    }
-
-    doRecovery(hard: boolean) {
-        this.$socket.emit('machine.update.recover', { name: this.repo.name, hard: hard })
-    }
-
-    closeCommitList() {
-        this.boolShowCommitList = false
-    }
-
-    closeShowUpdateHint() {
-        this.boolShowUpdateHint = false
-    }
-}
 </script>
 
 <style scoped></style>

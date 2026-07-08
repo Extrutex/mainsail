@@ -15,29 +15,35 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 
-@Component
-export default class SettingsMiscellaneousTabLightGroups extends Mixins(BaseMixin) {
-    @Prop({ type: String, required: true }) readonly type!: string
-    @Prop({ type: String, required: true }) readonly name!: string
-
-    page = ''
-    groupId: string | null = null
-
-    editGroup(groupId: string) {
-        this.openPage('form')
-        this.groupId = groupId
-    }
-
-    openPage(name: string) {
-        this.page = name
-        this.groupId = null
-    }
-
-    close() {
-        this.$emit('close')
-    }
-}
+export default defineComponent({
+    name: 'SettingsMiscellaneousTabLightGroups',
+    mixins: [BaseMixin],
+    props: {
+        type: { type: String, required: true },
+        name: { type: String, required: true },
+    },
+    emits: ['close'],
+    data() {
+        return {
+            page: '',
+            groupId: null as string | null,
+        }
+    },
+    methods: {
+        editGroup(groupId: string) {
+            this.openPage('form')
+            this.groupId = groupId
+        },
+        openPage(name: string) {
+            this.page = name
+            this.groupId = null
+        },
+        close() {
+            this.$emit('close')
+        },
+    },
+})
 </script>

@@ -10,16 +10,16 @@
         </td>
         <td v-if="!isResponsiveMobile" class="state">
             <v-tooltip v-if="state !== null" top>
-                <template #activator="{ on, attrs }">
-                    <div v-bind="attrs" v-on="on">{{ formatState }}</div>
+                <template #activator="{ props }">
+                    <div v-bind="props">{{ formatState }}</div>
                 </template>
                 <span>{{ $t('Panels.TemperaturePanel.Avg') }}: {{ avgState }} %</span>
             </v-tooltip>
         </td>
         <td class="current">
             <v-tooltip top :disabled="!(measured_min_temp !== null || measured_max_temp !== null)">
-                <template #activator="{ on, attrs }">
-                    <span style="cursor: default" v-bind="attrs" v-on="on">
+                <template #activator="{ props }">
+                    <span style="cursor: default" v-bind="props">
                         {{ formatTemperature }}
                     </span>
                 </template>
@@ -57,14 +57,19 @@
             :additional-sensor-name="additionalSensorName"
             :icon="icon"
             :color="color" />
-        <v-menu v-model="showContextMenu" :position-x="contextMenuX" :position-y="contextMenuY" absolute offset-y>
+        <v-menu
+            v-model="showContextMenu"
+            :position-x="contextMenuX"
+            :position-y="contextMenuY"
+            absolute
+            location="bottom">
             <v-list>
                 <v-list-item v-if="isHeater" :disabled="!isHeaterActive" @click="turnOffHeater">
-                    <v-icon left>{{ mdiSnowflake }}</v-icon>
+                    <v-icon start>{{ mdiSnowflake }}</v-icon>
                     {{ $t('Panels.TemperaturePanel.TurnHeaterOff') }}
                 </v-list-item>
                 <v-list-item @click="openEditDialog">
-                    <v-icon left>{{ mdiCog }}</v-icon>
+                    <v-icon start>{{ mdiCog }}</v-icon>
                     {{ $t('Panels.TemperaturePanel.Settings') }}
                 </v-list-item>
             </v-list>
@@ -73,8 +78,7 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import type { LongpressEvent } from '@/directives/longpress'
 import BaseMixin from '@/components/mixins/base'
 import { convertName } from '@/plugins/helpers'
@@ -93,258 +97,231 @@ import {
 import { additionalSensors, opacityHeaterActive, opacityHeaterInactive } from '@/store/variables'
 import { CLOSE_CONTEXT_MENU, EventBus } from '@/plugins/eventBus'
 
-@Component
-export default class TemperaturePanelListItem extends Mixins(BaseMixin) {
-    mdiCog = mdiCog
-    mdiSnowflake = mdiSnowflake
-
-    @Prop({ type: String, required: true }) readonly objectName!: string
-    @Prop({ type: Boolean, required: true }) readonly isResponsiveMobile!: boolean
-    @Prop({ type: Number, default: 3 }) readonly inputDigits!: number
-
-    showEditDialog = false
-    showContextMenu = false
-    contextMenuX = 0
-    contextMenuY = 0
-
-    get printerObject() {
-        if (!(this.objectName in this.$store.state.printer)) return {}
-
-        return this.$store.state.printer[this.objectName]
-    }
-
-    get printerObjectSettings() {
-        // convert objectName to lowercase, because klipper only user lowercase in configfile.settings
-        const lowerCaseObjectName = this.objectName.toLowerCase()
-
-        if (!(lowerCaseObjectName in (this.$store.state.printer?.configfile?.settings ?? {}))) return {}
-
-        return this.$store.state.printer?.configfile?.settings[lowerCaseObjectName]
-    }
-
-    get name() {
-        const splits = this.objectName.split(' ')
-        if (splits.length === 1) return this.objectName
-
-        return splits[1]
-    }
-
-    get formatName() {
-        return convertName(this.name)
-    }
-
-    get icon() {
-        // handle extruder icons
-        if (this.objectName.startsWith('extruder')) {
-            if (this.printerObject.can_extrude ?? false) return mdiPrinter3dNozzle
-
-            return mdiPrinter3dNozzleAlert
+export default defineComponent({
+    name: 'TemperaturePanelListItem',
+    mixins: [BaseMixin],
+    props: {
+        objectName: { type: String, required: true },
+        isResponsiveMobile: { type: Boolean, required: true },
+        inputDigits: { type: Number, default: 3 },
+    },
+    data() {
+        return {
+            mdiCog: mdiCog,
+            mdiSnowflake: mdiSnowflake,
+            showEditDialog: false,
+            showContextMenu: false,
+            contextMenuX: 0,
+            contextMenuY: 0,
         }
+    },
+    computed: {
+        printerObject() {
+            if (!(this.objectName in this.$store.state.printer)) return {}
 
-        // show heater_bed icon
-        if (this.objectName === 'heater_bed') {
-            if (
-                (this.temperature !== null && this.temperature > 50) ||
-                (this.target && this.temperature && this.temperature > this.target - 5)
-            )
-                return mdiRadiator
+            return this.$store.state.printer[this.objectName]
+        },
+        printerObjectSettings() {
+            // convert objectName to lowercase, because klipper only user lowercase in configfile.settings
+            const lowerCaseObjectName = this.objectName.toLowerCase()
 
-            return mdiRadiatorDisabled
-        }
+            if (!(lowerCaseObjectName in (this.$store.state.printer?.configfile?.settings ?? {}))) return {}
 
-        // show heater_generic icon
-        if (this.objectName.startsWith('heater_generic')) return mdiFire
+            return this.$store.state.printer?.configfile?.settings[lowerCaseObjectName]
+        },
+        name() {
+            const splits = this.objectName.split(' ')
+            if (splits.length === 1) return this.objectName
 
-        // show heater_generic icon
-        if (this.objectName.startsWith('tmc')) return mdiMemory
+            return splits[1]
+        },
+        formatName() {
+            return convertName(this.name)
+        },
+        icon() {
+            // handle extruder icons
+            if (this.objectName.startsWith('extruder')) {
+                if (this.printerObject.can_extrude ?? false) return mdiPrinter3dNozzle
 
-        // show fan icon, if it is a fan
-        if (this.isFan) return mdiFan
+                return mdiPrinter3dNozzleAlert
+            }
 
-        return mdiThermometer
-    }
+            // show heater_bed icon
+            if (this.objectName === 'heater_bed') {
+                if (
+                    (this.temperature !== null && this.temperature > 50) ||
+                    (this.target && this.temperature && this.temperature > this.target - 5)
+                )
+                    return mdiRadiator
 
-    get color() {
-        return this.$store.getters['printer/tempHistory/getDatasetColor'](this.objectName) ?? '#FFFFFF'
-    }
+                return mdiRadiatorDisabled
+            }
 
-    get iconColor() {
-        // set icon color to active, if no target exists (temperature_sensors) or a heater is active
-        if (this.target === null || this.target > 0) return `${this.color}${opacityHeaterActive}`
+            // show heater_generic icon
+            if (this.objectName.startsWith('heater_generic')) return mdiFire
 
-        return `${this.color}${opacityHeaterInactive}`
-    }
+            // show heater_generic icon
+            if (this.objectName.startsWith('tmc')) return mdiMemory
 
-    get iconClass() {
-        const classes = ['_no-focus-style', 'cursor-pointer']
+            // show fan icon, if it is a fan
+            if (this.isFan) return mdiFan
 
-        // add icon animation, when it is a fan and state > 0
-        if (this.isFan) {
-            const disableFanAnimation = this.$store.state.gui?.uiSettings.disableFanAnimation ?? false
+            return mdiThermometer
+        },
+        color() {
+            return this.$store.getters['printer/tempHistory/getDatasetColor'](this.objectName) ?? '#FFFFFF'
+        },
+        iconColor() {
+            // set icon color to active, if no target exists (temperature_sensors) or a heater is active
+            if (this.target === null || this.target > 0) return `${this.color}${opacityHeaterActive}`
 
-            if (!disableFanAnimation && (this.state ?? 0) > 0) classes.push('icon-rotate')
-        }
+            return `${this.color}${opacityHeaterInactive}`
+        },
+        iconClass() {
+            const classes = ['_no-focus-style', 'cursor-pointer']
 
-        return classes
-    }
+            // add icon animation, when it is a fan and state > 0
+            if (this.isFan) {
+                const disableFanAnimation = this.$store.state.gui?.uiSettings.disableFanAnimation ?? false
 
-    get isFan() {
-        return this.objectName.startsWith('temperature_fan')
-    }
+                if (!disableFanAnimation && (this.state ?? 0) > 0) classes.push('icon-rotate')
+            }
 
-    get state(): number | null {
-        return this.printerObject.power ?? this.printerObject.speed ?? null
-    }
+            return classes
+        },
+        isFan() {
+            return this.objectName.startsWith('temperature_fan')
+        },
+        state(): number | null {
+            return this.printerObject.power ?? this.printerObject.speed ?? null
+        },
+        formatState() {
+            if (this.state === null) return null
+            if (this.target === 0 && this.state === 0) return 'off'
 
-    get formatState() {
-        if (this.state === null) return null
-        if (this.target === 0 && this.state === 0) return 'off'
+            return `${Math.round(this.state * 100)} %`
+        },
+        avgPower() {
+            return this.$store.getters['printer/tempHistory/getAvgPower'](this.name) ?? 0
+        },
+        avgSpeed() {
+            return this.$store.getters['printer/tempHistory/getAvgSpeed'](this.name) ?? 0
+        },
+        avgState() {
+            if ('power' in this.printerObject) return Math.round(this.avgPower)
+            if ('speed' in this.printerObject) return Math.round(this.avgSpeed)
 
-        return `${Math.round(this.state * 100)} %`
-    }
+            return null
+        },
+        temperature(): number | null {
+            return this.printerObject?.temperature ?? null
+        },
+        formatTemperature() {
+            return `${this.temperature?.toFixed(1) ?? '--'}°C`
+        },
+        min_temp() {
+            return parseInt(this.printerObjectSettings.min_temp ?? 0)
+        },
+        max_temp() {
+            return parseInt(this.printerObjectSettings.max_temp ?? 0)
+        },
+        measured_min_temp() {
+            return this.printerObject?.measured_min_temp?.toFixed(1) ?? null
+        },
+        measured_max_temp() {
+            return this.printerObject?.measured_max_temp?.toFixed(1) ?? null
+        },
+        target() {
+            return this.printerObject?.target ?? null
+        },
+        additionalSensorName() {
+            if (this.objectName === 'z_thermal_adjust') return 'z_thermal_adjust'
 
-    get avgPower() {
-        return this.$store.getters['printer/tempHistory/getAvgPower'](this.name) ?? 0
-    }
+            const additionalSensorName = additionalSensors.find((sensorName) => {
+                const objectName = `${sensorName} ${this.name}`
 
-    get avgSpeed() {
-        return this.$store.getters['printer/tempHistory/getAvgSpeed'](this.name) ?? 0
-    }
+                if (objectName in this.$store.state.printer) return true
+            })
 
-    get avgState() {
-        if ('power' in this.printerObject) return Math.round(this.avgPower)
-        if ('speed' in this.printerObject) return Math.round(this.avgSpeed)
+            if (!additionalSensorName) return null
 
-        return null
-    }
+            return `${additionalSensorName} ${this.name}`
+        },
+        rpm() {
+            const rpm = this.printerObject.rpm ?? null
 
-    get temperature(): number | null {
-        return this.printerObject?.temperature ?? null
-    }
+            // return null when rpm doesn't exist
+            if (rpm === null) return null
 
-    get formatTemperature() {
-        return `${this.temperature?.toFixed(1) ?? '--'}°C`
-    }
+            return parseInt(this.printerObject.rpm)
+        },
+        rpmClass() {
+            if (this.rpm === 0 && (this.printerObject.speed ?? 0) > 0) return 'red--text'
 
-    get min_temp() {
-        return parseInt(this.printerObjectSettings.min_temp ?? 0)
-    }
+            return ''
+        },
+        presets() {
+            return this.$store.getters['gui/presets/getPresetsFromHeater']({ name: this.objectName }) ?? []
+        },
+        command() {
+            if (this.objectName.startsWith('temperature_fan')) return 'SET_TEMPERATURE_FAN_TARGET'
+            if (this.objectName.startsWith('extruder') || this.objectName.startsWith('heater_'))
+                return 'SET_HEATER_TEMPERATURE'
 
-    get max_temp() {
-        return parseInt(this.printerObjectSettings.max_temp ?? 0)
-    }
+            return null
+        },
+        commandAttributeName() {
+            if (this.command === 'SET_HEATER_TEMPERATURE') return 'HEATER'
+            if (this.command === 'SET_TEMPERATURE_FAN_TARGET') return 'TEMPERATURE_FAN'
 
-    get measured_min_temp() {
-        return this.printerObject?.measured_min_temp?.toFixed(1) ?? null
-    }
-
-    get measured_max_temp() {
-        return this.printerObject?.measured_max_temp?.toFixed(1) ?? null
-    }
-
-    get target() {
-        return this.printerObject?.target ?? null
-    }
-
-    get additionalSensorName() {
-        if (this.objectName === 'z_thermal_adjust') return 'z_thermal_adjust'
-
-        const additionalSensorName = additionalSensors.find((sensorName) => {
-            const objectName = `${sensorName} ${this.name}`
-
-            if (objectName in this.$store.state.printer) return true
-        })
-
-        if (!additionalSensorName) return null
-
-        return `${additionalSensorName} ${this.name}`
-    }
-
-    get rpm() {
-        const rpm = this.printerObject.rpm ?? null
-
-        // return null when rpm doesn't exist
-        if (rpm === null) return null
-
-        return parseInt(this.printerObject.rpm)
-    }
-
-    get rpmClass() {
-        if (this.rpm === 0 && (this.printerObject.speed ?? 0) > 0) return 'red--text'
-
-        return ''
-    }
-
-    get presets() {
-        return this.$store.getters['gui/presets/getPresetsFromHeater']({ name: this.objectName }) ?? []
-    }
-
-    get command() {
-        if (this.objectName.startsWith('temperature_fan')) return 'SET_TEMPERATURE_FAN_TARGET'
-        if (this.objectName.startsWith('extruder') || this.objectName.startsWith('heater_'))
-            return 'SET_HEATER_TEMPERATURE'
-
-        return null
-    }
-
-    get commandAttributeName() {
-        if (this.command === 'SET_HEATER_TEMPERATURE') return 'HEATER'
-        if (this.command === 'SET_TEMPERATURE_FAN_TARGET') return 'TEMPERATURE_FAN'
-
-        return ''
-    }
-
-    get availableHeaters() {
-        return this.$store.state.printer.heaters?.available_heaters ?? []
-    }
-
-    get isHeater() {
-        return this.availableHeaters.includes(this.objectName)
-    }
-
-    get isHeaterActive() {
-        return this.target > 0
-    }
-
+            return ''
+        },
+        availableHeaters() {
+            return this.$store.state.printer.heaters?.available_heaters ?? []
+        },
+        isHeater() {
+            return this.availableHeaters.includes(this.objectName)
+        },
+        isHeaterActive() {
+            return this.target > 0
+        },
+    },
     mounted() {
         EventBus.$on(CLOSE_CONTEXT_MENU, this.closeContextMenu)
-    }
-
-    beforeDestroy() {
+    },
+    beforeUnmount() {
         EventBus.$off(CLOSE_CONTEXT_MENU, this.closeContextMenu)
-    }
+    },
+    methods: {
+        openContextMenu(event: MouseEvent | LongpressEvent) {
+            EventBus.$emit(CLOSE_CONTEXT_MENU)
 
-    openContextMenu(event: MouseEvent | LongpressEvent) {
-        EventBus.$emit(CLOSE_CONTEXT_MENU)
-
-        this.showContextMenu = true
-        this.contextMenuX = event?.clientX || event?.pageX || window.screenX / 2
-        this.contextMenuY = event?.clientY || event?.pageY || window.screenY / 2
-    }
-
-    closeContextMenu() {
-        this.showContextMenu = false
-    }
-
-    openEditDialog() {
-        this.closeContextMenu()
-        this.showEditDialog = true
-    }
-
-    turnOffHeater() {
-        const gcode = `SET_HEATER_TEMPERATURE HEATER=${this.name} TARGET=0`
-        this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
-        this.$socket.emit('printer.gcode.script', { script: gcode })
-    }
-}
+            this.showContextMenu = true
+            this.contextMenuX = event?.clientX || event?.pageX || window.screenX / 2
+            this.contextMenuY = event?.clientY || event?.pageY || window.screenY / 2
+        },
+        closeContextMenu() {
+            this.showContextMenu = false
+        },
+        openEditDialog() {
+            this.closeContextMenu()
+            this.showEditDialog = true
+        },
+        turnOffHeater() {
+            const gcode = `SET_HEATER_TEMPERATURE HEATER=${this.name} TARGET=0`
+            this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
+            this.$socket.emit('printer.gcode.script', { script: gcode })
+        },
+    },
+})
 </script>
 
 <style scoped>
-::v-deep .v-icon._no-focus-style:focus::after {
+:deep(.v-icon._no-focus-style:focus::after) {
     opacity: 0 !important;
 }
 
-::v-deep .cursor-pointer {
+:deep(.cursor-pointer) {
     cursor: pointer;
 }
 </style>

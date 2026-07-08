@@ -177,8 +177,7 @@ export default defineComponent({
 
         fanClasses() {
             const output = ['mr-2']
-            if (!this.disableFanAnimation && this.value >= this.off_below && this.value > 0)
-                output.push('icon-rotate')
+            if (!this.disableFanAnimation && this.value >= this.off_below && this.value > 0) output.push('icon-rotate')
 
             return output
         },

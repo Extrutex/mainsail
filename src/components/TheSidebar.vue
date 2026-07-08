@@ -41,8 +41,7 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import TheSelectPrinterDialog from '@/components/TheSelectPrinterDialog.vue'
 import AboutDialog from '@/components/dialogs/AboutDialog.vue'
@@ -52,78 +51,75 @@ import SidebarItem from '@/components/ui/SidebarItem.vue'
 import NavigationMixin from '@/components/mixins/navigation'
 import ThemeMixin from '@/components/mixins/theme'
 
-@Component({
+export default defineComponent({
+    name: 'TheSidebar',
     components: {
         SidebarItem,
         TheSelectPrinterDialog,
         AboutDialog,
         MainsailLogo,
     },
+    mixins: [NavigationMixin, BaseMixin, ThemeMixin],
+    data() {
+        return {
+            navigationWidth: navigationWidth,
+            topbarHeight: topbarHeight,
+        }
+    },
+    computed: {
+        naviDrawer: {
+            get(): boolean {
+                return this.$store.state.naviDrawer
+            },
+            setnaviDrawer(newVal) {
+                this.$store.dispatch('setNaviDrawer', newVal)
+            },
+        },
+        navigationStyle() {
+            return this.$store.state.gui.uiSettings.navigationStyle
+        },
+        sidebarBackground(): string {
+            return this.$store.getters['files/getCustomSidebarBackground'] ?? this.sidebarBgImage
+        },
+        boolNaviTemp(): boolean {
+            return !this.isMobile && this.$vuetify.breakpoint.mdAndDown
+        },
+        sidebarCssVars(): Record<string, string> {
+            if (!this.boolNaviTemp) return {}
+
+            return {
+                top: `${topbarHeight}px !important`,
+                'padding-bottom': `${topbarHeight}px`,
+            }
+        },
+        sidebarLogo(): string {
+            return this.$store.getters['files/getSidebarLogo']
+        },
+        logoColor(): string {
+            return this.$store.state.gui.uiSettings.logo
+        },
+        printerName(): string {
+            if (this.$store.state.gui.general.printername.length) return this.$store.state.gui.general.printername
+
+            return this.$store.state.printer.hostname
+        },
+        logoCssVars() {
+            if (this.navigationStyle === 'iconsOnly') return {}
+
+            return { 'margin-right': '16px' }
+        },
+        mobileLogoClass() {
+            return {
+                'sidebar-logo': true,
+                'no-text-decoration': true,
+                'no-background': true,
+                'no-border': true,
+                'pa-0': this.navigationStyle === 'iconsOnly',
+                'justify-center': this.navigationStyle === 'iconsOnly',
+            }
+        },
+    },
 })
-export default class TheSidebar extends Mixins(NavigationMixin, BaseMixin, ThemeMixin) {
-    navigationWidth = navigationWidth
-    topbarHeight = topbarHeight
-
-    get naviDrawer(): boolean {
-        return this.$store.state.naviDrawer
-    }
-
-    set naviDrawer(newVal) {
-        this.$store.dispatch('setNaviDrawer', newVal)
-    }
-
-    get navigationStyle() {
-        return this.$store.state.gui.uiSettings.navigationStyle
-    }
-
-    get sidebarBackground(): string {
-        return this.$store.getters['files/getCustomSidebarBackground'] ?? this.sidebarBgImage
-    }
-
-    get boolNaviTemp(): boolean {
-        return !this.isMobile && this.$vuetify.breakpoint.mdAndDown
-    }
-
-    get sidebarCssVars(): Record<string, string> {
-        if (!this.boolNaviTemp) return {}
-
-        return {
-            top: `${topbarHeight}px !important`,
-            'padding-bottom': `${topbarHeight}px`,
-        }
-    }
-
-    get sidebarLogo(): string {
-        return this.$store.getters['files/getSidebarLogo']
-    }
-
-    get logoColor(): string {
-        return this.$store.state.gui.uiSettings.logo
-    }
-
-    get printerName(): string {
-        if (this.$store.state.gui.general.printername.length) return this.$store.state.gui.general.printername
-
-        return this.$store.state.printer.hostname
-    }
-
-    get logoCssVars() {
-        if (this.navigationStyle === 'iconsOnly') return {}
-
-        return { 'margin-right': '16px' }
-    }
-
-    get mobileLogoClass() {
-        return {
-            'sidebar-logo': true,
-            'no-text-decoration': true,
-            'no-background': true,
-            'no-border': true,
-            'pa-0': this.navigationStyle === 'iconsOnly',
-            'justify-center': this.navigationStyle === 'iconsOnly',
-        }
-    }
-}
 </script>
 
 <style scoped>

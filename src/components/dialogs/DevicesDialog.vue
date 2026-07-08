@@ -34,10 +34,7 @@
             </v-tabs>
             <overlay-scrollbars-component style="max-height: 400px; overflow-x: hidden">
                 <v-tabs-window v-model="tab">
-                    <v-tabs-window-item
-                        v-for="canInterface in canInterfaces"
-                        :key="canInterface"
-                        :value="canInterface">
+                    <v-tabs-window-item v-for="canInterface in canInterfaces" :key="canInterface" :value="canInterface">
                         <devices-dialog-can :hide-system-entries="hideSystemEntries" :name="canInterface" />
                     </v-tabs-window-item>
                     <v-tabs-window-item key="serial" value="serial">

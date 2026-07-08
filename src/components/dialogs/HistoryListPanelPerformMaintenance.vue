@@ -13,65 +13,84 @@
             <v-card-text class="pb-0">
                 <v-row>
                     <v-col>
-                        <v-textarea v-model="note" outlined hide-details="auto" :label="$t('History.AddANote')" />
+                        <v-textarea
+                            v-model="note"
+                            variant="outlined"
+                            hide-details="auto"
+                            :label="$t('History.AddANote')" />
                     </v-col>
                 </v-row>
             </v-card-text>
             <v-card-actions>
                 <v-spacer />
-                <v-btn text @click="closeDialog">{{ $t('Buttons.Cancel') }}</v-btn>
-                <v-btn v-if="showPerformButton" text color="primary" @click="perform">{{ performButtonText }}</v-btn>
+                <v-btn variant="text" @click="closeDialog">{{ $t('Buttons.Cancel') }}</v-btn>
+                <v-btn v-if="showPerformButton" variant="text" color="primary" @click="perform">
+                    {{ performButtonText }}
+                </v-btn>
             </v-card-actions>
         </panel>
     </v-dialog>
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop, VModel, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import Panel from '@/components/ui/Panel.vue'
 import { mdiCloseThick, mdiNotebook } from '@mdi/js'
 import { GuiMaintenanceStateEntry } from '@/store/gui/maintenance/types'
 import HistoryListPanelDetailMaintenanceHistoryEntry from '@/components/dialogs/HistoryListPanelDetailMaintenanceHistoryEntry.vue'
 
-@Component({
+export default defineComponent({
+    name: 'HistoryListPanelPerformMaintenance',
     components: { Panel, HistoryListPanelDetailMaintenanceHistoryEntry },
+    mixins: [BaseMixin],
+    props: {
+        modelValue: { type: Boolean },
+        item: { type: Object, default: false },
+    },
+    emits: ['close-details-dialog', 'update:modelValue'],
+    data() {
+        return {
+            mdiCloseThick: mdiCloseThick,
+            mdiNotebook: mdiNotebook,
+            note: '',
+        }
+    },
+    computed: {
+        showDialog: {
+            get(): boolean {
+                return this.modelValue
+            },
+            set(value: boolean) {
+                this.$emit('update:modelValue', value)
+            },
+        },
+        showPerformButton() {
+            if (this.item.end_time) return false
+
+            return this.item.reminder?.type ?? false
+        },
+        performButtonText() {
+            if (this.item.reminder?.type === 'repeat') return this.$t('History.PerformedAndReschedule')
+
+            return this.$t('History.Performed')
+        },
+    },
+    watch: {
+        showDialog(newVal: boolean) {
+            if (!newVal) return
+
+            this.note = ''
+        },
+    },
+    methods: {
+        closeDialog() {
+            this.showDialog = false
+        },
+        perform() {
+            this.$store.dispatch('gui/maintenance/perform', { id: this.item.id, note: this.note })
+            this.$emit('close-details-dialog')
+        },
+    },
 })
-export default class HistoryListPanelPerformMaintenance extends Mixins(BaseMixin) {
-    mdiCloseThick = mdiCloseThick
-    mdiNotebook = mdiNotebook
-
-    @VModel({ type: Boolean }) showDialog!: boolean
-    @Prop({ type: Object, default: false }) readonly item!: GuiMaintenanceStateEntry
-
-    note: string = ''
-
-    get showPerformButton() {
-        if (this.item.end_time) return false
-
-        return this.item.reminder?.type ?? false
-    }
-
-    get performButtonText() {
-        if (this.item.reminder?.type === 'repeat') return this.$t('History.PerformedAndReschedule')
-
-        return this.$t('History.Performed')
-    }
-
-    closeDialog() {
-        this.showDialog = false
-    }
-
-    perform() {
-        this.$store.dispatch('gui/maintenance/perform', { id: this.item.id, note: this.note })
-        this.$emit('close-details-dialog')
-    }
-
-    @Watch('showDialog')
-    onShowDialogChanged(newVal: boolean) {
-        if (!newVal) return
-
-        this.note = ''
-    }
-}
 </script>

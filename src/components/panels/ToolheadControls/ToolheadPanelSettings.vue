@@ -1,8 +1,8 @@
 <template>
     <v-menu :offset-y="true" :left="true" :close-on-content-click="false">
-        <template #activator="{ on, attrs }">
-            <v-btn icon tile v-bind="attrs" v-on="on">
-                <v-icon small>{{ mdiCog }}</v-icon>
+        <template #activator="{ props }">
+            <v-btn icon tile v-bind="props">
+                <v-icon size="small">{{ mdiCog }}</v-icon>
             </v-btn>
         </template>
         <v-list>
@@ -46,53 +46,59 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { mdiCog } from '@mdi/js'
 
-@Component
-export default class ToolheadPanelSettings extends Mixins(BaseMixin) {
-    mdiCog = mdiCog
-
-    get showPosition(): boolean {
-        return this.$store.state.gui.view.toolhead.showPosition ?? true
-    }
-
-    set showPosition(newVal: boolean) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.toolhead.showPosition', value: newVal })
-    }
-
-    get showCoordinates(): boolean {
-        return this.$store.state.gui.view.toolhead.showCoordinates ?? true
-    }
-
-    set showCoordinates(newVal: boolean) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.toolhead.showCoordinates', value: newVal })
-    }
-
-    get showControl(): boolean {
-        return this.$store.state.gui.view.toolhead.showControl ?? true
-    }
-
-    set showControl(newVal: boolean) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.toolhead.showControl', value: newVal })
-    }
-
-    get showZOffset(): boolean {
-        return this.$store.state.gui.view.toolhead.showZOffset ?? true
-    }
-
-    set showZOffset(newVal: boolean) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.toolhead.showZOffset', value: newVal })
-    }
-
-    get showSpeedFactor(): boolean {
-        return this.$store.state.gui.view.toolhead.showSpeedFactor ?? true
-    }
-
-    set showSpeedFactor(newVal: boolean) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.toolhead.showSpeedFactor', value: newVal })
-    }
-}
+export default defineComponent({
+    name: 'ToolheadPanelSettings',
+    mixins: [BaseMixin],
+    data() {
+        return {
+            mdiCog: mdiCog,
+        }
+    },
+    computed: {
+        showPosition: {
+            get(): boolean {
+                return this.$store.state.gui.view.toolhead.showPosition ?? true
+            },
+            setshowPosition(newVal: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.toolhead.showPosition', value: newVal })
+            },
+        },
+        showCoordinates: {
+            get(): boolean {
+                return this.$store.state.gui.view.toolhead.showCoordinates ?? true
+            },
+            setshowCoordinates(newVal: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.toolhead.showCoordinates', value: newVal })
+            },
+        },
+        showControl: {
+            get(): boolean {
+                return this.$store.state.gui.view.toolhead.showControl ?? true
+            },
+            setshowControl(newVal: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.toolhead.showControl', value: newVal })
+            },
+        },
+        showZOffset: {
+            get(): boolean {
+                return this.$store.state.gui.view.toolhead.showZOffset ?? true
+            },
+            setshowZOffset(newVal: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.toolhead.showZOffset', value: newVal })
+            },
+        },
+        showSpeedFactor: {
+            get(): boolean {
+                return this.$store.state.gui.view.toolhead.showSpeedFactor ?? true
+            },
+            setshowSpeedFactor(newVal: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.toolhead.showSpeedFactor', value: newVal })
+            },
+        },
+    },
+})
 </script>

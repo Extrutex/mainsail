@@ -1,4 +1,3 @@
-
 import { ActionTree } from 'vuex'
 import { RootState } from '@/store/types'
 import { ServerAnnouncementsState } from './types'

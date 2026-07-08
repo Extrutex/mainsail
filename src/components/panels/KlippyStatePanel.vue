@@ -65,11 +65,7 @@
             <p>{{ $t('Panels.KlippyStatePanel.PrinterSwitchedOffDescription') }}</p>
             <v-row>
                 <v-col class="text-center">
-                    <v-btn
-                        size="small"
-                        variant="outlined"
-                        :class="`text-${messageType.color} my-1`"
-                        @click="powerOn">
+                    <v-btn size="small" variant="outlined" :class="`text-${messageType.color} my-1`" @click="powerOn">
                         <v-icon class="mr-sm-2">{{ mdiPower }}</v-icon>
                         {{ $t('Panels.KlippyStatePanel.PowerOn') }}
                     </v-btn>

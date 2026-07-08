@@ -10,10 +10,10 @@
                     :append-icon="mdiMagnify"
                     :label="$t('Settings.MacrosTab.Search')"
                     single-line
-                    outlined
+                    variant="outlined"
                     clearable
                     hide-details
-                    dense />
+                    density="compact" />
             </v-col>
         </v-row>
         <template v-if="macros.length">
@@ -25,7 +25,7 @@
                     :sub-title="macro.description"
                     :dynamic-slot-width="true">
                     <v-switch
-                        :input-value="getMacroStatus(macro.name)"
+                        :model-value="getMacroStatus(macro.name)"
                         hide-details
                         class="mt-0"
                         @change="changeMacroStatus(macro.name)" />
@@ -41,45 +41,49 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '../mixins/base'
 import SettingsRow from '@/components/settings/SettingsRow.vue'
 import { mdiMagnify } from '@mdi/js'
 import { PrinterStateMacro } from '@/store/printer/types'
 
-@Component({
+export default defineComponent({
+    name: 'SettingsMacrosTabSimple',
     components: { SettingsRow },
+    mixins: [BaseMixin],
+    data() {
+        return {
+            mdiMagnify: mdiMagnify,
+            searchMacros: '',
+        }
+    },
+    computed: {
+        macros() {
+            const macros = this.$store.getters['printer/getMacros'] ?? []
+            return macros.filter((macro: PrinterStateMacro) => {
+                return (
+                    macro.name.toLowerCase().includes(this.searchMacros.toLowerCase()) ||
+                    macro.description?.toLowerCase().includes(this.searchMacros.toLowerCase())
+                )
+            })
+        },
+        hiddenMacros() {
+            return this.$store.state.gui.macros.hiddenMacros ?? []
+        },
+    },
+    methods: {
+        getMacroStatus(name: string) {
+            return !this.hiddenMacros.includes(name.toUpperCase())
+        },
+        changeMacroStatus(name: string) {
+            const hiddenMacros = [...this.hiddenMacros]
+
+            if (this.hiddenMacros.includes(name.toUpperCase()))
+                hiddenMacros.splice(hiddenMacros.indexOf(name.toUpperCase()), 1)
+            else hiddenMacros.push(name.toUpperCase())
+
+            this.$store.dispatch('gui/macros/saveSetting', { name: 'hiddenMacros', value: hiddenMacros })
+        },
+    },
 })
-export default class SettingsMacrosTabSimple extends Mixins(BaseMixin) {
-    mdiMagnify = mdiMagnify
-    searchMacros: string = ''
-
-    get macros() {
-        const macros = this.$store.getters['printer/getMacros'] ?? []
-        return macros.filter((macro: PrinterStateMacro) => {
-            return (
-                macro.name.toLowerCase().includes(this.searchMacros.toLowerCase()) ||
-                macro.description?.toLowerCase().includes(this.searchMacros.toLowerCase())
-            )
-        })
-    }
-
-    get hiddenMacros() {
-        return this.$store.state.gui.macros.hiddenMacros ?? []
-    }
-
-    getMacroStatus(name: string) {
-        return !this.hiddenMacros.includes(name.toUpperCase())
-    }
-
-    changeMacroStatus(name: string) {
-        const hiddenMacros = [...this.hiddenMacros]
-
-        if (this.hiddenMacros.includes(name.toUpperCase()))
-            hiddenMacros.splice(hiddenMacros.indexOf(name.toUpperCase()), 1)
-        else hiddenMacros.push(name.toUpperCase())
-
-        this.$store.dispatch('gui/macros/saveSetting', { name: 'hiddenMacros', value: hiddenMacros })
-    }
-}
 </script>

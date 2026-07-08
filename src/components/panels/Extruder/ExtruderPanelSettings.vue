@@ -1,8 +1,8 @@
 <template>
     <v-menu :offset-y="true" :left="true" :close-on-content-click="false">
-        <template #activator="{ on, attrs }">
-            <v-btn icon tile v-bind="attrs" v-on="on">
-                <v-icon small>{{ mdiCog }}</v-icon>
+        <template #activator="{ props }">
+            <v-btn icon tile v-bind="props">
+                <v-icon size="small">{{ mdiCog }}</v-icon>
             </v-btn>
         </template>
         <v-list>
@@ -46,53 +46,60 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { mdiCog } from '@mdi/js'
 import ControlMixin from '@/components/mixins/control'
-@Component
-export default class ExtruderPanelSettings extends Mixins(BaseMixin, ControlMixin) {
-    mdiCog = mdiCog
 
-    get showTools(): boolean {
-        return this.$store.state.gui.view.extruder.showTools ?? true
-    }
-
-    set showTools(newVal: boolean) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.extruder.showTools', value: newVal })
-    }
-
-    get showExtrusionFactor(): boolean {
-        return this.$store.state.gui.view.extruder.showExtrusionFactor ?? true
-    }
-
-    set showExtrusionFactor(newVal: boolean) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.extruder.showExtrusionFactor', value: newVal })
-    }
-
-    get showPressureAdvance(): boolean {
-        return this.$store.state.gui.view.extruder.showPressureAdvance ?? true
-    }
-
-    set showPressureAdvance(newVal: boolean) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.extruder.showPressureAdvance', value: newVal })
-    }
-
-    get showFirmwareRetraction(): boolean {
-        return this.$store.state.gui.view.extruder.showFirmwareRetraction ?? true
-    }
-
-    set showFirmwareRetraction(newVal: boolean) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.extruder.showFirmwareRetraction', value: newVal })
-    }
-
-    get showExtruderControl(): boolean {
-        return this.$store.state.gui.view.extruder.showExtruderControl ?? true
-    }
-
-    set showExtruderControl(newVal: boolean) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.extruder.showExtruderControl', value: newVal })
-    }
-}
+export default defineComponent({
+    name: 'ExtruderPanelSettings',
+    mixins: [BaseMixin, ControlMixin],
+    data() {
+        return {
+            mdiCog: mdiCog,
+        }
+    },
+    computed: {
+        showTools: {
+            get(): boolean {
+                return this.$store.state.gui.view.extruder.showTools ?? true
+            },
+            setshowTools(newVal: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.extruder.showTools', value: newVal })
+            },
+        },
+        showExtrusionFactor: {
+            get(): boolean {
+                return this.$store.state.gui.view.extruder.showExtrusionFactor ?? true
+            },
+            setshowExtrusionFactor(newVal: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.extruder.showExtrusionFactor', value: newVal })
+            },
+        },
+        showPressureAdvance: {
+            get(): boolean {
+                return this.$store.state.gui.view.extruder.showPressureAdvance ?? true
+            },
+            setshowPressureAdvance(newVal: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.extruder.showPressureAdvance', value: newVal })
+            },
+        },
+        showFirmwareRetraction: {
+            get(): boolean {
+                return this.$store.state.gui.view.extruder.showFirmwareRetraction ?? true
+            },
+            setshowFirmwareRetraction(newVal: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.extruder.showFirmwareRetraction', value: newVal })
+            },
+        },
+        showExtruderControl: {
+            get(): boolean {
+                return this.$store.state.gui.view.extruder.showExtruderControl ?? true
+            },
+            setshowExtruderControl(newVal: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.extruder.showExtruderControl', value: newVal })
+            },
+        },
+    },
+})
 </script>

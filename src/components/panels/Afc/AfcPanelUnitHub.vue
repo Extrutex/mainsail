@@ -6,7 +6,7 @@
                     v-bind="attr"
                     class="sensor-status rounded-circle d-inline-block mr-2"
                     :class="sensorClass"
-                    v-on="on" />
+                    v-bind="props" />
             </template>
             <span>{{ sensorOutput }}</span>
         </v-tooltip>
@@ -14,35 +14,36 @@
     </div>
 </template>
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import AfcMixin from '@/components/mixins/afc'
 
-@Component
-export default class AfcPanelUnitHub extends Mixins(BaseMixin, AfcMixin) {
-    @Prop({ type: String, required: true }) readonly name!: string
+export default defineComponent({
+    name: 'AfcPanelUnitHub',
+    mixins: [BaseMixin, AfcMixin],
+    props: {
+        name: { type: String, required: true },
+    },
+    computed: {
+        hub() {
+            return this.getAfcHubObject(this.name)
+        },
+        sensorStatus() {
+            return this.hub.state ?? false
+        },
+        sensorOutput() {
+            const status = this.sensorStatus ? this.$t('Panels.AfcPanel.Detected') : this.$t('Panels.AfcPanel.Empty')
 
-    get hub() {
-        return this.getAfcHubObject(this.name)
-    }
-
-    get sensorStatus() {
-        return this.hub.state ?? false
-    }
-
-    get sensorOutput() {
-        const status = this.sensorStatus ? this.$t('Panels.AfcPanel.Detected') : this.$t('Panels.AfcPanel.Empty')
-
-        return `${this.name} ${this.$t('Panels.AfcPanel.HubLoad')} - ${status}`
-    }
-
-    get sensorClass() {
-        return {
-            success: this.sensorStatus,
-            error: !this.sensorStatus,
-        }
-    }
-}
+            return `${this.name} ${this.$t('Panels.AfcPanel.HubLoad')} - ${status}`
+        },
+        sensorClass() {
+            return {
+                success: this.sensorStatus,
+                error: !this.sensorStatus,
+            }
+        },
+    },
+})
 </script>
 
 <style scoped>

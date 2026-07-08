@@ -19,7 +19,7 @@
                 </template>
                 <div class="text-center mt-3">
                     <v-btn v-if="helpButtonUrl" class="text--disabled mr-3" :href="helpButtonUrl" target="_blank">
-                        <v-icon left>{{ mdiHelp }}</v-icon>
+                        <v-icon start>{{ mdiHelp }}</v-icon>
                         {{ $t('ConnectionDialog.Help') }}
                     </v-btn>
                     <v-btn class="primary--text" @click="reconnect">{{ $t('ConnectionDialog.TryAgain') }}</v-btn>
@@ -33,77 +33,72 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 
 import ThemeMixin from '@/components/mixins/theme'
 import ConnectionStatus from '@/components/ui/ConnectionStatus.vue'
 import { mdiConnection, mdiHelp } from '@mdi/js'
 
-@Component({
+export default defineComponent({
+    name: 'TheConnectingDialog',
     components: {
         ConnectionStatus,
     },
+    mixins: [BaseMixin, ThemeMixin],
+    data() {
+        return {
+            mdiConnection: mdiConnection,
+            mdiHelp: mdiHelp,
+            counter: 0,
+        }
+    },
+    computed: {
+        hostname() {
+            return this.$store.state.socket.hostname
+        },
+        port() {
+            return this.$store.state.socket.port
+        },
+        path() {
+            return this.$store.state.socket.path
+        },
+        formatHostname() {
+            return parseInt(this.port) !== 80 && this.port !== ''
+                ? this.hostname + ':' + this.port + this.path
+                : this.hostname + this.path
+        },
+        isConnecting() {
+            return this.$store.state.socket.isConnecting
+        },
+        connectingFailed() {
+            return this.$store.state.socket.connectingFailed
+        },
+        showDialog() {
+            return true
+        },
+        titleText() {
+            if (this.connectingFailed) return this.$t('ConnectionDialog.Failed', { host: this.formatHostname })
+            if (this.isConnecting) return this.$t('ConnectionDialog.Connecting', { host: this.formatHostname })
+            if (!this.guiIsReady) return this.$t('ConnectionDialog.Initializing')
+
+            return this.formatHostname
+        },
+        connectionFailedMessage() {
+            return this.$store.state.socket.connectionFailedMessage ?? null
+        },
+        helpButtonUrl() {
+            if (!this.$store.state.socket.connectionFailedMessage) return null
+
+            return `https://docs.mainsail.xyz/faq/mainsail_errors/connection-${this.connectionFailedMessage?.toLowerCase()}`
+        },
+    },
+    methods: {
+        reconnect() {
+            this.counter++
+            this.$store.dispatch('socket/setData', { connectingFailed: false })
+            this.$socket.connect()
+        },
+    },
 })
-export default class TheConnectingDialog extends Mixins(BaseMixin, ThemeMixin) {
-    mdiConnection = mdiConnection
-    mdiHelp = mdiHelp
-
-    counter = 0
-
-    get hostname() {
-        return this.$store.state.socket.hostname
-    }
-
-    get port() {
-        return this.$store.state.socket.port
-    }
-
-    get path() {
-        return this.$store.state.socket.path
-    }
-
-    get formatHostname() {
-        return parseInt(this.port) !== 80 && this.port !== ''
-            ? this.hostname + ':' + this.port + this.path
-            : this.hostname + this.path
-    }
-
-    get isConnecting() {
-        return this.$store.state.socket.isConnecting
-    }
-
-    get connectingFailed() {
-        return this.$store.state.socket.connectingFailed
-    }
-
-    get showDialog() {
-        return true
-    }
-
-    get titleText() {
-        if (this.connectingFailed) return this.$t('ConnectionDialog.Failed', { host: this.formatHostname })
-        if (this.isConnecting) return this.$t('ConnectionDialog.Connecting', { host: this.formatHostname })
-        if (!this.guiIsReady) return this.$t('ConnectionDialog.Initializing')
-
-        return this.formatHostname
-    }
-
-    get connectionFailedMessage() {
-        return this.$store.state.socket.connectionFailedMessage ?? null
-    }
-
-    get helpButtonUrl() {
-        if (!this.$store.state.socket.connectionFailedMessage) return null
-
-        return `https://docs.mainsail.xyz/faq/mainsail_errors/connection-${this.connectionFailedMessage?.toLowerCase()}`
-    }
-
-    reconnect() {
-        this.counter++
-        this.$store.dispatch('socket/setData', { connectingFailed: false })
-        this.$socket.connect()
-    }
-}
 </script>

@@ -1,4 +1,3 @@
-
 import { ActionTree } from 'vuex'
 import { GuiRemindersState } from '@/store/gui/reminders/types'
 import { RootState } from '@/store/types'
@@ -11,7 +10,11 @@ export const actions: ActionTree<GuiRemindersState, RootState> = {
     },
 
     init() {
-        getSocketClient().emit('server.database.get_item', { namespace: 'reminders' }, { action: 'gui/reminders/initStore' })
+        getSocketClient().emit(
+            'server.database.get_item',
+            { namespace: 'reminders' },
+            { action: 'gui/reminders/initStore' }
+        )
     },
 
     async initStore({ commit, dispatch }, payload) {
@@ -21,7 +24,11 @@ export const actions: ActionTree<GuiRemindersState, RootState> = {
     },
 
     upload(_, payload) {
-        getSocketClient().emit('server.database.post_item', { namespace: 'reminders', key: payload.id, value: payload.value })
+        getSocketClient().emit('server.database.post_item', {
+            namespace: 'reminders',
+            key: payload.id,
+            value: payload.value,
+        })
     },
 
     store({ commit, dispatch, state }, payload) {

@@ -18,11 +18,11 @@
             </v-card-text>
             <v-card-actions>
                 <v-spacer />
-                <v-btn text @click="closePrompt">{{ $t('Buttons.Cancel') }}</v-btn>
+                <v-btn variant="text" @click="closePrompt">{{ $t('Buttons.Cancel') }}</v-btn>
                 <v-btn
                     :disabled="isInvalidName || name.length === 0"
                     color="primary"
-                    text
+                    variant="text"
                     @click="createDirectoryAction">
                     {{ $t('Files.Create') }}
                 </v-btn>
@@ -32,58 +32,73 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Ref, VModel, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import type { FocusableRef } from '@/types/vuetify'
 import BaseMixin from '@/components/mixins/base'
 import Panel from '@/components/ui/Panel.vue'
 import { mdiCloseThick } from '@mdi/js'
 import GcodefilesMixin from '@/components/mixins/gcodefiles'
 
-@Component({
+export default defineComponent({
+    name: 'GcodefilesCreateDirectoryDialog',
     components: { Panel },
+    mixins: [BaseMixin, GcodefilesMixin],
+    props: {
+        modelValue: { type: Boolean },
+    },
+    emits: ['update:modelValue'],
+    data() {
+        return {
+            mdiCloseThick: mdiCloseThick,
+            name: '',
+            isInvalidName: false,
+            nameInputRules: [
+                (value: string) => !!value || this.$t('Files.InvalidNameEmpty'),
+                (value: string) => !this.existsFilename(value) || this.$t('Files.InvalidNameAlreadyExists'),
+            ],
+        }
+    },
+    computed: {
+        showDialog: {
+            get(): boolean {
+                return this.modelValue
+            },
+            set(value: boolean) {
+                this.$emit('update:modelValue', value)
+            },
+        },
+        inputField(): FocusableRef {
+            return this.$refs.inputField as FocusableRef
+        },
+    },
+    watch: {
+        showDialog(newVal: boolean) {
+            if (!newVal) return
+
+            this.name = ''
+            this.isInvalidName = false
+
+            setTimeout(() => {
+                this.inputField?.focus()
+            })
+        },
+    },
+    methods: {
+        updateIsInvalidName(value: boolean) {
+            this.isInvalidName = value
+        },
+        createDirectoryAction() {
+            this.$socket.emit(
+                'server.files.post_directory',
+                { path: 'gcodes' + this.currentPath + '/' + this.name },
+                { action: 'files/getCreateDir' }
+            )
+
+            this.closePrompt()
+        },
+        closePrompt() {
+            this.showDialog = false
+        },
+    },
 })
-export default class GcodefilesCreateDirectoryDialog extends Mixins(BaseMixin, GcodefilesMixin) {
-    mdiCloseThick = mdiCloseThick
-
-    name = ''
-    isInvalidName = false
-
-    @VModel({ type: Boolean }) showDialog!: boolean
-    @Ref() readonly inputField!: FocusableRef
-
-    nameInputRules = [
-        (value: string) => !!value || this.$t('Files.InvalidNameEmpty'),
-        (value: string) => !this.existsFilename(value) || this.$t('Files.InvalidNameAlreadyExists'),
-    ]
-
-    updateIsInvalidName(value: boolean) {
-        this.isInvalidName = value
-    }
-
-    createDirectoryAction() {
-        this.$socket.emit(
-            'server.files.post_directory',
-            { path: 'gcodes' + this.currentPath + '/' + this.name },
-            { action: 'files/getCreateDir' }
-        )
-
-        this.closePrompt()
-    }
-
-    closePrompt() {
-        this.showDialog = false
-    }
-
-    @Watch('showDialog')
-    onShowDialogChanged(newVal: boolean) {
-        if (!newVal) return
-
-        this.name = ''
-        this.isInvalidName = false
-
-        setTimeout(() => {
-            this.inputField?.focus()
-        })
-    }
-}
 </script>

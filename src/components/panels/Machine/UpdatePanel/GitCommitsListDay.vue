@@ -1,6 +1,6 @@
 <template>
     <div>
-        <v-timeline-item small class="git-commit-list-day">
+        <v-timeline-item size="small" class="git-commit-list-day">
             <v-row class="pt-0">
                 <v-col class="pr-12">
                     <h3 class="caption">
@@ -20,7 +20,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent, PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import {
     ServerUpdateManagerStateGitRepo,
@@ -29,21 +29,24 @@ import {
 import Panel from '@/components/ui/Panel.vue'
 import GitCommitsListDayCommit from '@/components/panels/Machine/UpdatePanel/GitCommitsListDayCommit.vue'
 
-@Component({
+export default defineComponent({
+    name: 'GitCommitsListDay',
     components: { Panel, GitCommitsListDayCommit },
+    mixins: [BaseMixin],
+    props: {
+        groupedCommits: { type: Object as PropType<ServerUpdateManagerStateGitRepoGroupedCommits>, required: true },
+        repo: { type: Object as PropType<ServerUpdateManagerStateGitRepo>, required: true },
+    },
+    computed: {
+        groupedCommitsDate() {
+            return new Date(this.groupedCommits.date).toLocaleDateString(this.browserLocale, {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+            })
+        },
+    },
 })
-export default class GitCommitsListDay extends Mixins(BaseMixin) {
-    @Prop({ required: true }) readonly groupedCommits!: ServerUpdateManagerStateGitRepoGroupedCommits
-    @Prop({ required: true }) readonly repo!: ServerUpdateManagerStateGitRepo
-
-    get groupedCommitsDate() {
-        return new Date(this.groupedCommits.date).toLocaleDateString(this.browserLocale, {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-        })
-    }
-}
 </script>
 
 <style scoped>

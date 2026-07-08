@@ -24,7 +24,7 @@
                                 v-for="value in feedamountsSorted"
                                 :key="value"
                                 :disabled="printerIsPrintingOnly"
-                                dense
+                                density="compact"
                                 class="_btn-qs flex-grow-1 px-0"
                                 @click="setFeedamount({ value })">
                                 {{ value }}
@@ -52,7 +52,7 @@
                                 v-for="value in feedratesSorted"
                                 :key="value"
                                 :disabled="printerIsPrintingOnly"
-                                dense
+                                density="compact"
                                 class="_btn-qs flex-grow-1 px-0"
                                 @click="setFeedrate({ value })">
                                 {{ value }}
@@ -60,18 +60,18 @@
                         </v-item-group>
                     </v-col>
                     <!-- EXTRUDE AND RETRACT BUTTON LARGE SIZED PANEL -->
-                    <v-col v-if="el.is.large" class="col-3 d-flex align-center flex-column justify-center">
+                    <v-col v-if="el.is.large" cols="3" class="d-flex align-center flex-column justify-center">
                         <!-- RETRACT -->
                         <v-tooltip left :disabled="extrudePossible && !tooLargeExtrusion" color="secondary">
-                            <template #activator="{ on }">
-                                <div class="mb-4" v-on="on">
+                            <template #activator="{ props }">
+                                <div class="mb-4" v-bind="props">
                                     <v-btn
                                         :loading="loadings.includes('btnRetract')"
                                         :disabled="!extrudePossible || tooLargeExtrusion || printerIsPrintingOnly"
-                                        small
+                                        size="small"
                                         class="_btn-extruder-cmd"
                                         @click="sendRetract()">
-                                        <v-icon small class="mr-1">{{ mdiArrowUpBold }}</v-icon>
+                                        <v-icon size="small" class="mr-1">{{ mdiArrowUpBold }}</v-icon>
                                         {{ $t('Panels.ExtruderControlPanel.Retract') }}
                                     </v-btn>
                                 </div>
@@ -90,15 +90,15 @@
                         </v-tooltip>
                         <!-- EXTRUDE  -->
                         <v-tooltip left :disabled="extrudePossible && !tooLargeExtrusion" color="secondary">
-                            <template #activator="{ on }">
-                                <div v-on="on">
+                            <template #activator="{ props }">
+                                <div v-bind="props">
                                     <v-btn
                                         :loading="loadings.includes('btnExtrude')"
                                         :disabled="!extrudePossible || tooLargeExtrusion || printerIsPrintingOnly"
-                                        small
+                                        size="small"
                                         class="_btn-extruder-cmd"
                                         @click="sendExtrude()">
-                                        <v-icon small class="mr-1">{{ mdiArrowDownBold }}</v-icon>
+                                        <v-icon size="small" class="mr-1">{{ mdiArrowDownBold }}</v-icon>
                                         {{ $t('Panels.ExtruderControlPanel.Extrude') }}
                                     </v-btn>
                                 </div>
@@ -124,17 +124,17 @@
                             <div class="d-flex align-center">
                                 <!-- RETRACT -->
                                 <v-tooltip top :disabled="extrudePossible && !tooLargeExtrusion" color="secondary">
-                                    <template #activator="{ on }">
-                                        <div class="pt-1 pb-2 px-3" v-on="on">
+                                    <template #activator="{ props }">
+                                        <div class="pt-1 pb-2 px-3" v-bind="props">
                                             <v-btn
                                                 :loading="loadings.includes('btnRetract')"
                                                 :disabled="
                                                     !extrudePossible || tooLargeExtrusion || printerIsPrintingOnly
                                                 "
-                                                small
+                                                size="small"
                                                 class="_btn-extruder-cmd"
                                                 @click="sendRetract()">
-                                                <v-icon small class="mr-1">{{ mdiArrowUpBold }}</v-icon>
+                                                <v-icon size="small" class="mr-1">{{ mdiArrowUpBold }}</v-icon>
                                                 {{ $t('Panels.ExtruderControlPanel.Retract') }}
                                             </v-btn>
                                         </div>
@@ -154,17 +154,17 @@
                                 </v-tooltip>
                                 <!-- EXTRUDE  -->
                                 <v-tooltip top :disabled="extrudePossible && !tooLargeExtrusion" color="secondary">
-                                    <template #activator="{ on }">
-                                        <div class="pt-1 pb-2 px-3" v-on="on">
+                                    <template #activator="{ props }">
+                                        <div class="pt-1 pb-2 px-3" v-bind="props">
                                             <v-btn
                                                 :loading="loadings.includes('btnExtrude')"
                                                 :disabled="
                                                     !extrudePossible || tooLargeExtrusion || printerIsPrintingOnly
                                                 "
-                                                small
+                                                size="small"
                                                 class="_btn-extruder-cmd"
                                                 @click="sendExtrude()">
-                                                <v-icon small class="mr-1">{{ mdiArrowDownBold }}</v-icon>
+                                                <v-icon size="small" class="mr-1">{{ mdiArrowDownBold }}</v-icon>
                                                 {{ $t('Panels.ExtruderControlPanel.Extrude') }}
                                             </v-btn>
                                         </div>
@@ -194,8 +194,8 @@
 </template>
 
 <script lang="ts">
+import { defineComponent } from 'vue'
 import { mdiArrowDownBold, mdiArrowUpBold, mdiPrinter3dNozzle } from '@mdi/js'
-import { Component, Mixins, Watch } from 'vue-property-decorator'
 import BaseMixin from '@/components/mixins/base'
 import NumberInput from '@/components/inputs/NumberInput.vue'
 import Responsive from '@/components/ui/Responsive.vue'
@@ -203,95 +203,94 @@ import ToolSlider from '@/components/inputs/ToolSlider.vue'
 import ExtruderMixin from '@/components/mixins/extruder'
 import { parseNumber } from '@/plugins/helpers'
 
-@Component({
+export default defineComponent({
+    name: 'ExtruderControlPanel',
     components: {
         NumberInput,
         Responsive,
         ToolSlider,
     },
+    mixins: [BaseMixin, ExtruderMixin],
+    data() {
+        return {
+            mdiArrowDownBold: mdiArrowDownBold,
+            mdiArrowUpBold: mdiArrowUpBold,
+            mdiPrinter3dNozzle: mdiPrinter3dNozzle,
+        }
+    },
+    computed: {
+        feedamounts(): number[] {
+            return this.$store.state.gui.control.extruder?.feedamounts ?? []
+        },
+        feedrates(): number[] {
+            return this.$store.state.gui.control.extruder?.feedrates ?? []
+        },
+        feedamountsSorted(): number[] {
+            return [...this.feedamounts].sort((a, b) => {
+                return b - a
+            })
+        },
+        feedratesSorted(): number[] {
+            return [...this.feedrates].sort((a, b) => {
+                return b - a
+            })
+        },
+        maxExtrudeOnlyDistance(): number {
+            return parseNumber(this.activeExtruderSettings?.max_extrude_only_distance, 50)
+        },
+        tooLargeExtrusion(): boolean {
+            return this.feedamount * this.extrudeFactor > this.maxExtrudeOnlyDistance
+        },
+        existsClientLinearMoveMacro() {
+            const macros = this.$store.state.printer?.gcode?.commands ?? {}
+
+            return '_CLIENT_LINEAR_MOVE' in macros
+        },
+    },
+    watch: {
+        maxExtrudeOnlyDistance: {
+            immediate: true,
+            handler(): void {
+                /**
+                 * If, while switching from ex. A to ex. B, the feedamount
+                 * from ex. an exceeds the maxExtrudeOnlyDistance of ex. B,
+                 * set the feedamount to maxExtrudeOnlyDistance of ex. B
+                 */
+                if (this.feedamount > this.maxExtrudeOnlyDistance) {
+                    this.setFeedamount({ value: this.maxExtrudeOnlyDistance })
+                }
+            },
+        },
+    },
+    methods: {
+        setFeedamount(params: { value: number }): void {
+            this.$store.dispatch('gui/saveSetting', { name: 'control.extruder.feedamount', value: params.value })
+        },
+        setFeedrate(params: { value: number }): void {
+            this.$store.dispatch('gui/saveSetting', { name: 'control.extruder.feedrate', value: params.value })
+        },
+        sendRetract(): void {
+            this.sendCommand(this.feedamount * -1, 'btnRetract')
+        },
+        sendExtrude(): void {
+            this.sendCommand(this.feedamount, 'btnExtrude')
+        },
+        sendCommand(length: number, loading: string): void {
+            let gcode =
+                `SAVE_GCODE_STATE NAME=_ui_extrude\n` +
+                `M83\n` +
+                `G1 E${length} F${this.feedrate * 60}\n` +
+                `RESTORE_GCODE_STATE NAME=_ui_extrude`
+
+            if (this.existsClientLinearMoveMacro) {
+                gcode = `_CLIENT_LINEAR_MOVE E=${length} F=${this.feedrate * 60}`
+            }
+
+            this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
+            this.$socket.emit('printer.gcode.script', { script: gcode }, { loading })
+        },
+    },
 })
-export default class ExtruderControlPanel extends Mixins(BaseMixin, ExtruderMixin) {
-    mdiArrowDownBold = mdiArrowDownBold
-    mdiArrowUpBold = mdiArrowUpBold
-    mdiPrinter3dNozzle = mdiPrinter3dNozzle
-
-    get feedamounts(): number[] {
-        return this.$store.state.gui.control.extruder?.feedamounts ?? []
-    }
-
-    get feedrates(): number[] {
-        return this.$store.state.gui.control.extruder?.feedrates ?? []
-    }
-
-    get feedamountsSorted(): number[] {
-        return [...this.feedamounts].sort((a, b) => {
-            return b - a
-        })
-    }
-
-    get feedratesSorted(): number[] {
-        return [...this.feedrates].sort((a, b) => {
-            return b - a
-        })
-    }
-
-    setFeedamount(params: { value: number }): void {
-        this.$store.dispatch('gui/saveSetting', { name: 'control.extruder.feedamount', value: params.value })
-    }
-
-    setFeedrate(params: { value: number }): void {
-        this.$store.dispatch('gui/saveSetting', { name: 'control.extruder.feedrate', value: params.value })
-    }
-
-    get maxExtrudeOnlyDistance(): number {
-        return parseNumber(this.activeExtruderSettings?.max_extrude_only_distance, 50)
-    }
-
-    get tooLargeExtrusion(): boolean {
-        return this.feedamount * this.extrudeFactor > this.maxExtrudeOnlyDistance
-    }
-
-    get existsClientLinearMoveMacro() {
-        const macros = this.$store.state.printer?.gcode?.commands ?? {}
-
-        return '_CLIENT_LINEAR_MOVE' in macros
-    }
-
-    @Watch('maxExtrudeOnlyDistance', { immediate: true })
-    onMaxExtrudeOnlyDistanceChange(): void {
-        /**
-         * If, while switching from ex. A to ex. B, the feedamount
-         * from ex. an exceeds the maxExtrudeOnlyDistance of ex. B,
-         * set the feedamount to maxExtrudeOnlyDistance of ex. B
-         */
-        if (this.feedamount > this.maxExtrudeOnlyDistance) {
-            this.setFeedamount({ value: this.maxExtrudeOnlyDistance })
-        }
-    }
-
-    sendRetract(): void {
-        this.sendCommand(this.feedamount * -1, 'btnRetract')
-    }
-
-    sendExtrude(): void {
-        this.sendCommand(this.feedamount, 'btnExtrude')
-    }
-
-    sendCommand(length: number, loading: string): void {
-        let gcode =
-            `SAVE_GCODE_STATE NAME=_ui_extrude\n` +
-            `M83\n` +
-            `G1 E${length} F${this.feedrate * 60}\n` +
-            `RESTORE_GCODE_STATE NAME=_ui_extrude`
-
-        if (this.existsClientLinearMoveMacro) {
-            gcode = `_CLIENT_LINEAR_MOVE E=${length} F=${this.feedrate * 60}`
-        }
-
-        this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
-        this.$socket.emit('printer.gcode.script', { script: gcode }, { loading })
-    }
-}
 </script>
 
 <style scoped>

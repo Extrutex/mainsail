@@ -114,8 +114,10 @@ export const mutations: MutationTree<GuiState> = {
             return
         }
 
-        const additionalSensors = state.view.tempchart.datasetSettings[payload.objectName]
-            .additionalSensors as Record<string, boolean>
+        const additionalSensors = state.view.tempchart.datasetSettings[payload.objectName].additionalSensors as Record<
+            string,
+            boolean
+        >
         additionalSensors[payload.dataset] = payload.value
     },
 }

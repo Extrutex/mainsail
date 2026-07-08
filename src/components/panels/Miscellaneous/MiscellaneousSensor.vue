@@ -3,7 +3,7 @@
         <v-row>
             <v-col class="pb-3">
                 <v-subheader class="_miscellaneous-sensor-subheader">
-                    <v-icon small class="mr-2">{{ unitToSymbol(unit) }}</v-icon>
+                    <v-icon size="small" class="mr-2">{{ unitToSymbol(unit) }}</v-icon>
                     <span>{{ convertName(name) }}</span>
                     <v-spacer />
                     <span>{{ output }}</span>
@@ -14,13 +14,13 @@
 </template>
 
 <script lang="ts">
+import { defineComponent } from 'vue'
 import { convertName, unitToSymbol } from '@/plugins/helpers'
-import { Component, Mixins, Prop } from 'vue-property-decorator'
 import BaseMixin from '@/components/mixins/base'
 import {} from '@mdi/js'
 
-@Component()
-export default class MiscellaneousSensor extends Mixins(BaseMixin) {
+export default defineComponent({
+    name: 'MiscellaneousSensor',
     convertName = convertName
     unitToSymbol = unitToSymbol
 
@@ -34,8 +34,29 @@ export default class MiscellaneousSensor extends Mixins(BaseMixin) {
         if (this.unit === null) return this.value
 
         return `${value} ${this.unit}`
-    }
-}
+    },
+    mixins: [BaseMixin],
+    props: {
+        name: { type: String, required: true },
+        value: { type: Number, required: true },
+        unit: { type: String, required: false },
+    },
+    data() {
+        return {
+            convertName: convertName,
+            unitToSymbol: unitToSymbol,
+        }
+    },
+    computed: {
+        output() {
+            const value = isNaN(this.value) ? '--' : this.value
+
+            if (this.unit === null) return this.value
+
+            return `${value} ${this.unit}`
+        },
+    },
+})
 </script>
 
 <style scoped>

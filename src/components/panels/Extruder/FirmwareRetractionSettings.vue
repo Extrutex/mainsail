@@ -83,7 +83,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
+import { debounce } from '@/plugins/helpers'
 import { Debounce } from 'vue-debounce-decorator'
 import BaseMixin from '@/components/mixins/base'
 import Panel from '@/components/ui/Panel.vue'
@@ -91,57 +92,55 @@ import NumberInput from '@/components/inputs/NumberInput.vue'
 import Responsive from '@/components/ui/Responsive.vue'
 import ControlMixin from '@/components/mixins/control'
 
-@Component({
+export default defineComponent({
+    name: 'FirmwareRetractionSettings',
     components: { Panel, NumberInput, Responsive },
+    mixins: [BaseMixin, ControlMixin],
+    computed: {
+        retractLength(): number {
+            return Math.floor((this.$store.state.printer?.firmware_retraction?.retract_length ?? 0) * 100) / 100
+        },
+        retractSpeed(): number {
+            return Math.trunc(this.$store.state.printer?.firmware_retraction?.retract_speed ?? 20)
+        },
+        unretractExtraLength(): number {
+            return Math.floor((this.$store.state.printer?.firmware_retraction?.unretract_extra_length ?? 0) * 100) / 100
+        },
+        unretractSpeed(): number {
+            return Math.trunc(this.$store.state.printer?.firmware_retraction?.unretract_speed ?? 10)
+        },
+        defaultRetractLength(): number {
+            return (
+                Math.floor(
+                    (this.$store.state.printer?.configfile?.settings?.firmware_retraction?.retract_length ?? 0) * 100
+                ) / 100
+            )
+        },
+        defaultRetractSpeed(): number {
+            return Math.trunc(this.$store.state.printer?.configfile?.settings?.firmware_retraction?.retract_speed ?? 20)
+        },
+        defaultUnretractExtraLength(): number {
+            return (
+                Math.floor(
+                    (this.$store.state.printer?.configfile?.settings?.firmware_retraction?.unretract_extra_length ??
+                        0) * 100
+                ) / 100
+            )
+        },
+        defaultUnretractSpeed(): number {
+            return Math.trunc(
+                this.$store.state.printer?.configfile?.settings?.firmware_retraction?.unretract_speed ?? 0
+            )
+        },
+    },
+    methods: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        sendCmd: debounce(function (this: any, params: { name: string; value: number }) {
+            const gcode = `SET_RETRACTION ${params.name}=${params.value}`
+
+            this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
+            this.$socket.emit('printer.gcode.script', { script: gcode })
+        }, 500),
+    },
 })
-export default class FirmwareRetractionSettings extends Mixins(BaseMixin, ControlMixin) {
-    get retractLength(): number {
-        return Math.floor((this.$store.state.printer?.firmware_retraction?.retract_length ?? 0) * 100) / 100
-    }
-
-    get retractSpeed(): number {
-        return Math.trunc(this.$store.state.printer?.firmware_retraction?.retract_speed ?? 20)
-    }
-
-    get unretractExtraLength(): number {
-        return Math.floor((this.$store.state.printer?.firmware_retraction?.unretract_extra_length ?? 0) * 100) / 100
-    }
-
-    get unretractSpeed(): number {
-        return Math.trunc(this.$store.state.printer?.firmware_retraction?.unretract_speed ?? 10)
-    }
-
-    get defaultRetractLength(): number {
-        return (
-            Math.floor(
-                (this.$store.state.printer?.configfile?.settings?.firmware_retraction?.retract_length ?? 0) * 100
-            ) / 100
-        )
-    }
-
-    get defaultRetractSpeed(): number {
-        return Math.trunc(this.$store.state.printer?.configfile?.settings?.firmware_retraction?.retract_speed ?? 20)
-    }
-
-    get defaultUnretractExtraLength(): number {
-        return (
-            Math.floor(
-                (this.$store.state.printer?.configfile?.settings?.firmware_retraction?.unretract_extra_length ?? 0) *
-                    100
-            ) / 100
-        )
-    }
-
-    get defaultUnretractSpeed(): number {
-        return Math.trunc(this.$store.state.printer?.configfile?.settings?.firmware_retraction?.unretract_speed ?? 0)
-    }
-
-    @Debounce(500)
-    sendCmd(params: { name: string; value: number }): void {
-        const gcode = `SET_RETRACTION ${params.name}=${params.value}`
-
-        this.$store.dispatch('server/addEvent', { message: gcode, type: 'command' })
-        this.$socket.emit('printer.gcode.script', { script: gcode })
-    }
-}
 </script>

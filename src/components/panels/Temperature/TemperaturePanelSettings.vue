@@ -1,8 +1,8 @@
 <template>
     <v-menu :offset-y="true" :close-on-content-click="false" :title="$t('Panels.TemperaturePanel.SetupTemperatures')">
-        <template #activator="{ on, attrs }">
-            <v-btn icon tile v-bind="attrs" v-on="on">
-                <v-icon small>{{ mdiCog }}</v-icon>
+        <template #activator="{ props }">
+            <v-btn icon tile v-bind="props">
+                <v-icon size="small">{{ mdiCog }}</v-icon>
             </v-btn>
         </template>
         <v-list>
@@ -39,45 +39,51 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { mdiCog } from '@mdi/js'
 
-@Component
-export default class TemperaturePanelSettings extends Mixins(BaseMixin) {
-    mdiCog = mdiCog
-
-    get boolTempchart(): boolean {
-        return this.$store.state.gui.view.tempchart.boolTempchart ?? false
-    }
-
-    set boolTempchart(newVal: boolean) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.tempchart.boolTempchart', value: newVal })
-    }
-
-    get autoscaleTempchart(): boolean {
-        return this.$store.state.gui.view.tempchart.autoscale ?? false
-    }
-
-    set autoscaleTempchart(newVal: boolean) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.tempchart.autoscale', value: newVal })
-    }
-
-    get hideMcuHostSensors(): boolean {
-        return this.$store.state.gui.view.tempchart.hideMcuHostSensors ?? false
-    }
-
-    set hideMcuHostSensors(newVal: boolean) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.tempchart.hideMcuHostSensors', value: newVal })
-    }
-
-    get hideMonitors(): boolean {
-        return this.$store.state.gui.view.tempchart.hideMonitors ?? false
-    }
-
-    set hideMonitors(newVal: boolean) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.tempchart.hideMonitors', value: newVal })
-    }
-}
+export default defineComponent({
+    name: 'TemperaturePanelSettings',
+    mixins: [BaseMixin],
+    data() {
+        return {
+            mdiCog: mdiCog,
+        }
+    },
+    computed: {
+        boolTempchart: {
+            get(): boolean {
+                return this.$store.state.gui.view.tempchart.boolTempchart ?? false
+            },
+            setboolTempchart(newVal: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.tempchart.boolTempchart', value: newVal })
+            },
+        },
+        autoscaleTempchart: {
+            get(): boolean {
+                return this.$store.state.gui.view.tempchart.autoscale ?? false
+            },
+            setautoscaleTempchart(newVal: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.tempchart.autoscale', value: newVal })
+            },
+        },
+        hideMcuHostSensors: {
+            get(): boolean {
+                return this.$store.state.gui.view.tempchart.hideMcuHostSensors ?? false
+            },
+            sethideMcuHostSensors(newVal: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.tempchart.hideMcuHostSensors', value: newVal })
+            },
+        },
+        hideMonitors: {
+            get(): boolean {
+                return this.$store.state.gui.view.tempchart.hideMonitors ?? false
+            },
+            sethideMonitors(newVal: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.tempchart.hideMonitors', value: newVal })
+            },
+        },
+    },
+})
 </script>

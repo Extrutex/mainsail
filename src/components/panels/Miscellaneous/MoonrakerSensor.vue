@@ -18,8 +18,45 @@
 </template>
 
 <script lang="ts">
+import { defineComponent } from 'vue'
 import { convertName } from '@/plugins/helpers'
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import BaseMixin from '@/components/mixins/base'
+import MoonrakerSensorValue from '@/components/panels/Miscellaneous/MoonrakerSensorValue.vue'
+import {} from '@mdi/js'
+
+export default defineComponent({
+    name: 'MoonrakerSensor',
+    components: { MoonrakerSensorValue },
+    mixins: [BaseMixin],
+    props: {
+        name: { type: String, required: true },
+    },
+    data() {
+        return {
+            convertName: convertName,
+        }
+    },
+    computed: {
+        sensor() {
+            const sensors = this.$store.state.server.sensor.sensors
+            if (!(this.name in sensors)) return undefined
+
+            return sensors[this.name]
+        },
+        displayName() {
+            // If the friendly name is the same as the sensor name, then it hasn't been customized in the config
+            // this is the fallback value in Moonraker, so we convert the sensor name to a more user-friendly format
+            if (this.sensor === undefined || this.sensor?.friendly_name === this.name) {
+                return this.convertName(this.name)
+            }
+
+            return this.sensor?.friendly_name
+        },
+        valueNames() {
+            return Object.keys(this.sensor?.values ?? {})
+        },
+    },
+})import { convertName } from '@/plugins/helpers'
 import BaseMixin from '@/components/mixins/base'
 import MoonrakerSensorValue from '@/components/panels/Miscellaneous/MoonrakerSensorValue.vue'
 import {} from '@mdi/js'

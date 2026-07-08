@@ -1,4 +1,3 @@
-
 import { ActionTree } from 'vuex'
 import { GuiState, GuiStateDashboard, GuiStateDashboardLayoutKey, GuiStateLayoutoption } from '@/store/gui/types'
 import { GuiPresetsStatePreset } from '@/store/gui/presets/types'

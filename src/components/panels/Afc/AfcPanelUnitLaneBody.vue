@@ -4,7 +4,7 @@
             <v-col class="pl-6 pr-0 pt-0 pb-0 d-flex flex-column">
                 <v-tooltip top>
                     <template #activator="{ on, attr }">
-                        <span class="d-flex align-center justify-center" v-bind="attr" v-on="on">
+                        <span class="d-flex align-center justify-center" v-bind="attr" v-bind="props">
                             <afc-filament-reel
                                 :percent="spoolPercent"
                                 :color="spoolColor"
@@ -22,8 +22,8 @@
                 <afc-unit-lane-filament-dialog v-model="showFilamentDialog" :name="name" />
             </v-col>
             <v-col class="pr-6 pl-2 pt-0 pb-0 d-flex flex-column justify-space-between align-end">
-                <v-btn v-if="afcShowLaneInfinite" x-small @click="showInfintiyDialog = true">
-                    <v-icon v-if="runoutLane === 'NONE'" color="error" small>{{ afcIconInfintiy }}</v-icon>
+                <v-btn v-if="afcShowLaneInfinite" size="x-small" @click="showInfintiyDialog = true">
+                    <v-icon v-if="runoutLane === 'NONE'" color="error" size="small">{{ afcIconInfintiy }}</v-icon>
                     <template v-else>{{ runoutLane }}</template>
                 </v-btn>
                 <afc-unit-lane-infinite-dialog v-model="showInfintiyDialog" :name="name" />
@@ -31,7 +31,7 @@
                 <span class="text--disabled">{{ spoolRemainingWeightOutput }}</span>
                 <v-tooltip v-if="hasTd" top>
                     <template #activator="{ on, attr }">
-                        <span class="d-flex align-center justify-center text--disabled" v-bind="attr" v-on="on">
+                        <span class="d-flex align-center justify-center text--disabled" v-bind="attr" v-bind="props">
                             TD: {{ tdValue }}
                         </span>
                     </template>
@@ -51,7 +51,7 @@
     </div>
 </template>
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import AfcMixin from '@/components/mixins/afc'
 import { ServerSpoolmanStateSpool } from '@/store/server/spoolman/types'
@@ -59,102 +59,93 @@ import { afcIconInfintiy } from '@/plugins/afcIcons'
 import AfcUnitLaneInfiniteDialog from '@/components/dialogs/AfcUnitLaneInfiniteDialog.vue'
 import AfcUnitLaneFilamentDialog from '@/components/dialogs/AfcUnitLaneFilamentDialog.vue'
 
-@Component({
+export default defineComponent({
+    name: 'AfcPanelUnitLaneBody',
     components: {
         AfcUnitLaneFilamentDialog,
         AfcUnitLaneInfiniteDialog,
     },
-})
-export default class AfcPanelUnitLaneBody extends Mixins(BaseMixin, AfcMixin) {
-    afcIconInfintiy = afcIconInfintiy
-
-    @Prop({ type: String, required: true }) readonly name!: string
-
-    showInfintiyDialog = false
-    showSpoolmanDialog = false
-    showFilamentDialog = false
-
-    get lane() {
-        return this.getAfcLaneObject(this.name)
-    }
-
-    get runoutLane() {
-        return this.lane.runout_lane ?? 'NONE'
-    }
-
-    get spoolId(): number {
-        return Number(this.lane.spool_id || '0')
-    }
-
-    get spool(): ServerSpoolmanStateSpool | null {
-        if (this.spoolId === 0) return null
-
-        const spools = this.$store.state.server.spoolman?.spools || []
-
-        return spools.find((spool: ServerSpoolmanStateSpool) => spool.id === this.spoolId) || null
-    }
-
-    get spoolColor() {
-        if (this.hasTd && this.showTd1Color) return `#${this.tdColor}`
-
-        return this.lane.color || '#000000'
-    }
-
-    get spoolRemainingWeight() {
-        return Math.round(this.lane.weight ?? 0)
-    }
-
-    get spoolRemainingWeightOutput() {
-        return `${this.spoolRemainingWeight} g`
-    }
-
-    get spoolFullWeight() {
-        return this.spool?.filament?.weight ?? 1000
-    }
-
-    get spoolPercent() {
-        if (this.spoolFullWeight === 0) return 100
-
-        return Math.round((this.spoolRemainingWeight / this.spoolFullWeight) * 100)
-    }
-
-    get spoolMaterial() {
-        return this.lane.material || '--'
-    }
-
-    get spoolVendor() {
-        return this.spool?.filament?.vendor?.name ?? 'Unknown'
-    }
-
-    get spoolFilamentName() {
-        return this.spool?.filament?.name ?? 'Unknown'
-    }
-
-    get showTd1Color(): boolean {
-        return this.$store.state.gui.view.afc?.showTd1Color ?? true
-    }
-
-    get hasTd() {
-        return (this.lane?.td1_td || null) !== null
-    }
-
-    get tdValue() {
-        return this.lane?.td1_td || '--'
-    }
-
-    get tdColor() {
-        return this.lane?.td1_color || '------'
-    }
-
-    onFilamentClick() {
-        if (this.afcExistsSpoolman) {
-            this.showSpoolmanDialog = true
-            return
+    mixins: [BaseMixin, AfcMixin],
+    props: {
+        name: { type: String, required: true },
+    },
+    data() {
+        return {
+            afcIconInfintiy: afcIconInfintiy,
+            showInfintiyDialog: false,
+            showSpoolmanDialog: false,
+            showFilamentDialog: false,
         }
+    },
+    computed: {
+        lane() {
+            return this.getAfcLaneObject(this.name)
+        },
+        runoutLane() {
+            return this.lane.runout_lane ?? 'NONE'
+        },
+        spoolId(): number {
+            return Number(this.lane.spool_id || '0')
+        },
+        spool(): ServerSpoolmanStateSpool | null {
+            if (this.spoolId === 0) return null
 
-        this.showFilamentDialog = true
-    }
-}
+            const spools = this.$store.state.server.spoolman?.spools || []
+
+            return spools.find((spool: ServerSpoolmanStateSpool) => spool.id === this.spoolId) || null
+        },
+        spoolColor() {
+            if (this.hasTd && this.showTd1Color) return `#${this.tdColor}`
+
+            return this.lane.color || '#000000'
+        },
+        spoolRemainingWeight() {
+            return Math.round(this.lane.weight ?? 0)
+        },
+        spoolRemainingWeightOutput() {
+            return `${this.spoolRemainingWeight} g`
+        },
+        spoolFullWeight() {
+            return this.spool?.filament?.weight ?? 1000
+        },
+        spoolPercent() {
+            if (this.spoolFullWeight === 0) return 100
+
+            return Math.round((this.spoolRemainingWeight / this.spoolFullWeight) * 100)
+        },
+        spoolMaterial() {
+            return this.lane.material || '--'
+        },
+        spoolVendor() {
+            return this.spool?.filament?.vendor?.name ?? 'Unknown'
+        },
+        spoolFilamentName() {
+            return this.spool?.filament?.name ?? 'Unknown'
+        },
+        showTd1Color(): boolean {
+            return this.$store.state.gui.view.afc?.showTd1Color ?? true
+        },
+        hasTd() {
+            return (this.lane?.td1_td || null) !== null
+        },
+        tdValue() {
+            return this.lane?.td1_td || '--'
+        },
+        tdColor() {
+            return this.lane?.td1_color || '------'
+        },
+    },
+    methods: {
+        onFilamentClick() {
+            if (this.afcExistsSpoolman) {
+                this.showSpoolmanDialog = true
+                return
+            }
+
+            this.showFilamentDialog = true
+        },
+    },
+})
 </script>
 
 <style scoped>

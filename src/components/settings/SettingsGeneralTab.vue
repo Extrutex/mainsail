@@ -3,25 +3,49 @@
         <v-card flat>
             <v-card-text>
                 <settings-row :title="$t('Settings.GeneralTab.PrinterName')">
-                    <v-text-field v-model="printerName" hide-details outlined dense></v-text-field>
+                    <v-text-field
+                        v-model="printerName"
+                        hide-details
+                        variant="outlined"
+                        density="compact"></v-text-field>
                 </settings-row>
                 <v-divider class="my-2" />
                 <settings-row :title="$t('Settings.GeneralTab.Language')">
-                    <v-select v-model="currentLanguage" :items="availableLanguages" hide-details outlined dense />
+                    <v-select
+                        v-model="currentLanguage"
+                        :items="availableLanguages"
+                        hide-details
+                        variant="outlined"
+                        density="compact" />
                 </settings-row>
                 <v-divider class="my-2" />
                 <settings-row :title="$t('Settings.GeneralTab.DateFormat')">
-                    <v-select v-model="dateFormat" :items="dateFormatItems" hide-details outlined dense />
+                    <v-select
+                        v-model="dateFormat"
+                        :items="dateFormatItems"
+                        hide-details
+                        variant="outlined"
+                        density="compact" />
                 </settings-row>
                 <v-divider class="my-2" />
                 <settings-row :title="$t('Settings.GeneralTab.TimeFormat')">
-                    <v-select v-model="timeFormat" :items="timeFormatItems" hide-details outlined dense />
+                    <v-select
+                        v-model="timeFormat"
+                        :items="timeFormatItems"
+                        hide-details
+                        variant="outlined"
+                        density="compact" />
                 </settings-row>
                 <v-divider class="my-2" />
                 <settings-row
                     :title="$t('Settings.GeneralTab.CalcPrintProgress')"
                     :sub-title="$t('Settings.GeneralTab.CalcPrintProgressDescription')">
-                    <v-select v-model="calcPrintProgress" :items="calcPrintProgressItems" hide-details dense outlined />
+                    <v-select
+                        v-model="calcPrintProgress"
+                        :items="calcPrintProgressItems"
+                        hide-details
+                        density="compact"
+                        variant="outlined" />
                 </settings-row>
                 <v-divider class="my-2" />
                 <settings-row
@@ -32,14 +56,20 @@
                         :items="calcEstimateItems"
                         multiple
                         hide-details
-                        dense
-                        outlined />
+                        density="compact"
+                        variant="outlined" />
                 </settings-row>
                 <v-divider class="my-2" />
                 <settings-row
                     :title="$t('Settings.GeneralTab.CalcEtaTime')"
                     :sub-title="$t('Settings.GeneralTab.CalcEtaTimeDescription')">
-                    <v-select v-model="calcEtaTime" :items="calcEtaTimeItems" multiple hide-details dense outlined />
+                    <v-select
+                        v-model="calcEtaTime"
+                        :items="calcEtaTimeItems"
+                        multiple
+                        hide-details
+                        density="compact"
+                        variant="outlined" />
                 </settings-row>
                 <v-divider class="my-2" />
                 <settings-row :title="$t('Settings.GeneralTab.MainsailSettingsMoonrakerDb')" :dynamic-slot-width="true">
@@ -56,7 +86,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import SettingsRow from '@/components/settings/SettingsRow.vue'
 import Panel from '@/components/ui/Panel.vue'
@@ -66,7 +96,8 @@ import SettingsGeneralTabRestoreDatabase from '@/components/settings/General/Gen
 import SettingsGeneralTabResetDatabase from '@/components/settings/General/GeneralReset.vue'
 import SettingsGeneralDatabase from '@/components/mixins/settingsGeneralDatabase'
 
-@Component({
+export default defineComponent({
+    name: 'SettingsGeneralTab',
     components: {
         Panel,
         SettingsRow,
@@ -75,10 +106,154 @@ import SettingsGeneralDatabase from '@/components/mixins/settingsGeneralDatabase
         SettingsGeneralTabRestoreDatabase,
         SettingsGeneralTabResetDatabase,
     },
-})
-export default class SettingsGeneralTab extends Mixins(BaseMixin, SettingsGeneralDatabase) {
-    availableLanguages: { text: string; value: string }[] = []
+    mixins: [BaseMixin, SettingsGeneralDatabase],
+    data() {
+        return {
+            availableLanguages: [] as { text: string; value: string }[],
+        }
+    },
+    computed: {
+        printerName: {
+            get() {
+                return this.$store.state.gui.general.printername
+            },
+            setprinterName(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'general.printername', value: newVal })
+            },
+        },
+        currentLanguage: {
+            get() {
+                return this.$store.state.gui.general.language
+            },
+            setcurrentLanguage(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'general.language', value: newVal })
+            },
+        },
+        dateFormat: {
+            get() {
+                return this.$store.state.gui.general.dateFormat
+            },
+            setdateFormat(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'general.dateFormat', value: newVal })
+            },
+        },
+        dateFormatItems() {
+            const date = new Date()
+            const availableFormats = [
+                null,
+                'short',
+                'iso',
+                'mm-dd-yyyy',
+                'mm-dd-yy',
+                'm-d-yyyy',
+                'm-d-yy',
+                'dd-mm-yyyy',
+                'dd-mm-yy',
+                'dd.mm.yyyy',
+                'dd.mm.yy',
+                'd.m.yyyy',
+                'd.m.yy',
+                'yyyy. mm. dd.',
+                'yy. mm. dd.',
+            ]
 
+            return availableFormats.map((format) => {
+                let name = format
+                if (name === null) name = 'Browser'
+                else if (['short', 'iso'].includes(name)) name = name.toUpperCase()
+
+                let example = this.formatDate(date, format)
+                if (format === null) example = date.toLocaleDateString(this.browserLocale, { dateStyle: 'medium' })
+
+                return {
+                    value: format,
+                    text: `${name} (${example})`,
+                }
+            })
+        },
+        timeFormat: {
+            get() {
+                return this.$store.state.gui.general.timeFormat
+            },
+            settimeFormat(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'general.timeFormat', value: newVal })
+            },
+        },
+        timeFormatItems() {
+            const date = new Date()
+            const userLocale =
+                navigator.languages && navigator.languages.length ? navigator.languages[0] : navigator.language
+
+            return [
+                { value: null, text: `Browser (${date.toLocaleTimeString(userLocale, { timeStyle: 'short' })})` },
+                {
+                    value: '24hours',
+                    text: this.$t('Settings.GeneralTab.24hours', {
+                        time: date.toLocaleTimeString(userLocale, {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hourCycle: 'h23',
+                        }),
+                    }),
+                },
+                {
+                    value: '12hours',
+                    text: this.$t('Settings.GeneralTab.12hours', {
+                        time: date.toLocaleTimeString(userLocale, {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            hourCycle: 'h12',
+                        }),
+                    }),
+                },
+            ]
+        },
+        calcPrintProgressItems() {
+            return [
+                { value: 'file-relative', text: this.$t('Settings.GeneralTab.CalcPrintProgressItems.FileRelative') },
+                { value: 'file-absolute', text: this.$t('Settings.GeneralTab.CalcPrintProgressItems.FileAbsolute') },
+                { value: 'slicer', text: this.$t('Settings.GeneralTab.CalcPrintProgressItems.Slicer') },
+                { value: 'filament', text: this.$t('Settings.GeneralTab.CalcPrintProgressItems.Filament') },
+            ]
+        },
+        calcPrintProgress: {
+            get() {
+                return this.$store.state.gui.general.calcPrintProgress ?? 'file-relative'
+            },
+            setcalcPrintProgress(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'general.calcPrintProgress', value: newVal })
+            },
+        },
+        calcEstimateItems() {
+            return [
+                { value: 'file', text: this.$t('Settings.GeneralTab.EstimateValues.File') },
+                { value: 'filament', text: this.$t('Settings.GeneralTab.EstimateValues.Filament') },
+            ]
+        },
+        calcEstimateTime: {
+            get() {
+                return this.$store.state.gui.general.calcEstimateTime
+            },
+            setcalcEstimateTime(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'general.calcEstimateTime', value: newVal })
+            },
+        },
+        calcEtaTimeItems() {
+            return [
+                { value: 'file', text: this.$t('Settings.GeneralTab.EstimateValues.File') },
+                { value: 'filament', text: this.$t('Settings.GeneralTab.EstimateValues.Filament') },
+                { value: 'slicer', text: this.$t('Settings.GeneralTab.EstimateValues.Slicer') },
+            ]
+        },
+        calcEtaTime: {
+            get() {
+                return this.$store.state.gui.general.calcEtaTime
+            },
+            setcalcEtaTime(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'general.calcEtaTime', value: newVal })
+            },
+        },
+    },
     async created() {
         const locales = import.meta.glob('../../locales/*.json', { import: 'default' })
         const languages: { text: string; value: string }[] = []
@@ -94,143 +269,6 @@ export default class SettingsGeneralTab extends Mixins(BaseMixin, SettingsGenera
         }
 
         this.availableLanguages = languages.sort((a, b) => a.text.localeCompare(b.text))
-    }
-
-    get printerName() {
-        return this.$store.state.gui.general.printername
-    }
-
-    set printerName(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'general.printername', value: newVal })
-    }
-
-    get currentLanguage() {
-        return this.$store.state.gui.general.language
-    }
-
-    set currentLanguage(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'general.language', value: newVal })
-    }
-
-    get dateFormat() {
-        return this.$store.state.gui.general.dateFormat
-    }
-
-    set dateFormat(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'general.dateFormat', value: newVal })
-    }
-
-    get dateFormatItems() {
-        const date = new Date()
-        const availableFormats = [
-            null,
-            'short',
-            'iso',
-            'mm-dd-yyyy',
-            'mm-dd-yy',
-            'm-d-yyyy',
-            'm-d-yy',
-            'dd-mm-yyyy',
-            'dd-mm-yy',
-            'dd.mm.yyyy',
-            'dd.mm.yy',
-            'd.m.yyyy',
-            'd.m.yy',
-            'yyyy. mm. dd.',
-            'yy. mm. dd.',
-        ]
-
-        return availableFormats.map((format) => {
-            let name = format
-            if (name === null) name = 'Browser'
-            else if (['short', 'iso'].includes(name)) name = name.toUpperCase()
-
-            let example = this.formatDate(date, format)
-            if (format === null) example = date.toLocaleDateString(this.browserLocale, { dateStyle: 'medium' })
-
-            return {
-                value: format,
-                text: `${name} (${example})`,
-            }
-        })
-    }
-
-    get timeFormat() {
-        return this.$store.state.gui.general.timeFormat
-    }
-
-    set timeFormat(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'general.timeFormat', value: newVal })
-    }
-
-    get timeFormatItems() {
-        const date = new Date()
-        const userLocale =
-            navigator.languages && navigator.languages.length ? navigator.languages[0] : navigator.language
-
-        return [
-            { value: null, text: `Browser (${date.toLocaleTimeString(userLocale, { timeStyle: 'short' })})` },
-            {
-                value: '24hours',
-                text: this.$t('Settings.GeneralTab.24hours', {
-                    time: date.toLocaleTimeString(userLocale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }),
-                }),
-            },
-            {
-                value: '12hours',
-                text: this.$t('Settings.GeneralTab.12hours', {
-                    time: date.toLocaleTimeString(userLocale, { hour: '2-digit', minute: '2-digit', hourCycle: 'h12' }),
-                }),
-            },
-        ]
-    }
-
-    get calcPrintProgressItems() {
-        return [
-            { value: 'file-relative', text: this.$t('Settings.GeneralTab.CalcPrintProgressItems.FileRelative') },
-            { value: 'file-absolute', text: this.$t('Settings.GeneralTab.CalcPrintProgressItems.FileAbsolute') },
-            { value: 'slicer', text: this.$t('Settings.GeneralTab.CalcPrintProgressItems.Slicer') },
-            { value: 'filament', text: this.$t('Settings.GeneralTab.CalcPrintProgressItems.Filament') },
-        ]
-    }
-
-    get calcPrintProgress() {
-        return this.$store.state.gui.general.calcPrintProgress ?? 'file-relative'
-    }
-
-    set calcPrintProgress(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'general.calcPrintProgress', value: newVal })
-    }
-
-    get calcEstimateItems() {
-        return [
-            { value: 'file', text: this.$t('Settings.GeneralTab.EstimateValues.File') },
-            { value: 'filament', text: this.$t('Settings.GeneralTab.EstimateValues.Filament') },
-        ]
-    }
-
-    get calcEstimateTime() {
-        return this.$store.state.gui.general.calcEstimateTime
-    }
-
-    set calcEstimateTime(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'general.calcEstimateTime', value: newVal })
-    }
-
-    get calcEtaTimeItems() {
-        return [
-            { value: 'file', text: this.$t('Settings.GeneralTab.EstimateValues.File') },
-            { value: 'filament', text: this.$t('Settings.GeneralTab.EstimateValues.Filament') },
-            { value: 'slicer', text: this.$t('Settings.GeneralTab.EstimateValues.Slicer') },
-        ]
-    }
-
-    get calcEtaTime() {
-        return this.$store.state.gui.general.calcEtaTime
-    }
-
-    set calcEtaTime(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'general.calcEtaTime', value: newVal })
-    }
-}
+    },
+})
 </script>

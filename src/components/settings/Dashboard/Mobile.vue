@@ -16,21 +16,22 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import DashboardMixin from '@/components/mixins/dashboard'
 import SettingsDashboardSortable from '@/components/settings/Dashboard/Sortable.vue'
 
-@Component({
+export default defineComponent({
+    name: 'SettingsDashboardTabMobile',
     components: {
         SettingsDashboardSortable,
     },
+    mixins: [DashboardMixin],
+    methods: {
+        resetLayout() {
+            this.$store.dispatch('gui/resetLayout', 'mobileLayout')
+        },
+    },
 })
-export default class SettingsDashboardTabMobile extends Mixins(DashboardMixin) {
-    resetLayout() {
-        this.$store.dispatch('gui/resetLayout', 'mobileLayout')
-    }
-}
 </script>
 
 <style scoped></style>

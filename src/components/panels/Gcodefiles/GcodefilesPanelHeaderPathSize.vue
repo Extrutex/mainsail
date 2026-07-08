@@ -1,6 +1,6 @@
 <template>
     <v-row>
-        <v-col class="col-12 py-2 d-flex align-center">
+        <v-col cols="12" class="py-2 d-flex align-center">
             <span>
                 <b class="mr-1">{{ $t('Files.CurrentPath') }}:</b>
                 <path-navigation
@@ -10,8 +10,8 @@
             </span>
             <v-spacer />
             <v-tooltip v-if="disk_usage !== null" top>
-                <template #activator="{ on, attrs }">
-                    <span v-bind="attrs" v-on="on">
+                <template #activator="{ props }">
+                    <span v-bind="props">
                         <b>{{ $t('Files.FreeDisk') }}:</b>
                         {{ formatFilesize(disk_usage.free) }}
                     </span>
@@ -28,27 +28,33 @@
     </v-row>
 </template>
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import GcodefilesMixin from '@/components/mixins/gcodefiles'
 import { formatFilesize } from '@/plugins/helpers'
 
-@Component
-export default class GcodefilesPanelHeaderPathSize extends Mixins(BaseMixin, GcodefilesMixin) {
-    formatFilesize = formatFilesize
-
-    get directory() {
-        return this.$store.getters['files/getDirectory']('gcodes' + this.currentPath)
-    }
-
-    get disk_usage() {
-        return this.directory?.disk_usage ?? { used: 0, free: 0, total: 0 }
-    }
-
-    clickPathNavGoToDirectory(segment: { location: string }) {
-        this.currentPath = segment.location
-    }
-}
+export default defineComponent({
+    name: 'GcodefilesPanelHeaderPathSize',
+    mixins: [BaseMixin, GcodefilesMixin],
+    data() {
+        return {
+            formatFilesize: formatFilesize,
+        }
+    },
+    computed: {
+        directory() {
+            return this.$store.getters['files/getDirectory']('gcodes' + this.currentPath)
+        },
+        disk_usage() {
+            return this.directory?.disk_usage ?? { used: 0, free: 0, total: 0 }
+        },
+    },
+    methods: {
+        clickPathNavGoToDirectory(segment: { location: string }) {
+            this.currentPath = segment.location
+        },
+    },
+})
 </script>
 
 <style scoped></style>

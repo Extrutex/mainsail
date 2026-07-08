@@ -29,13 +29,13 @@
                             :key="index"
                             :href="'#' + tab.name"
                             class="justify-start">
-                            <v-icon left v-html="tab.icon"></v-icon>
+                            <v-icon start v-html="tab.icon"></v-icon>
                             {{ tab.title }}
                         </v-tab>
                     </v-tabs>
                 </template>
                 <v-row class="flex-row flex-nowrap">
-                    <v-col v-if="!isMobile" class="col-auto pr-0">
+                    <v-col v-if="!isMobile" cols="auto" class="pr-0">
                         <overlay-scrollbars ref="settingsTabsScroll" class="settings-tabs-bar height500">
                             <v-tabs v-model="activeTab" :vertical="true">
                                 <v-tab
@@ -44,7 +44,7 @@
                                     :href="'#' + tab.name"
                                     class="justify-start"
                                     style="width: 200px">
-                                    <v-icon left v-html="tab.icon"></v-icon>
+                                    <v-icon start v-html="tab.icon"></v-icon>
                                     <span class="text-truncate">{{ tab.title }}</span>
                                 </v-tab>
                             </v-tabs>
@@ -65,8 +65,7 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, Ref, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import SettingsGeneralTab from '@/components/settings/SettingsGeneralTab.vue'
 import SettingsWebcamsTab from '@/components/settings/SettingsWebcamsTab.vue'
@@ -106,7 +105,8 @@ import SettingsMiscellaneousTab from '@/components/settings/SettingsMiscellaneou
 import SettingsHeightmapTab from '@/components/settings/SettingsHeightmapTab.vue'
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-vue'
 
-@Component({
+export default defineComponent({
+    name: 'TheSettingsMenu',
     components: {
         Panel,
         SettingsUiSettingsTab,
@@ -125,121 +125,126 @@ import { OverlayScrollbarsComponent } from 'overlayscrollbars-vue'
         SettingsNavigationTab,
         SettingsHeightmapTab,
     },
-})
-export default class TheSettingsMenu extends Mixins(BaseMixin) {
-    @Ref() readonly settingsScroll!: OverlayScrollbarsComponent
-
-    mdiCloseThick = mdiCloseThick
-    mdiCogs = mdiCogs
-
-    showSettings = false
-    activeTab = 'general'
-
-    get tabTitles() {
-        const tabs = [
-            {
-                icon: mdiCog,
-                name: 'general',
-                title: this.$t('Settings.GeneralTab.General'),
-            },
-            {
-                icon: mdiPalette,
-                name: 'ui-settings',
-                title: this.$t('Settings.UiSettingsTab.UiSettings'),
-            },
-            {
-                icon: mdiMonitorDashboard,
-                name: 'dashboard',
-                title: this.$t('Settings.DashboardTab.Dashboard'),
-            },
-            {
-                icon: mdiWebcam,
-                name: 'webcams',
-                title: this.$t('Settings.WebcamsTab.Webcams'),
-            },
-            {
-                icon: mdiCodeTags,
-                name: 'macros',
-                title: this.$t('Settings.MacrosTab.Macros'),
-            },
-            {
-                icon: mdiTune,
-                name: 'control',
-                title: this.$t('Settings.ControlTab.Control'),
-            },
-            {
-                icon: mdiConsoleLine,
-                name: 'console',
-                title: this.$t('Settings.ConsoleTab.Console'),
-            },
-            {
-                icon: mdiFire,
-                name: 'presets',
-                title: this.$t('Settings.PresetsTab.PreheatPresets'),
-            },
-            {
-                icon: mdiPrinter3d,
-                name: 'remote-printers',
-                title: this.$t('Settings.RemotePrintersTab.RemotePrinters'),
-            },
-            {
-                icon: mdiVideo3d,
-                name: 'g-code-viewer',
-                title: this.$t('Settings.GCodeViewerTab.GCodeViewer'),
-            },
-            {
-                icon: mdiFileDocumentEditOutline,
-                name: 'editor',
-                title: this.$t('Settings.EditorTab.Editor'),
-            },
-            {
-                icon: mdiDipSwitch,
-                name: 'miscellaneous',
-                title: this.$t('Settings.MiscellaneousTab.Miscellaneous'),
-            },
-            {
-                icon: mdiMenu,
-                name: 'navigation',
-                title: this.$t('Settings.NavigationTab.Navigation'),
-            },
-            {
-                icon: mdiGrid,
-                name: 'heightmap',
-                title: this.$t('Settings.HeightmapTab.Heightmap'),
-            },
-        ]
-
-        if (this.moonrakerComponents.includes('timelapse')) {
-            tabs.push({
-                icon: mdiTimelapse,
-                name: 'timelapse',
-                title: this.$t('Settings.TimelapseTab.Timelapse'),
-            })
+    mixins: [BaseMixin],
+    data() {
+        return {
+            mdiCloseThick: mdiCloseThick,
+            mdiCogs: mdiCogs,
+            showSettings: false,
+            activeTab: 'general',
         }
+    },
+    computed: {
+        settingsScroll(): OverlayScrollbarsComponent {
+            return this.$refs.settingsScroll as OverlayScrollbarsComponent
+        },
+        tabTitles() {
+            const tabs = [
+                {
+                    icon: mdiCog,
+                    name: 'general',
+                    title: this.$t('Settings.GeneralTab.General'),
+                },
+                {
+                    icon: mdiPalette,
+                    name: 'ui-settings',
+                    title: this.$t('Settings.UiSettingsTab.UiSettings'),
+                },
+                {
+                    icon: mdiMonitorDashboard,
+                    name: 'dashboard',
+                    title: this.$t('Settings.DashboardTab.Dashboard'),
+                },
+                {
+                    icon: mdiWebcam,
+                    name: 'webcams',
+                    title: this.$t('Settings.WebcamsTab.Webcams'),
+                },
+                {
+                    icon: mdiCodeTags,
+                    name: 'macros',
+                    title: this.$t('Settings.MacrosTab.Macros'),
+                },
+                {
+                    icon: mdiTune,
+                    name: 'control',
+                    title: this.$t('Settings.ControlTab.Control'),
+                },
+                {
+                    icon: mdiConsoleLine,
+                    name: 'console',
+                    title: this.$t('Settings.ConsoleTab.Console'),
+                },
+                {
+                    icon: mdiFire,
+                    name: 'presets',
+                    title: this.$t('Settings.PresetsTab.PreheatPresets'),
+                },
+                {
+                    icon: mdiPrinter3d,
+                    name: 'remote-printers',
+                    title: this.$t('Settings.RemotePrintersTab.RemotePrinters'),
+                },
+                {
+                    icon: mdiVideo3d,
+                    name: 'g-code-viewer',
+                    title: this.$t('Settings.GCodeViewerTab.GCodeViewer'),
+                },
+                {
+                    icon: mdiFileDocumentEditOutline,
+                    name: 'editor',
+                    title: this.$t('Settings.EditorTab.Editor'),
+                },
+                {
+                    icon: mdiDipSwitch,
+                    name: 'miscellaneous',
+                    title: this.$t('Settings.MiscellaneousTab.Miscellaneous'),
+                },
+                {
+                    icon: mdiMenu,
+                    name: 'navigation',
+                    title: this.$t('Settings.NavigationTab.Navigation'),
+                },
+                {
+                    icon: mdiGrid,
+                    name: 'heightmap',
+                    title: this.$t('Settings.HeightmapTab.Heightmap'),
+                },
+            ]
 
-        return tabs.sort((a, b) => {
-            if (a.name === 'general') return -1
-            if (b.name === 'general') return 1
+            if (this.moonrakerComponents.includes('timelapse')) {
+                tabs.push({
+                    icon: mdiTimelapse,
+                    name: 'timelapse',
+                    title: this.$t('Settings.TimelapseTab.Timelapse'),
+                })
+            }
 
-            const stringA = a.title.toString().toLowerCase()
-            const stringB = b.title.toString().toLowerCase()
+            return tabs.sort((a, b) => {
+                if (a.name === 'general') return -1
+                if (b.name === 'general') return 1
 
-            if (stringA < stringB) return -1
-            if (stringA > stringB) return 1
+                const stringA = a.title.toString().toLowerCase()
+                const stringB = b.title.toString().toLowerCase()
 
-            return 0
-        })
-    }
+                if (stringA < stringB) return -1
+                if (stringA > stringB) return 1
 
-    @Watch('activeTab')
-    activeTabWatch() {
-        this.scrollToTop()
-    }
-
-    scrollToTop() {
-        this.settingsScroll?.osInstance()?.scroll({ y: '0%' })
-    }
-}
+                return 0
+            })
+        },
+    },
+    watch: {
+        activeTab() {
+            this.scrollToTop()
+        },
+    },
+    methods: {
+        scrollToTop() {
+            this.settingsScroll?.osInstance()?.scroll({ y: '0%' })
+        },
+    },
+})
 </script>
 
 <style scoped>

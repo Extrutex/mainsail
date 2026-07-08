@@ -1,4 +1,3 @@
-
 import { MutationTree } from 'vuex'
 import { GuiMaintenanceState } from '@/store/gui/maintenance/types'
 import { getDefaultState } from './index'

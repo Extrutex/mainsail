@@ -26,8 +26,8 @@
             <v-divider />
             <v-card-actions>
                 <v-spacer />
-                <v-btn text @click="closeDialog">{{ $t('Machine.UpdatePanel.Abort') }}</v-btn>
-                <v-btn text color="primary" :disabled="!checkboxUpdateQuestion" @click="doUpdate">
+                <v-btn variant="text" @click="closeDialog">{{ $t('Machine.UpdatePanel.Abort') }}</v-btn>
+                <v-btn variant="text" color="primary" :disabled="!checkboxUpdateQuestion" @click="doUpdate">
                     {{ $t('Machine.UpdatePanel.StartUpdate') }}
                 </v-btn>
             </v-card-actions>
@@ -36,7 +36,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop, VModel } from 'vue-property-decorator'
+import { defineComponent, PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { ServerUpdateManagerStateGitRepo } from '@/store/server/updateManager/types'
 import { mdiProgressQuestion, mdiCloseThick } from '@mdi/js'
@@ -44,28 +44,42 @@ import Panel from '@/components/ui/Panel.vue'
 import GitCommitsListDay from '@/components/panels/Machine/UpdatePanel/GitCommitsListDay.vue'
 import UpdateHintAlert from '@/components/panels/Machine/UpdatePanel/UpdateHintAlert.vue'
 
-@Component({
+export default defineComponent({
+    name: 'UpdateHint',
     components: { GitCommitsListDay, Panel, UpdateHintAlert },
+    mixins: [BaseMixin],
+    props: {
+        modelValue: { type: Boolean },
+        repo: { type: Object as PropType<ServerUpdateManagerStateGitRepo>, required: true },
+    },
+    emits: ['do-update', 'open-commit-history', 'update:modelValue'],
+    data() {
+        return {
+            mdiCloseThick: mdiCloseThick,
+            mdiProgressQuestion: mdiProgressQuestion,
+            checkboxUpdateQuestion: false,
+        }
+    },
+    computed: {
+        showDialog: {
+            get(): boolean {
+                return this.modelValue
+            },
+            set(value: boolean) {
+                this.$emit('update:modelValue', value)
+            },
+        },
+    },
+    methods: {
+        doUpdate() {
+            this.$emit('do-update')
+        },
+        openCommitHistory() {
+            this.$emit('open-commit-history')
+        },
+        closeDialog() {
+            this.showDialog = false
+        },
+    },
 })
-export default class UpdateHint extends Mixins(BaseMixin) {
-    mdiCloseThick = mdiCloseThick
-    mdiProgressQuestion = mdiProgressQuestion
-
-    checkboxUpdateQuestion = false
-
-    @VModel({ type: Boolean }) showDialog!: boolean
-    @Prop({ required: true }) readonly repo!: ServerUpdateManagerStateGitRepo
-
-    doUpdate() {
-        this.$emit('do-update')
-    }
-
-    openCommitHistory() {
-        this.$emit('open-commit-history')
-    }
-
-    closeDialog() {
-        this.showDialog = false
-    }
-}
 </script>

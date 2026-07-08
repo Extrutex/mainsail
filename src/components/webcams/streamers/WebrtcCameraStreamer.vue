@@ -20,7 +20,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop, Ref, Watch } from 'vue-property-decorator'
+import { defineComponent, PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { GuiWebcamStateWebcam } from '@/store/gui/webcams/types'
 import WebcamMixin from '@/components/mixins/webcam'
@@ -32,257 +32,252 @@ interface CameraStreamerResponse extends RTCSessionDescriptionInit {
     iceServers?: RTCIceServer[]
 }
 
-@Component({
+export default defineComponent({
+    name: 'WebrtcCameraStreamer',
     components: { WebcamNozzleCrosshair },
-})
-export default class WebrtcCameraStreamer extends Mixins(BaseMixin, WebcamMixin) {
-    capitalize = capitalize
-
-    pc: RTCPeerConnection | null = null
-    useStun = true
-    aspectRatio: null | number = null
-    status: string = 'connecting'
-    restartTimer: number | null = null
-
-    @Prop({ required: true }) readonly camSettings!: GuiWebcamStateWebcam
-    @Prop({ default: null }) readonly printerUrl!: string | null
-    @Prop({ type: String, default: null }) readonly page!: string | null
-    @Ref() readonly stream!: HTMLVideoElement
-
-    get url() {
-        return this.convertUrl(this.camSettings?.stream_url, this.printerUrl)
-    }
-
-    get wrapperStyle() {
-        return this.getWrapperStyle(this.aspectRatio, this.camSettings.rotation)
-    }
-
-    get webcamStyle() {
+    mixins: [BaseMixin, WebcamMixin],
+    props: {
+        camSettings: { type: Object as PropType<GuiWebcamStateWebcam>, required: true },
+        printerUrl: { type: String, default: null },
+        page: { type: String, default: null },
+    },
+    data() {
         return {
-            transform: this.generateTransform(
-                this.camSettings.flip_horizontal ?? false,
-                this.camSettings.flip_vertical ?? false,
-                this.camSettings.rotation ?? 0,
-                this.aspectRatio ?? 1
-            ),
+            capitalize: capitalize,
+            pc: null as RTCPeerConnection | null,
+            useStun: true,
+            aspectRatio: null as null | number,
+            status: 'connecting',
+            restartTimer: null as number | null,
         }
-    }
-
-    get nozzleCrosshair() {
-        return this.camSettings.extra_data?.nozzleCrosshair ?? false
-    }
-
-    get expanded(): boolean {
-        if (this.page !== 'dashboard') return true
-
-        return this.$store.getters['gui/getPanelExpand']('webcam-panel', this.viewport) ?? false
-    }
-
-    // start or stop the video when the expanded state changes
-    @Watch('expanded', { immediate: true })
-    expandChanged(newExpanded: boolean): void {
-        if (!newExpanded) {
-            this.terminate()
-            return
-        }
-
-        this.start()
-    }
-
-    // This WebRTC signaling pattern is designed for camera-streamer, a common webcam server the supports WebRTC.
-    async start() {
-        if (this.restartTimer) {
-            this.log('Clearing restart timer before starting stream')
-            window.clearTimeout(this.restartTimer)
-        }
-
-        if (!this.expanded) {
-            this.log('Not expanded, not starting stream')
-            return
-        }
-
-        this.log(`Requesting ICE servers from ${this.url}`)
-
-        try {
-            const requestIceServers = this.useStun ? [{ urls: ['stun:stun.l.google.com:19302'] }] : null
-            const response = await fetch(this.url, {
-                body: JSON.stringify({ type: 'request', iceServers: requestIceServers, keepAlive: true }),
-                method: 'POST',
-            })
-
-            if (this.useStun && response.status === 500) {
-                const errorMessage = await response.text()
-                this.log('Server returned 500 error, likely due to unsupported ICE server request.')
-                this.log(`Serer error message: ${errorMessage}`)
-                this.useStun = false
-                this.restartStream()
-                return
+    },
+    computed: {
+        stream(): HTMLVideoElement {
+            return this.$refs.stream as HTMLVideoElement
+        },
+        url() {
+            return this.convertUrl(this.camSettings?.stream_url, this.printerUrl)
+        },
+        wrapperStyle() {
+            return this.getWrapperStyle(this.aspectRatio, this.camSettings.rotation)
+        },
+        webcamStyle() {
+            return {
+                transform: this.generateTransform(
+                    this.camSettings.flip_horizontal ?? false,
+                    this.camSettings.flip_vertical ?? false,
+                    this.camSettings.rotation ?? 0,
+                    this.aspectRatio ?? 1
+                ),
             }
+        },
+        nozzleCrosshair() {
+            return this.camSettings.extra_data?.nozzleCrosshair ?? false
+        },
+        expanded(): boolean {
+            if (this.page !== 'dashboard') return true
 
-            if (response.status !== 200) {
-                this.log(`Failed to start stream: ${response.status}`)
-                this.restartStream()
-                return
-            }
+            return this.$store.getters['gui/getPanelExpand']('webcam-panel', this.viewport) ?? false
+        },
+    },
+    watch: {
+        // start or stop the video when the expanded state changes
+        expanded: {
+            immediate: true,
+            handler(newExpanded: boolean): void {
+                if (!newExpanded) {
+                    this.terminate()
+                    return
+                }
 
-            const answer = await response.json()
-            await this.onIceServers(answer)
-        } catch (e) {
-            this.log('Failed to start stream', e)
-        }
-    }
-
-    async onIceServers(iceResponse: CameraStreamerResponse) {
-        if (this.pc) this.pc.close()
-
-        // It's important to set any ICE servers returned, which could include servers we requested or servers
-        // setup by the server. But note that older versions of camera-streamer won't return this property.
-        // https://webrtc.org/getting-started/unified-plan-transition-guide
-        const peerConnectionConfig: RTCConfiguration & { sdpSemantics?: string } = {
-            iceServers: iceResponse.iceServers ?? [],
-            sdpSemantics: 'unified-plan',
-        }
-        this.pc = new RTCPeerConnection(peerConnectionConfig)
-
-        this.pc.addTransceiver('video', { direction: 'recvonly' })
-
-        if ('iceServers' in iceResponse) {
-            this.pc.onicecandidate = (e: RTCPeerConnectionIceEvent) => this.onIceCandidate(e, iceResponse.id)
-        } else {
-            this.log('No ICE servers returned, so the current camera-streamer version may not support them')
-        }
-
-        this.pc.onconnectionstatechange = () => this.onConnectionStateChange()
-        this.pc.ontrack = (e) => this.onTrack(e)
-        this.pc.ondatachannel = (e) => this.onDataChannel(e)
-
-        await this.pc?.setRemoteDescription(iceResponse)
-        const answer = await this.pc.createAnswer()
-        await this.pc.setLocalDescription(answer)
-
-        const offer = this.pc.localDescription
-        if (!offer) {
-            this.log('Failed to create offer')
+                this.start()
+            },
+        },
+        url() {
             this.restartStream()
-            return
-        }
-
-        try {
-            const response = await fetch(this.url, {
-                body: JSON.stringify({
-                    type: offer?.type,
-                    id: iceResponse.id,
-                    sdp: offer?.sdp,
-                }),
-                headers: { 'Content-Type': 'application/json' },
-                method: 'POST',
-            })
-            if (response.status !== 200) {
-                this.log(`Failed to send offer: ${response.status}`)
-                this.restartStream()
-            }
-        } catch (e) {
-            this.log('Failed to send offer', e)
-            this.restartStream()
-        }
-    }
-
-    async onIceCandidate(e: RTCPeerConnectionIceEvent, id: string) {
-        if (!e.candidate) return
-
-        try {
-            const response = await fetch(this.url, {
-                body: JSON.stringify({
-                    id,
-                    type: 'remote_candidate',
-                    candidates: [e.candidate],
-                }),
-                headers: { 'Content-Type': 'application/json' },
-                method: 'POST',
-            })
-            if (response.status !== 200) {
-                this.log(`Failed to send ICE candidate: ${response.status}`)
-                this.restartStream()
-            }
-        } catch (e) {
-            this.log('Failed to send ICE candidate', e)
-            this.restartStream()
-        }
-    }
-
-    onConnectionStateChange() {
-        this.status = this.pc?.connectionState ?? 'connecting'
-
-        this.log(`State: ${this.status}`)
-
-        if (['failed', 'disconnected'].includes(this.status)) {
-            this.restartStream(5000)
-        }
-    }
-
-    onTrack(e: RTCTrackEvent) {
-        if (e.track.kind !== 'video') return
-
-        this.stream.srcObject = e.streams[0]
-    }
-
-    onDataChannel(event: RTCDataChannelEvent) {
-        const receiveChannel = event.channel
-
-        this.log(`Data channel opened: ${receiveChannel.label}`)
-
-        if (receiveChannel.label !== 'keepalive') {
-            this.log(`Unknown data channel label: ${receiveChannel.label}`)
-            return
-        }
-
-        receiveChannel.onmessage = (message) => {
-            if (message.data !== 'ping') return
-
-            receiveChannel.send('pong')
-        }
-    }
-
-    log(msg: string, obj?: unknown) {
-        const message = `[WebRTC camera-streamer] ${msg}`
-        if (obj) {
-            window.console.log(message, obj)
-            return
-        }
-
-        window.console.log(message)
-    }
-
-    beforeDestroy() {
+        },
+    },
+    beforeUnmount() {
         this.terminate()
         if (this.restartTimer) window.clearTimeout(this.restartTimer)
-    }
+    },
+    methods: {
+        // This WebRTC signaling pattern is designed for camera-streamer, a common webcam server the supports WebRTC.
+        async start() {
+            if (this.restartTimer) {
+                this.log('Clearing restart timer before starting stream')
+                window.clearTimeout(this.restartTimer)
+            }
 
-    terminate() {
-        this.log('Terminating stream')
-        this.pc?.close()
-    }
+            if (!this.expanded) {
+                this.log('Not expanded, not starting stream')
+                return
+            }
 
-    restartStream(delay = 500) {
-        this.terminate()
+            this.log(`Requesting ICE servers from ${this.url}`)
 
-        if (this.restartTimer) return
+            try {
+                const requestIceServers = this.useStun ? [{ urls: ['stun:stun.l.google.com:19302'] }] : null
+                const response = await fetch(this.url, {
+                    body: JSON.stringify({ type: 'request', iceServers: requestIceServers, keepAlive: true }),
+                    method: 'POST',
+                })
 
-        this.restartTimer = window.setTimeout(async () => {
-            this.restartTimer = null
-            await this.start()
-        }, delay)
-    }
+                if (this.useStun && response.status === 500) {
+                    const errorMessage = await response.text()
+                    this.log('Server returned 500 error, likely due to unsupported ICE server request.')
+                    this.log(`Serer error message: ${errorMessage}`)
+                    this.useStun = false
+                    this.restartStream()
+                    return
+                }
 
-    onLoadedMetadata() {
-        this.aspectRatio = this.updateAspectRatioFromVideo(this.stream)
-    }
+                if (response.status !== 200) {
+                    this.log(`Failed to start stream: ${response.status}`)
+                    this.restartStream()
+                    return
+                }
 
-    @Watch('url')
-    changedUrl() {
-        this.restartStream()
-    }
-}
+                const answer = await response.json()
+                await this.onIceServers(answer)
+            } catch (e) {
+                this.log('Failed to start stream', e)
+            }
+        },
+        async onIceServers(iceResponse: CameraStreamerResponse) {
+            if (this.pc) this.pc.close()
+
+            // It's important to set any ICE servers returned, which could include servers we requested or servers
+            // setup by the server. But note that older versions of camera-streamer won't return this property.
+            // https://webrtc.org/getting-started/unified-plan-transition-guide
+            const peerConnectionConfig: RTCConfiguration & { sdpSemantics?: string } = {
+                iceServers: iceResponse.iceServers ?? [],
+                sdpSemantics: 'unified-plan',
+            }
+            this.pc = new RTCPeerConnection(peerConnectionConfig)
+
+            this.pc.addTransceiver('video', { direction: 'recvonly' })
+
+            if ('iceServers' in iceResponse) {
+                this.pc.onicecandidate = (e: RTCPeerConnectionIceEvent) => this.onIceCandidate(e, iceResponse.id)
+            } else {
+                this.log('No ICE servers returned, so the current camera-streamer version may not support them')
+            }
+
+            this.pc.onconnectionstatechange = () => this.onConnectionStateChange()
+            this.pc.ontrack = (e) => this.onTrack(e)
+            this.pc.ondatachannel = (e) => this.onDataChannel(e)
+
+            await this.pc?.setRemoteDescription(iceResponse)
+            const answer = await this.pc.createAnswer()
+            await this.pc.setLocalDescription(answer)
+
+            const offer = this.pc.localDescription
+            if (!offer) {
+                this.log('Failed to create offer')
+                this.restartStream()
+                return
+            }
+
+            try {
+                const response = await fetch(this.url, {
+                    body: JSON.stringify({
+                        type: offer?.type,
+                        id: iceResponse.id,
+                        sdp: offer?.sdp,
+                    }),
+                    headers: { 'Content-Type': 'application/json' },
+                    method: 'POST',
+                })
+                if (response.status !== 200) {
+                    this.log(`Failed to send offer: ${response.status}`)
+                    this.restartStream()
+                }
+            } catch (e) {
+                this.log('Failed to send offer', e)
+                this.restartStream()
+            }
+        },
+        async onIceCandidate(e: RTCPeerConnectionIceEvent, id: string) {
+            if (!e.candidate) return
+
+            try {
+                const response = await fetch(this.url, {
+                    body: JSON.stringify({
+                        id,
+                        type: 'remote_candidate',
+                        candidates: [e.candidate],
+                    }),
+                    headers: { 'Content-Type': 'application/json' },
+                    method: 'POST',
+                })
+                if (response.status !== 200) {
+                    this.log(`Failed to send ICE candidate: ${response.status}`)
+                    this.restartStream()
+                }
+            } catch (e) {
+                this.log('Failed to send ICE candidate', e)
+                this.restartStream()
+            }
+        },
+        onConnectionStateChange() {
+            this.status = this.pc?.connectionState ?? 'connecting'
+
+            this.log(`State: ${this.status}`)
+
+            if (['failed', 'disconnected'].includes(this.status)) {
+                this.restartStream(5000)
+            }
+        },
+        onTrack(e: RTCTrackEvent) {
+            if (e.track.kind !== 'video') return
+
+            this.stream.srcObject = e.streams[0]
+        },
+        onDataChannel(event: RTCDataChannelEvent) {
+            const receiveChannel = event.channel
+
+            this.log(`Data channel opened: ${receiveChannel.label}`)
+
+            if (receiveChannel.label !== 'keepalive') {
+                this.log(`Unknown data channel label: ${receiveChannel.label}`)
+                return
+            }
+
+            receiveChannel.onmessage = (message) => {
+                if (message.data !== 'ping') return
+
+                receiveChannel.send('pong')
+            }
+        },
+        log(msg: string, obj?: unknown) {
+            const message = `[WebRTC camera-streamer] ${msg}`
+            if (obj) {
+                window.console.log(message, obj)
+                return
+            }
+
+            window.console.log(message)
+        },
+        terminate() {
+            this.log('Terminating stream')
+            this.pc?.close()
+        },
+        restartStream(delay = 500) {
+            this.terminate()
+
+            if (this.restartTimer) return
+
+            this.restartTimer = window.setTimeout(async () => {
+                this.restartTimer = null
+                await this.start()
+            }, delay)
+        },
+        onLoadedMetadata() {
+            this.aspectRatio = this.updateAspectRatioFromVideo(this.stream)
+        },
+    },
+})
 </script>
 
 <style scoped>

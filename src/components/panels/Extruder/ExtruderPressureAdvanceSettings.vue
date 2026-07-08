@@ -19,8 +19,8 @@
                                 :label="$t('Panels.ExtruderControlPanel.PressureAdvanceSettings.Extruder')"
                                 :items="extruders"
                                 hide-details
-                                outlined
-                                dense />
+                                variant="outlined"
+                                density="compact" />
                         </div>
                     </v-col>
                     <v-col
@@ -37,36 +37,43 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import Responsive from '@/components/ui/Responsive.vue'
 import { mdiRestart } from '@mdi/js'
 
-@Component({
+export default defineComponent({
+    name: 'ExtruderPressureAdvanceSettings',
     components: { Responsive },
+    mixins: [BaseMixin],
+    data() {
+        return {
+            mdiRestart: mdiRestart,
+            selectedExtruder: '',
+        }
+    },
+    computed: {
+        extruders() {
+            return Object.keys(this.$store.state.printer)
+                .filter((e) => e.startsWith('extruder') && !e.startsWith('extruder_stepper'))
+                .sort((a, b) => a.localeCompare(b))
+        },
+        activeExtruder() {
+            return this.$store.state.printer.toolhead?.extruder ?? 'extruder'
+        },
+    },
+    watch: {
+        activeExtruder: {
+            immediate: true,
+            handler(newVal: string): void {
+                this.selectedExtruder = newVal
+            },
+        },
+    },
+    methods: {
+        resetToActiveExtruder(): void {
+            this.selectedExtruder = this.$store.state.printer.toolhead?.extruder
+        },
+    },
 })
-export default class ExtruderPressureAdvanceSettings extends Mixins(BaseMixin) {
-    mdiRestart = mdiRestart
-
-    selectedExtruder = ''
-
-    get extruders() {
-        return Object.keys(this.$store.state.printer)
-            .filter((e) => e.startsWith('extruder') && !e.startsWith('extruder_stepper'))
-            .sort((a, b) => a.localeCompare(b))
-    }
-
-    get activeExtruder() {
-        return this.$store.state.printer.toolhead?.extruder ?? 'extruder'
-    }
-
-    resetToActiveExtruder(): void {
-        this.selectedExtruder = this.$store.state.printer.toolhead?.extruder
-    }
-
-    @Watch('activeExtruder', { immediate: true })
-    onActiveExtruderChanged(newVal: string): void {
-        this.selectedExtruder = newVal
-    }
-}
 </script>

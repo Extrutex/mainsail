@@ -16,12 +16,12 @@
         <td class=" ">{{ item.filename }}</td>
         <td class="text-right text-no-wrap">
             <v-tooltip v-if="item.last_status" top>
-                <template #activator="{ on, attrs }">
-                    <span v-bind="attrs" v-on="on">
+                <template #activator="{ props }">
+                    <span v-bind="props">
                         <span v-if="item.count_printed > 0" :class="`file-list__count_printed ${printStatusTextColor}`">
                             {{ item.count_printed }}
                         </span>
-                        <v-icon small :color="printStatusIconColor">{{ printStatusIcon }}</v-icon>
+                        <v-icon size="small" :color="printStatusIconColor">{{ printStatusIcon }}</v-icon>
                     </span>
                 </template>
                 <span>{{ item.last_status.replace(/_/g, ' ') }}</span>
@@ -48,7 +48,7 @@
             :position-x="showContextMenuX"
             :position-y="showContextMenuY"
             absolute
-            offset-y>
+            location="bottom">
             <v-list>
                 <v-list-item
                     v-if="isGcodeFile"
@@ -121,7 +121,7 @@
     </tr>
 </template>
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import type { LongpressEvent } from '@/directives/longpress'
 import BaseMixin from '@/components/mixins/base'
 import GcodefilesMixin from '@/components/mixins/gcodefiles'
@@ -151,7 +151,8 @@ import GcodefilesPanelTableRowFileMetadataSlicer from '@/components/panels/Gcode
 import GcodefilesPanelTableRowFileMetadataFilamentStrings from '@/components/panels/Gcodefiles/GcodefilesPanelTableRowFileMetadataFilamentStrings.vue'
 import { CLOSE_CONTEXT_MENU, EventBus } from '@/plugins/eventBus'
 
-@Component({
+export default defineComponent({
+    name: 'GcodefilesPanelTableRowFile',
     components: {
         ConfirmationDialog,
         GcodefilesPanelTableRowFileMetadataFilamentStrings,
@@ -162,146 +163,135 @@ import { CLOSE_CONTEXT_MENU, EventBus } from '@/plugins/eventBus'
         GcodefilesRenameFileDialog,
         GcodefilesThumbnail,
     },
-})
-export default class GcodefilesPanelTableRowFile extends Mixins(BaseMixin, ControlMixin, GcodefilesMixin) {
-    mdiCloudDownload = mdiCloudDownload
-    mdiContentCopy = mdiContentCopy
-    mdiDelete = mdiDelete
-    mdiFileDocumentEditOutline = mdiFileDocumentEditOutline
-    mdiFire = mdiFire
-    mdiMagnify = mdiMagnify
-    mdiPlay = mdiPlay
-    mdiPlaylistPlus = mdiPlaylistPlus
-    mdiRenameBox = mdiRenameBox
-    mdiVideo3d = mdiVideo3d
-
-    showContextMenu = false
-    showContextMenuX = 0
-    showContextMenuY = 0
-
-    showStartPrintDialog = false
-    showAddBatchToQueueDialog = false
-    showRenameFileDialog = false
-    showDuplicateFileDialog = false
-    showDeleteFileDialog = false
-
-    @Prop({ type: Object, required: true }) readonly item!: FileStateGcodefile
-    @Prop({ type: Boolean, required: true }) readonly isSelected!: boolean
-    @Prop({ type: Function, required: true }) readonly select!: (value: boolean) => void
-
-    get isGcodeFile() {
-        const format = this.item.filename.slice(this.item.filename.lastIndexOf('.'))
-
-        return validGcodeExtensions.includes(format)
-    }
-
-    get printStatusTextColor() {
-        switch (this.item.last_status) {
-            case 'in_progress':
-                return 'blue--text' //'blue-grey darken-1'
-            case 'completed':
-                return 'green--text' //'green'
-            case 'cancelled':
-                return 'red--text'
-
-            default:
-                return 'orange--text'
+    mixins: [BaseMixin, ControlMixin, GcodefilesMixin],
+    props: {
+        item: { type: Object, required: true },
+        isSelected: { type: Boolean, required: true },
+        select: { type: Function, required: true },
+    },
+    data() {
+        return {
+            mdiCloudDownload: mdiCloudDownload,
+            mdiContentCopy: mdiContentCopy,
+            mdiDelete: mdiDelete,
+            mdiFileDocumentEditOutline: mdiFileDocumentEditOutline,
+            mdiFire: mdiFire,
+            mdiMagnify: mdiMagnify,
+            mdiPlay: mdiPlay,
+            mdiPlaylistPlus: mdiPlaylistPlus,
+            mdiRenameBox: mdiRenameBox,
+            mdiVideo3d: mdiVideo3d,
+            showContextMenu: false,
+            showContextMenuX: 0,
+            showContextMenuY: 0,
+            showStartPrintDialog: false,
+            showAddBatchToQueueDialog: false,
+            showRenameFileDialog: false,
+            showDuplicateFileDialog: false,
+            showDeleteFileDialog: false,
         }
-    }
+    },
+    computed: {
+        isGcodeFile() {
+            const format = this.item.filename.slice(this.item.filename.lastIndexOf('.'))
 
-    get printStatusIcon() {
-        return convertPrintStatusIcon(this.item.last_status ?? '')
-    }
+            return validGcodeExtensions.includes(format)
+        },
+        printStatusTextColor() {
+            switch (this.item.last_status) {
+                case 'in_progress':
+                    return 'blue--text' //'blue-grey darken-1'
+                case 'completed':
+                    return 'green--text' //'green'
+                case 'cancelled':
+                    return 'red--text'
 
-    get printStatusIconColor() {
-        return convertPrintStatusIconColor(this.item.last_status ?? '')
-    }
-
-    showContextMenuAction(e: MouseEvent | LongpressEvent) {
-        e?.preventDefault()
-        EventBus.$emit(CLOSE_CONTEXT_MENU)
-
-        this.showContextMenuX = e?.clientX || e?.pageX || window.screenX / 2
-        this.showContextMenuY = e?.clientY || e?.pageY || window.screenY / 2
-
-        this.showContextMenu = true
-    }
-
-    closeContextMenu() {
-        this.showContextMenu = false
-    }
-
-    clickOnRow() {
-        if (!this.isGcodeFile || ['error', 'printing', 'paused'].includes(this.printer_state)) return
-
-        this.showStartPrintDialog = true
-    }
-
-    addToQueue() {
-        let filename = [this.currentPath, this.item.filename].join('/')
-        if (filename.startsWith('/')) filename = filename.slice(1)
-
-        this.$store.dispatch('server/jobQueue/addToQueue', [filename])
-    }
-
-    view3D() {
-        this.$router.push({
-            path: '/viewer',
-            query: { filename: 'gcodes' + this.currentPath + '/' + this.item.filename },
-        })
-    }
-
-    scanMeta() {
-        this.$store.dispatch('files/scanMetadata', {
-            filename: 'gcodes' + this.currentPath + '/' + this.item.filename,
-        })
-    }
-
-    downloadFile() {
-        const filename = this.currentPath + '/' + this.item.filename
-        const href = this.apiUrl + '/server/files/gcodes' + escapePath(filename)
-
-        window.open(href)
-    }
-
-    editFile() {
-        this.$store.dispatch('editor/openFile', {
-            root: 'gcodes',
-            path: this.currentPath,
-            filename: this.item.filename,
-            size: this.item.size,
-            permissions: this.item.permissions,
-        })
-    }
-
-    deleteFile() {
-        this.$socket.emit(
-            'server.files.delete_file',
-            { path: 'gcodes' + this.currentPath + '/' + this.item.filename },
-            { action: 'files/getDeleteFile' }
-        )
-    }
-
-    onDragStart(e: DragEvent) {
-        if (e.dataTransfer === null) return
-
-        e.dataTransfer.setData('filename', this.item.filename)
-        e.dataTransfer.effectAllowed = 'move'
-    }
-
-    onDrag(e: DragEvent) {
-        e.preventDefault()
-        e.stopPropagation()
-    }
-
+                default:
+                    return 'orange--text'
+            }
+        },
+        printStatusIcon() {
+            return convertPrintStatusIcon(this.item.last_status ?? '')
+        },
+        printStatusIconColor() {
+            return convertPrintStatusIconColor(this.item.last_status ?? '')
+        },
+    },
     mounted() {
         EventBus.$on(CLOSE_CONTEXT_MENU, this.closeContextMenu)
-    }
-
-    beforeDestroy() {
+    },
+    beforeUnmount() {
         EventBus.$off(CLOSE_CONTEXT_MENU, this.closeContextMenu)
-    }
-}
+    },
+    methods: {
+        showContextMenuAction(e: MouseEvent | LongpressEvent) {
+            e?.preventDefault()
+            EventBus.$emit(CLOSE_CONTEXT_MENU)
+
+            this.showContextMenuX = e?.clientX || e?.pageX || window.screenX / 2
+            this.showContextMenuY = e?.clientY || e?.pageY || window.screenY / 2
+
+            this.showContextMenu = true
+        },
+        closeContextMenu() {
+            this.showContextMenu = false
+        },
+        clickOnRow() {
+            if (!this.isGcodeFile || ['error', 'printing', 'paused'].includes(this.printer_state)) return
+
+            this.showStartPrintDialog = true
+        },
+        addToQueue() {
+            let filename = [this.currentPath, this.item.filename].join('/')
+            if (filename.startsWith('/')) filename = filename.slice(1)
+
+            this.$store.dispatch('server/jobQueue/addToQueue', [filename])
+        },
+        view3D() {
+            this.$router.push({
+                path: '/viewer',
+                query: { filename: 'gcodes' + this.currentPath + '/' + this.item.filename },
+            })
+        },
+        scanMeta() {
+            this.$store.dispatch('files/scanMetadata', {
+                filename: 'gcodes' + this.currentPath + '/' + this.item.filename,
+            })
+        },
+        downloadFile() {
+            const filename = this.currentPath + '/' + this.item.filename
+            const href = this.apiUrl + '/server/files/gcodes' + escapePath(filename)
+
+            window.open(href)
+        },
+        editFile() {
+            this.$store.dispatch('editor/openFile', {
+                root: 'gcodes',
+                path: this.currentPath,
+                filename: this.item.filename,
+                size: this.item.size,
+                permissions: this.item.permissions,
+            })
+        },
+        deleteFile() {
+            this.$socket.emit(
+                'server.files.delete_file',
+                { path: 'gcodes' + this.currentPath + '/' + this.item.filename },
+                { action: 'files/getDeleteFile' }
+            )
+        },
+        onDragStart(e: DragEvent) {
+            if (e.dataTransfer === null) return
+
+            e.dataTransfer.setData('filename', this.item.filename)
+            e.dataTransfer.effectAllowed = 'move'
+        },
+        onDrag(e: DragEvent) {
+            e.preventDefault()
+            e.stopPropagation()
+        },
+    },
+})
 </script>
 
 <style scoped>

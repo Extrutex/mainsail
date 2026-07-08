@@ -14,37 +14,37 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import Responsive from '@/components/ui/Responsive.vue'
 import { capitalize } from '@/plugins/helpers'
 
-@Component({
+export default defineComponent({
+    name: 'ExtruderStepperPressureAdvanceSettings',
     components: { Responsive },
+    mixins: [BaseMixin],
+    props: {
+        extruderStepper: { type: String, required: true },
+    },
+    computed: {
+        name() {
+            return this.extruderStepper.substring('extruder_stepper '.length)
+        },
+        subheadline() {
+            if (this.motionQueue) {
+                return `${capitalize(this.name)} (${this.$t('Panels.ExtruderControlPanel.PressureAdvanceSettings.SyncedWithExtruder', { extruder: this.motionQueue })})`
+            }
+
+            return capitalize(this.name)
+        },
+        extruderStepperObject() {
+            return this.$store.state.printer?.[this.extruderStepper] ?? undefined
+        },
+        motionQueue() {
+            return this.extruderStepperObject?.motion_queue ?? ''
+        },
+    },
 })
-export default class ExtruderStepperPressureAdvanceSettings extends Mixins(BaseMixin) {
-    @Prop({ required: true }) readonly extruderStepper!: string
-
-    get name() {
-        return this.extruderStepper.substring('extruder_stepper '.length)
-    }
-
-    get subheadline() {
-        if (this.motionQueue) {
-            return `${capitalize(this.name)} (${this.$t('Panels.ExtruderControlPanel.PressureAdvanceSettings.SyncedWithExtruder', { extruder: this.motionQueue })})`
-        }
-
-        return capitalize(this.name)
-    }
-
-    get extruderStepperObject() {
-        return this.$store.state.printer?.[this.extruderStepper] ?? undefined
-    }
-
-    get motionQueue() {
-        return this.extruderStepperObject?.motion_queue ?? ''
-    }
-}
 </script>
 
 <style scoped>

@@ -9,20 +9,18 @@
         :toolbar-color="isCurrentPrinter ? 'primary' : ''">
         <template #buttons>
             <v-menu v-if="showWebcamSwitch" :offset-y="true" title="Webcam">
-                <template #activator="{ on, attrs }">
-                    <v-btn text v-bind="attrs" v-on="on">
-                        <v-icon small>{{ mdiWebcam }}</v-icon>
-                        <v-icon small>{{ mdiMenuDown }}</v-icon>
+                <template #activator="{ props }">
+                    <v-btn variant="text" v-bind="props">
+                        <v-icon size="small">{{ mdiWebcam }}</v-icon>
+                        <v-icon size="small">{{ mdiMenuDown }}</v-icon>
                     </v-btn>
                 </template>
-                <v-list dense class="py-0">
+                <v-list density="compact" class="py-0">
                     <v-list-item link @click="currentCamName = 'off'">
                         <v-list-item-icon class="mr-2">
-                            <v-icon small class="mt-1">{{ mdiWebcamOff }}</v-icon>
+                            <v-icon size="small" class="mt-1">{{ mdiWebcamOff }}</v-icon>
                         </v-list-item-icon>
-                        <v-list-item-content>
-                            <v-list-item-title>{{ $t('Panels.FarmPrinterPanel.WebcamOff') }}</v-list-item-title>
-                        </v-list-item-content>
+                        <v-list-item-title>{{ $t('Panels.FarmPrinterPanel.WebcamOff') }}</v-list-item-title>
                     </v-list-item>
                     <v-list-item
                         v-for="webcam of printer_webcams"
@@ -30,11 +28,9 @@
                         link
                         @click="currentCamName = webcam.name">
                         <v-list-item-icon class="mr-2">
-                            <v-icon small class="mt-1">{{ convertWebcamIcon(webcam.icon) }}</v-icon>
+                            <v-icon size="small" class="mt-1">{{ convertWebcamIcon(webcam.icon) }}</v-icon>
                         </v-list-item-icon>
-                        <v-list-item-content>
-                            <v-list-item-title v-text="webcam.name" />
-                        </v-list-item-content>
+                        <v-list-item-title v-text="webcam.name" />
                     </v-list-item>
                 </v-list>
             </v-menu>
@@ -57,7 +53,7 @@
                             class="white--text py-2"
                             style="background-color: rgba(0, 0, 0, 0.3); backdrop-filter: blur(3px)">
                             <v-row>
-                                <v-col class="col-auto pr-0 d-flex align-center" style="width: 58px">
+                                <v-col cols="auto" class="pr-0 d-flex align-center" style="width: 58px">
                                     <img
                                         v-if="printer_logo"
                                         :src="printer_logo"
@@ -75,7 +71,7 @@
                                     <span
                                         v-if="printer_current_filename !== ''"
                                         class="subtitle-2 text-truncate px-0 text--disabled d-block">
-                                        <v-icon small class="mr-1">{{ mdiFileOutline }}</v-icon>
+                                        <v-icon size="small" class="mr-1">{{ mdiFileOutline }}</v-icon>
                                         {{ printer_current_filename }}
                                     </span>
                                 </v-col>
@@ -113,7 +109,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop, Ref, Vue } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
+import { debounce } from '@/plugins/helpers'
 import BaseMixin from '@/components/mixins/base'
 import { FarmPrinterState } from '@/store/farm/printer/types'
 import MainsailLogo from '@/components/ui/MainsailLogo.vue'
@@ -125,148 +122,141 @@ import WebcamWrapper from '@/components/webcams/WebcamWrapper.vue'
 import { GuiWebcamStateWebcam } from '@/store/gui/webcams/types'
 import ThemeMixin from '@/components/mixins/theme'
 
-@Component({
+export default defineComponent({
+    name: 'FarmPrinterPanel',
     components: {
         Panel,
         'webcam-wrapper': WebcamWrapper,
         'mainsail-logo': MainsailLogo,
     },
-})
-export default class FarmPrinterPanel extends Mixins(BaseMixin, ThemeMixin, WebcamMixin) {
-    mdiPrinter3d = mdiPrinter3d
-    mdiWebcam = mdiWebcam
-    mdiMenuDown = mdiMenuDown
-    mdiWebcamOff = mdiWebcamOff
-    mdiFileOutline = mdiFileOutline
-
-    imageHeight = 200
-    resizeObserver: ResizeObserver | null = null
-
-    @Prop({ type: Object, required: true }) declare printer: FarmPrinterState
-    @Ref() readonly imageDiv!: Vue
-    @Ref() readonly panel!: Vue
-
-    get printerUrl() {
-        const thisUrl = window.location.href.split('/')
-        const protocol = thisUrl[0]
-
-        let url = protocol + '//' + this.printer.socket.hostname
-        if (80 !== this.printer.socket.webPort) url += ':' + this.printer.socket.webPort
-
-        return url
-    }
-
-    get isCurrentPrinter() {
-        return this.$store.getters['farm/' + this.printer._namespace + '/isCurrentPrinter']
-    }
-
-    get currentCamName() {
-        return this.$store.getters['farm/' + this.printer._namespace + '/getSetting']('currentCamName', 'off')
-    }
-
-    set currentCamName(newVal) {
-        this.$store.dispatch('farm/' + this.printer._namespace + '/setSettings', { currentCamName: newVal })
-    }
-
-    get printer_name() {
-        return this.$store.getters['farm/' + this.printer._namespace + '/getPrinterName']
-    }
-
-    get printer_status() {
-        return this.$store.getters['farm/' + this.printer._namespace + '/getStatus']
-    }
-
-    get printer_current_filename() {
-        return this.$store.getters['farm/' + this.printer._namespace + '/getCurrentFilename']
-    }
-
-    get printer_image() {
-        if (this.currentWebcam) return this.sidebarBgImage
-
-        return this.$store.getters['farm/' + this.printer._namespace + '/getImage'] ?? this.sidebarBgImage
-    }
-
-    get printer_logo() {
-        return this.$store.getters['farm/' + this.printer._namespace + '/getLogo']
-    }
-
-    get printerLogoColor() {
-        return this.$store.getters['farm/' + this.printer._namespace + '/getLogoColor']
-    }
-
-    get printer_position() {
-        return this.$store.getters['farm/' + this.printer._namespace + '/getPosition']
-    }
-
-    get printer_preview() {
-        return this.$store.getters['farm/' + this.printer._namespace + '/getPrinterPreview']
-    }
-
-    get showWebcamSwitch() {
-        if (this.printer_webcams.length == 0) return false
-
-        return this.printer.socket.isConnected
-    }
-
-    get printer_webcams(): GuiWebcamStateWebcam[] {
-        return this.$store.getters['farm/' + this.printer._namespace + '/getPrinterWebcams']
-    }
-
-    get currentWebcam(): GuiWebcamStateWebcam | null {
-        const currentCam = this.printer_webcams?.find(
-            (webcam: GuiWebcamStateWebcam) => webcam.name === this.currentCamName
-        )
-        if (currentCam) return currentCam
-
-        return null
-    }
-
-    get panelClass(): string[] {
-        const output = []
-
-        if (!this.printer.socket.isConnected && !this.printer.socket.isConnecting) output.push('disabledPrinter')
-
-        return output
-    }
-
-    clickPrinter() {
-        // If the printer is already connected, just switch to it
-        if (this.printer.socket.isConnected) {
-            this.$store.dispatch('changePrinter', { printer: this.printer._namespace })
-            return
+    mixins: [BaseMixin, ThemeMixin, WebcamMixin],
+    props: {
+        printer: { type: Object, required: true },
+    },
+    data() {
+        return {
+            mdiPrinter3d: mdiPrinter3d,
+            mdiWebcam: mdiWebcam,
+            mdiMenuDown: mdiMenuDown,
+            mdiWebcamOff: mdiWebcamOff,
+            mdiFileOutline: mdiFileOutline,
+            imageHeight: 200,
+            resizeObserver: null as ResizeObserver | null,
         }
+    },
+    computed: {
+        imageDiv(): Vue {
+            return this.$refs.imageDiv as Vue
+        },
+        panel(): Vue {
+            return this.$refs.panel as Vue
+        },
+        printerUrl() {
+            const thisUrl = window.location.href.split('/')
+            const protocol = thisUrl[0]
 
-        // Otherwise, reconnect to the printer
-        this.$store.dispatch('farm/' + this.printer._namespace + '/reconnect')
-    }
+            let url = protocol + '//' + this.printer.socket.hostname
+            if (80 !== this.printer.socket.webPort) url += ':' + this.printer.socket.webPort
 
+            return url
+        },
+        isCurrentPrinter() {
+            return this.$store.getters['farm/' + this.printer._namespace + '/isCurrentPrinter']
+        },
+        currentCamName: {
+            get() {
+                return this.$store.getters['farm/' + this.printer._namespace + '/getSetting']('currentCamName', 'off')
+            },
+            setcurrentCamName(newVal) {
+                this.$store.dispatch('farm/' + this.printer._namespace + '/setSettings', { currentCamName: newVal })
+            },
+        },
+        printer_name() {
+            return this.$store.getters['farm/' + this.printer._namespace + '/getPrinterName']
+        },
+        printer_status() {
+            return this.$store.getters['farm/' + this.printer._namespace + '/getStatus']
+        },
+        printer_current_filename() {
+            return this.$store.getters['farm/' + this.printer._namespace + '/getCurrentFilename']
+        },
+        printer_image() {
+            if (this.currentWebcam) return this.sidebarBgImage
+
+            return this.$store.getters['farm/' + this.printer._namespace + '/getImage'] ?? this.sidebarBgImage
+        },
+        printer_logo() {
+            return this.$store.getters['farm/' + this.printer._namespace + '/getLogo']
+        },
+        printerLogoColor() {
+            return this.$store.getters['farm/' + this.printer._namespace + '/getLogoColor']
+        },
+        printer_position() {
+            return this.$store.getters['farm/' + this.printer._namespace + '/getPosition']
+        },
+        printer_preview() {
+            return this.$store.getters['farm/' + this.printer._namespace + '/getPrinterPreview']
+        },
+        showWebcamSwitch() {
+            if (this.printer_webcams.length == 0) return false
+
+            return this.printer.socket.isConnected
+        },
+        printer_webcams(): GuiWebcamStateWebcam[] {
+            return this.$store.getters['farm/' + this.printer._namespace + '/getPrinterWebcams']
+        },
+        currentWebcam(): GuiWebcamStateWebcam | null {
+            const currentCam = this.printer_webcams?.find(
+                (webcam: GuiWebcamStateWebcam) => webcam.name === this.currentCamName
+            )
+            if (currentCam) return currentCam
+
+            return null
+        },
+        panelClass(): string[] {
+            const output = []
+
+            if (!this.printer.socket.isConnected && !this.printer.socket.isConnecting) output.push('disabledPrinter')
+
+            return output
+        },
+    },
     mounted() {
         this.calcImageHeight()
 
         this.resizeObserver = new ResizeObserver(() => this.handleResize())
         this.resizeObserver.observe(this.panel.$el)
-    }
-
-    beforeDestroy() {
+    },
+    beforeUnmount() {
         this.resizeObserver?.disconnect()
-    }
+    },
+    methods: {
+        clickPrinter() {
+            // If the printer is already connected, just switch to it
+            if (this.printer.socket.isConnected) {
+                this.$store.dispatch('changePrinter', { printer: this.printer._namespace })
+                return
+            }
 
-    calcImageHeight() {
-        if (this.imageDiv?.$el?.clientWidth) {
-            this.imageHeight = Math.round((this.imageDiv.$el.clientWidth / 3) * 2)
-            return
-        }
+            // Otherwise, reconnect to the printer
+            this.$store.dispatch('farm/' + this.printer._namespace + '/reconnect')
+        },
+        calcImageHeight() {
+            if (this.imageDiv?.$el?.clientWidth) {
+                this.imageHeight = Math.round((this.imageDiv.$el.clientWidth / 3) * 2)
+                return
+            }
 
-        this.imageHeight = 200
-    }
-
-    @Debounce(200)
-    handleResize() {
-        this.$nextTick(() => {
-            this.calcImageHeight()
-        })
-    }
-}
+            this.imageHeight = 200
+        },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        handleResize: debounce(function (this: any) {
+            this.$nextTick(() => {
+                this.calcImageHeight()
+            })
+        }, 200),
+    },
+})
 </script>
 
 <style scoped>
@@ -298,7 +288,7 @@ export default class FarmPrinterPanel extends Mixins(BaseMixin, ThemeMixin, Webc
     top: 48px;
 }
 
-::v-deep .farmprinter-panel {
+:deep(.farmprinter-panel) {
     position: relative;
 }
 </style>

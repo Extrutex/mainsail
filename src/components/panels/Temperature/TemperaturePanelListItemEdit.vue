@@ -18,7 +18,7 @@
                     :object-name="objectName"
                     :additional-sensor="additionalSensor" />
                 <v-row>
-                    <v-col class="col-12 text-center pb-0">
+                    <v-col cols="12" class="text-center pb-0">
                         <v-color-picker
                             hide-mode-switch
                             mode="hexa"
@@ -33,59 +33,73 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, Prop, VModel } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
+import { debounce } from '@/plugins/helpers'
 import BaseMixin from '@/components/mixins/base'
 import { mdiCloseThick } from '@mdi/js'
 import TemperaturePanelListItemEditChartSerie from '@/components/panels/Temperature/TemperaturePanelListItemEditChartSerie.vue'
 import TemperaturePanelListItemEditAdditionalSensor from '@/components/panels/Temperature/TemperaturePanelListItemEditAdditionalSensor.vue'
 import { Debounce } from 'vue-debounce-decorator'
 
-@Component({
+export default defineComponent({
+    name: 'TemperaturePanelListItemEdit',
     components: { TemperaturePanelListItemEditAdditionalSensor, TemperaturePanelListItemEditChartSerie },
+    mixins: [BaseMixin],
+    props: {
+        modelValue: { type: Boolean },
+        objectName: { type: String, required: true },
+        name: { type: String, required: true },
+        additionalSensorName: { type: String, required: true },
+        formatName: { type: String, required: true },
+        icon: { type: String, required: true },
+        color: { type: String, required: true },
+    },
+    emits: ['update:modelValue'],
+    data() {
+        return {
+            mdiCloseThick: mdiCloseThick,
+        }
+    },
+    computed: {
+        showDialog: {
+            get(): boolean {
+                return this.modelValue
+            },
+            set(value: boolean) {
+                this.$emit('update:modelValue', value)
+            },
+        },
+        chartSeries() {
+            return this.$store.getters['printer/tempHistory/getSerieNames'](this.objectName) ?? []
+        },
+        printerObjectAdditionalSensor() {
+            if (this.additionalSensorName === null || !(this.additionalSensorName in this.$store.state.printer))
+                return {}
+
+            return this.$store.state.printer[this.additionalSensorName]
+        },
+        additionalValues() {
+            if (this.objectName === 'z_thermal_adjust') return ['current_z_adjust']
+            if (this.objectName.startsWith('nevermore')) return ['temperature', 'pressure', 'humidity', 'rpm']
+
+            return Object.keys(this.printerObjectAdditionalSensor).filter((key) => key !== 'temperature')
+        },
+    },
+    methods: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        setChartColor: debounce(function (this: any, value: string | { hex: string }) {
+            if (typeof value === 'object' && 'hex' in value) value = value.hex
+
+            this.$store.dispatch('gui/setChartColor', {
+                objectName: this.objectName,
+                value,
+            })
+
+            this.$store.dispatch('printer/tempHistory/setColor', { name: this.objectName, value })
+        }, 500),
+        closeDialog() {
+            this.showDialog = false
+        },
+    },
 })
-export default class TemperaturePanelListItemEdit extends Mixins(BaseMixin) {
-    mdiCloseThick = mdiCloseThick
-
-    @VModel({ type: Boolean }) showDialog!: boolean
-    @Prop({ type: String, required: true }) readonly objectName!: string
-    @Prop({ type: String, required: true }) readonly name!: string
-    @Prop({ required: true }) readonly additionalSensorName!: string | null
-    @Prop({ type: String, required: true }) readonly formatName!: string
-    @Prop({ type: String, required: true }) readonly icon!: string
-    @Prop({ type: String, required: true }) readonly color!: string
-
-    get chartSeries() {
-        return this.$store.getters['printer/tempHistory/getSerieNames'](this.objectName) ?? []
-    }
-
-    get printerObjectAdditionalSensor() {
-        if (this.additionalSensorName === null || !(this.additionalSensorName in this.$store.state.printer)) return {}
-
-        return this.$store.state.printer[this.additionalSensorName]
-    }
-
-    get additionalValues() {
-        if (this.objectName === 'z_thermal_adjust') return ['current_z_adjust']
-        if (this.objectName.startsWith('nevermore')) return ['temperature', 'pressure', 'humidity', 'rpm']
-
-        return Object.keys(this.printerObjectAdditionalSensor).filter((key) => key !== 'temperature')
-    }
-
-    @Debounce(500)
-    setChartColor(value: string | { hex: string }): void {
-        if (typeof value === 'object' && 'hex' in value) value = value.hex
-
-        this.$store.dispatch('gui/setChartColor', {
-            objectName: this.objectName,
-            value,
-        })
-
-        this.$store.dispatch('printer/tempHistory/setColor', { name: this.objectName, value })
-    }
-
-    closeDialog() {
-        this.showDialog = false
-    }
-}
 </script>

@@ -1,4 +1,3 @@
-
 import { ActionTree } from 'vuex'
 import { PrinterState } from '@/store/printer/types'
 import { RootState } from '@/store/types'
@@ -75,7 +74,11 @@ export const actions: ActionTree<PrinterState, RootState> = {
             }, 200)
         }
 
-        getSocketClient().emit('server.temperature_store', { include_monitors: true }, { action: 'printer/tempHistory/init' })
+        getSocketClient().emit(
+            'server.temperature_store',
+            { include_monitors: true },
+            { action: 'printer/tempHistory/init' }
+        )
 
         dispatch('socket/removeInitModule', 'printer/initSubscripts', { root: true })
     },
@@ -133,7 +136,11 @@ export const actions: ActionTree<PrinterState, RootState> = {
     },
 
     async initGcodes({ commit }) {
-        const gcodes = await getSocketClient().emitAndWait('printer.objects.query', { objects: { gcode: ['commands'] } }, {})
+        const gcodes = await getSocketClient().emitAndWait(
+            'printer.objects.query',
+            { objects: { gcode: ['commands'] } },
+            {}
+        )
 
         commit('setData', gcodes.status)
     },

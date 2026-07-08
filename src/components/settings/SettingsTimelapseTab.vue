@@ -28,7 +28,12 @@
                 <settings-row
                     :title="$t('Settings.TimelapseTab.Camera')"
                     :sub-title="$t('Settings.TimelapseTab.CameraDescriptionWithSnapshotUrl')">
-                    <v-alert v-if="blockedsettings.includes('snapshoturl')" dense text type="warning" class="mb-0">
+                    <v-alert
+                        v-if="blockedsettings.includes('snapshoturl')"
+                        density="compact"
+                        text
+                        type="warning"
+                        class="mb-0">
                         {{ $t('Settings.TimelapseTab.CameraWarningAlreadySet') }}
                         <small>({{ $t('Settings.TimelapseTab.CameraWarningAlreadySetSmall') }})</small>
                     </v-alert>
@@ -37,8 +42,8 @@
                         v-model="camera"
                         :items="cameraOptions"
                         hide-details
-                        outlined
-                        dense
+                        variant="outlined"
+                        density="compact"
                         :disabled="blockedsettings.includes('camera') || availableSnapshotWebcams.length === 0" />
                 </settings-row>
                 <v-divider class="my-2" />
@@ -49,8 +54,8 @@
                         v-model="mode"
                         :items="modeOptions"
                         hide-details
-                        outlined
-                        dense
+                        variant="outlined"
+                        density="compact"
                         :disabled="blockedsettings.includes('modeOptions')" />
                 </settings-row>
                 <template v-if="mode === 'hyperlapse'">
@@ -63,8 +68,8 @@
                             type="number"
                             suffix="s"
                             hide-details="auto"
-                            outlined
-                            dense
+                            variant="outlined"
+                            density="compact"
                             :disabled="blockedsettings.includes('hyperlapseCycle')"
                             hide-spin-buttons />
                     </settings-row>
@@ -101,8 +106,8 @@
                         suffix="s"
                         step="0.01"
                         hide-details="auto"
-                        outlined
-                        dense
+                        variant="outlined"
+                        density="compact"
                         :rules="[
                             (v) => !!v || $t('Settings.TimelapseTab.RulesRequired'),
                             (v) => v >= 0 || $t('Settings.TimelapseTab.RulesZeroAndPositive'),
@@ -141,8 +146,8 @@
                             v-model="parkpos"
                             :items="parkposOptions"
                             hide-details
-                            outlined
-                            dense
+                            variant="outlined"
+                            density="compact"
                             :disabled="blockedsettings.includes('parkposOptions')" />
                     </settings-row>
                     <template v-if="['x_only', 'custom'].includes(parkpos)">
@@ -155,8 +160,8 @@
                                 type="number"
                                 suffix="mm"
                                 hide-details="auto"
-                                outlined
-                                dense
+                                variant="outlined"
+                                density="compact"
                                 :rules="[
                                     (v) => !!v || $t('Settings.TimelapseTab.RulesRequired'),
                                     (v) =>
@@ -180,8 +185,8 @@
                                 type="number"
                                 suffix="mm"
                                 hide-details="auto"
-                                outlined
-                                dense
+                                variant="outlined"
+                                density="compact"
                                 :rules="[
                                     (v) => !!v || $t('Settings.TimelapseTab.RulesRequired'),
                                     (v) =>
@@ -205,8 +210,8 @@
                                 type="number"
                                 suffix="mm"
                                 hide-details="auto"
-                                outlined
-                                dense
+                                variant="outlined"
+                                density="compact"
                                 :rules="[
                                     (v) => !!v || $t('Settings.TimelapseTab.RulesRequired'),
                                     (v) => v >= 0 || $t('Settings.TimelapseTab.RulesZeroAndPositive'),
@@ -224,8 +229,8 @@
                             type="number"
                             suffix="mm/s"
                             hide-details="auto"
-                            outlined
-                            dense
+                            variant="outlined"
+                            density="compact"
                             :rules="[
                                 (v) => !!v || $t('Settings.TimelapseTab.RulesRequired'),
                                 (v) => v >= 0 || $t('Settings.TimelapseTab.RulesZeroAndPositive'),
@@ -254,8 +259,8 @@
                                 type="number"
                                 suffix="mm/s"
                                 hide-details="auto"
-                                outlined
-                                dense
+                                variant="outlined"
+                                density="compact"
                                 :rules="[
                                     (v) => !!v || $t('Settings.TimelapseTab.RulesRequired'),
                                     (v) => v > 0 || $t('Settings.TimelapseTab.RulesPositive'),
@@ -272,8 +277,8 @@
                                 type="number"
                                 suffix="mm"
                                 hide-details="auto"
-                                outlined
-                                dense
+                                variant="outlined"
+                                density="compact"
                                 :rules="[
                                     (v) => !!v || $t('Settings.TimelapseTab.RulesRequired'),
                                     (v) => v >= 0 || $t('Settings.TimelapseTab.RulesZeroAndPositive'),
@@ -290,8 +295,8 @@
                                 type="number"
                                 suffix="mm/s"
                                 hide-details="auto"
-                                outlined
-                                dense
+                                variant="outlined"
+                                density="compact"
                                 :rules="[
                                     (v) => !!v || $t('Settings.TimelapseTab.RulesRequired'),
                                     (v) => v > 0 || $t('Settings.TimelapseTab.RulesPositive'),
@@ -308,8 +313,8 @@
                                 type="number"
                                 suffix="mm"
                                 hide-details="auto"
-                                outlined
-                                dense
+                                variant="outlined"
+                                density="compact"
                                 :rules="[
                                     (v) => !!v || $t('Settings.TimelapseTab.RulesRequired'),
                                     (v) => v >= 0 || $t('Settings.TimelapseTab.RulesZeroAndPositive'),
@@ -328,8 +333,8 @@
                             suffix="s"
                             hide-details="auto"
                             step="0.1"
-                            outlined
-                            dense
+                            variant="outlined"
+                            density="compact"
                             :rules="[
                                 (v) => !!v || $t('Settings.TimelapseTab.RulesRequired'),
                                 (v) => v >= 0 || $t('Settings.TimelapseTab.RulesZeroAndPositive'),
@@ -359,8 +364,8 @@
                             type="number"
                             suffix="s"
                             hide-details="auto"
-                            outlined
-                            dense
+                            variant="outlined"
+                            density="compact"
                             :rules="[
                                 (v) => !!v || $t('Settings.TimelapseTab.RulesRequired'),
                                 (v) => v > 0 || $t('Settings.TimelapseTab.RulesPositive'),
@@ -377,8 +382,8 @@
                             type="number"
                             suffix="frames"
                             hide-details="auto"
-                            outlined
-                            dense
+                            variant="outlined"
+                            density="compact"
                             :rules="[
                                 (v) => !!v || $t('Settings.TimelapseTab.RulesRequired'),
                                 (v) => v > 0 || $t('Settings.TimelapseTab.RulesPositive'),
@@ -395,8 +400,8 @@
                             type="number"
                             suffix="frames"
                             hide-details="auto"
-                            outlined
-                            dense
+                            variant="outlined"
+                            density="compact"
                             :rules="[
                                 (v) => !!v || $t('Settings.TimelapseTab.RulesRequired'),
                                 (v) => v > variable_fps_min || $t('Settings.TimelapseTab.RulesMin'),
@@ -415,8 +420,8 @@
                             type="number"
                             suffix="frames"
                             hide-details="auto"
-                            outlined
-                            dense
+                            variant="outlined"
+                            density="compact"
                             :rules="[
                                 (v) => !!v || $t('Settings.TimelapseTab.RulesRequired'),
                                 (v) => v > 0 || $t('Settings.TimelapseTab.RulesPositive'),
@@ -433,8 +438,8 @@
                         v-model="duplicatelastframe"
                         type="number"
                         hide-details="auto"
-                        outlined
-                        dense
+                        variant="outlined"
+                        density="compact"
                         :rules="[
                             (v) => !!v || $t('Settings.TimelapseTab.RulesRequired'),
                             (v) => v >= 0 || $t('Settings.TimelapseTab.RulesZeroAndPositive'),
@@ -450,8 +455,8 @@
                         v-model="constant_rate_factor"
                         type="number"
                         hide-details="auto"
-                        outlined
-                        dense
+                        variant="outlined"
+                        density="compact"
                         :rules="[
                             (v) => !!v || $t('Settings.TimelapseTab.RulesRequired'),
                             (v) => v > 0 || $t('Settings.TimelapseTab.RulesPositive'),
@@ -467,8 +472,8 @@
                         v-model="pixelformat"
                         type="text"
                         hide-details="auto"
-                        outlined
-                        dense
+                        variant="outlined"
+                        density="compact"
                         :disabled="blockedsettings.includes('pixelformat')" />
                 </settings-row>
                 <v-divider class="my-2" />
@@ -479,8 +484,8 @@
                         v-model="time_format_code"
                         type="text"
                         hide-details="auto"
-                        outlined
-                        dense
+                        variant="outlined"
+                        density="compact"
                         :disabled="blockedsettings.includes('time_format_code')" />
                 </settings-row>
                 <v-divider class="my-2" />
@@ -491,8 +496,8 @@
                         v-model="extraoutputparams"
                         type="text"
                         hide-details="auto"
-                        outlined
-                        dense
+                        variant="outlined"
+                        density="compact"
                         :disabled="blockedsettings.includes('extraoutputparams')" />
                 </settings-row>
             </v-card-text>
@@ -501,401 +506,399 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import SettingsRow from '@/components/settings/SettingsRow.vue'
 import { caseInsensitiveSort } from '@/plugins/helpers'
 import { GuiWebcamStateWebcam } from '@/store/gui/webcams/types'
 import { TranslateResult } from 'vue-i18n'
-@Component({
+
+export default defineComponent({
+    name: 'SettingsTimelapseTab',
     components: { SettingsRow },
-})
-export default class SettingsTimelapseTab extends Mixins(BaseMixin) {
-    private modeOptions = [
-        {
-            text: 'layermacro',
-            value: 'layermacro',
-        },
-        {
-            text: 'hyperlapse',
-            value: 'hyperlapse',
-        },
-    ]
-
-    private parkposOptions = [
-        {
-            text: 'center',
-            value: 'center',
-        },
-        {
-            text: 'front_left',
-            value: 'front_left',
-        },
-        {
-            text: 'front_right',
-            value: 'front_right',
-        },
-        {
-            text: 'back_left',
-            value: 'back_left',
-        },
-        {
-            text: 'back_right',
-            value: 'back_right',
-        },
-        {
-            text: 'x_only',
-            value: 'x_only',
-        },
-        {
-            text: 'y_only',
-            value: 'y_only',
-        },
-        {
-            text: 'custom',
-            value: 'custom',
-        },
-    ]
-
-    get availableSnapshotWebcams(): GuiWebcamStateWebcam[] {
-        return this.$store.getters['gui/webcams/getWebcams'].filter(
-            (webcam: GuiWebcamStateWebcam) => webcam.snapshot_url !== ''
-        )
-    }
-
-    get cameraOptions() {
-        let output: { text: string | TranslateResult; value: string | null }[] = []
-
-        if (this.availableSnapshotWebcams.length === 0) {
-            return [{ value: null, text: this.$t('Settings.TimelapseTab.NoWebcamFound') }]
+    mixins: [BaseMixin],
+    data() {
+        return {
+            modeOptions: [
+                {
+                    text: 'layermacro',
+                    value: 'layermacro',
+                },
+                {
+                    text: 'hyperlapse',
+                    value: 'hyperlapse',
+                },
+            ],
+            parkposOptions: [
+                {
+                    text: 'center',
+                    value: 'center',
+                },
+                {
+                    text: 'front_left',
+                    value: 'front_left',
+                },
+                {
+                    text: 'front_right',
+                    value: 'front_right',
+                },
+                {
+                    text: 'back_left',
+                    value: 'back_left',
+                },
+                {
+                    text: 'back_right',
+                    value: 'back_right',
+                },
+                {
+                    text: 'x_only',
+                    value: 'x_only',
+                },
+                {
+                    text: 'y_only',
+                    value: 'y_only',
+                },
+                {
+                    text: 'custom',
+                    value: 'custom',
+                },
+            ],
         }
+    },
+    computed: {
+        availableSnapshotWebcams(): GuiWebcamStateWebcam[] {
+            return this.$store.getters['gui/webcams/getWebcams'].filter(
+                (webcam: GuiWebcamStateWebcam) => webcam.snapshot_url !== ''
+            )
+        },
+        cameraOptions() {
+            let output: { text: string | TranslateResult; value: string | null }[] = []
 
-        this.availableSnapshotWebcams.forEach((webcam: GuiWebcamStateWebcam) => {
-            output.push({
-                text: webcam.name,
-                value: webcam.name,
+            if (this.availableSnapshotWebcams.length === 0) {
+                return [{ value: null, text: this.$t('Settings.TimelapseTab.NoWebcamFound') }]
+            }
+
+            this.availableSnapshotWebcams.forEach((webcam: GuiWebcamStateWebcam) => {
+                output.push({
+                    text: webcam.name,
+                    value: webcam.name,
+                })
             })
-        })
 
-        output = caseInsensitiveSort(output, 'text')
-
-        if (this.camera === null) {
-            output.unshift({ value: null, text: this.$t('Settings.TimelapseTab.SelectWebcam') })
-        }
-
-        return output
-    }
-
-    get blockedsettings() {
-        return this.$store.state.server.timelapse.settings.blockedsettings ?? []
-    }
-
-    get enabled() {
-        return this.$store.state.server.timelapse.settings.enabled
-    }
-
-    set enabled(newVal) {
-        this.$store.dispatch('server/timelapse/saveSetting', { enabled: newVal })
-    }
-
-    get mode() {
-        return this.$store.state.server.timelapse.settings.mode
-    }
-
-    set mode(newVal) {
-        this.$store.dispatch('server/timelapse/saveSetting', { mode: newVal })
-    }
-
-    get hyperlapseCycle() {
-        return this.$store.state.server.timelapse.settings.hyperlapse_cycle
-    }
-
-    set hyperlapseCycle(newVal) {
-        this.$store.dispatch('server/timelapse/saveSetting', { hyperlapse_cycle: newVal })
-    }
-
-    get autorender() {
-        return this.$store.state.server.timelapse.settings.autorender
-    }
-
-    set autorender(newVal) {
-        this.$store.dispatch('server/timelapse/saveSetting', { autorender: newVal })
-    }
-
-    get saveframes() {
-        return this.$store.state.server.timelapse.settings.saveframes
-    }
-
-    set saveframes(newVal) {
-        this.$store.dispatch('server/timelapse/saveSetting', { saveframes: newVal })
-    }
-
-    get stream_delay_compensation() {
-        return this.$store.state.server.timelapse.settings.stream_delay_compensation
-    }
-
-    set stream_delay_compensation(newVal: number | string) {
-        if (newVal === '') newVal = 0
-
-        this.$store.dispatch('server/timelapse/saveSetting', { stream_delay_compensation: newVal })
-    }
-
-    get previewimage() {
-        return this.$store.state.server.timelapse.settings.previewimage
-    }
-
-    set previewimage(newVal) {
-        this.$store.dispatch('server/timelapse/saveSetting', { previewimage: newVal })
-    }
-
-    get gcode_verbose() {
-        return this.$store.state.server.timelapse.settings.gcode_verbose
-    }
-
-    set gcode_verbose(newVal) {
-        this.$store.dispatch('server/timelapse/saveSetting', { gcode_verbose: newVal })
-    }
-
-    get parkhead() {
-        return this.$store.state.server.timelapse.settings.parkhead
-    }
-
-    set parkhead(newVal) {
-        this.$store.dispatch('server/timelapse/saveSetting', { parkhead: newVal })
-    }
-
-    get parkpos() {
-        return this.$store.state.server.timelapse.settings.parkpos
-    }
-
-    set parkpos(newVal) {
-        this.$store.dispatch('server/timelapse/saveSetting', { parkpos: newVal })
-    }
-
-    get park_custom_pos_x() {
-        return this.$store.state.server.timelapse.settings.park_custom_pos_x
-    }
-
-    set park_custom_pos_x(newVal: number | string) {
-        if (newVal === '' || newVal < this.stepperXmin || newVal > this.stepperXmax) return
-
-        this.$store.dispatch('server/timelapse/saveSetting', { park_custom_pos_x: newVal })
-    }
-
-    get stepperXmin() {
-        return this.$store.state.printer.configfile?.settings?.stepper_x?.position_min ?? 0
-    }
-
-    get stepperXmax() {
-        return this.$store.state.printer.configfile?.settings?.stepper_x?.position_max ?? 200
-    }
-
-    get park_custom_pos_y() {
-        return this.$store.state.server.timelapse.settings.park_custom_pos_y
-    }
-
-    set park_custom_pos_y(newVal: number | string) {
-        if (newVal === '' || newVal < this.stepperYmin || newVal > this.stepperYmax) return
-
-        this.$store.dispatch('server/timelapse/saveSetting', { park_custom_pos_y: newVal })
-    }
-
-    get stepperYmin() {
-        return this.$store.state.printer.configfile?.settings?.stepper_y?.position_min ?? 0
-    }
-
-    get stepperYmax() {
-        return this.$store.state.printer.configfile?.settings?.stepper_y?.position_max ?? 200
-    }
-
-    get park_custom_pos_dz() {
-        return this.$store.state.server.timelapse.settings.park_custom_pos_dz
-    }
-
-    set park_custom_pos_dz(newVal: number | string) {
-        if (newVal === '' || newVal < 0) return
-
-        this.$store.dispatch('server/timelapse/saveSetting', { park_custom_pos_dz: newVal })
-    }
-
-    get park_travel_speed() {
-        return this.$store.state.server.timelapse.settings.park_travel_speed
-    }
-
-    set park_travel_speed(newVal: number | string) {
-        if (newVal === '' || newVal < 0) return
-
-        this.$store.dispatch('server/timelapse/saveSetting', { park_travel_speed: newVal })
-    }
-
-    get park_retract_speed() {
-        return this.$store.state.server.timelapse.settings.park_retract_speed
-    }
-
-    set park_retract_speed(newVal: number | string) {
-        if (newVal === '' || newVal <= 0) return
-
-        this.$store.dispatch('server/timelapse/saveSetting', { park_retract_speed: newVal })
-    }
-
-    get park_extrude_speed() {
-        return this.$store.state.server.timelapse.settings.park_extrude_speed
-    }
-
-    set park_extrude_speed(newVal: number | string) {
-        if (newVal === '' || newVal <= 0) return
-
-        this.$store.dispatch('server/timelapse/saveSetting', { park_extrude_speed: newVal })
-    }
-
-    get park_retract_distance() {
-        return this.$store.state.server.timelapse.settings.park_retract_distance
-    }
-
-    set park_retract_distance(newVal: number | string) {
-        if (newVal === '' || newVal < 0) return
-
-        this.$store.dispatch('server/timelapse/saveSetting', { park_retract_distance: newVal })
-    }
-
-    get park_extrude_distance() {
-        return this.$store.state.server.timelapse.settings.park_extrude_distance
-    }
-
-    set park_extrude_distance(newVal: number | string) {
-        if (newVal === '' || newVal < 0) return
-
-        this.$store.dispatch('server/timelapse/saveSetting', { park_extrude_distance: newVal })
-    }
-
-    get park_time() {
-        return this.$store.state.server.timelapse.settings.park_time
-    }
-
-    set park_time(newVal: number | string) {
-        if (newVal === '' || newVal < 0) return
-
-        this.$store.dispatch('server/timelapse/saveSetting', { park_time: newVal })
-    }
-
-    get fw_retract() {
-        return this.$store.state.server.timelapse.settings.fw_retract
-    }
-
-    set fw_retract(newVal) {
-        this.$store.dispatch('server/timelapse/saveSetting', { fw_retract: newVal })
-    }
-
-    get constant_rate_factor() {
-        return this.$store.state.server.timelapse.settings.constant_rate_factor
-    }
-
-    set constant_rate_factor(newVal: number | string) {
-        if (newVal === '' || newVal <= 0) return
-
-        this.$store.dispatch('server/timelapse/saveSetting', { constant_rate_factor: newVal })
-    }
-
-    get output_framerate() {
-        return this.$store.state.server.timelapse.settings.output_framerate
-    }
-
-    set output_framerate(newVal: number | string) {
-        if (newVal === '' || newVal <= 0) return
-
-        this.$store.dispatch('server/timelapse/saveSetting', { output_framerate: newVal })
-    }
-
-    get pixelformat() {
-        return this.$store.state.server.timelapse.settings.pixelformat
-    }
-
-    set pixelformat(newVal) {
-        this.$store.dispatch('server/timelapse/saveSetting', { pixelformat: newVal })
-    }
-
-    get extraoutputparams() {
-        return this.$store.state.server.timelapse.settings.extraoutputparams
-    }
-
-    set extraoutputparams(newVal) {
-        this.$store.dispatch('server/timelapse/saveSetting', { extraoutputparams: newVal })
-    }
-
-    get variable_fps() {
-        return this.$store.state.server.timelapse.settings.variable_fps
-    }
-
-    set variable_fps(newVal) {
-        this.$store.dispatch('server/timelapse/saveSetting', { variable_fps: newVal })
-    }
-
-    get targetlength() {
-        return this.$store.state.server.timelapse.settings.targetlength
-    }
-
-    set targetlength(newVal: number | string) {
-        if (newVal === '' || newVal <= 0) return
-
-        this.$store.dispatch('server/timelapse/saveSetting', { targetlength: newVal })
-    }
-
-    get variable_fps_min() {
-        return this.$store.state.server.timelapse.settings.variable_fps_min
-    }
-
-    set variable_fps_min(newVal: number | string) {
-        if (newVal === '' || newVal <= 0) return
-
-        this.$store.dispatch('server/timelapse/saveSetting', { variable_fps_min: newVal })
-    }
-
-    get variable_fps_max() {
-        return this.$store.state.server.timelapse.settings.variable_fps_max
-    }
-
-    set variable_fps_max(newVal: number | string) {
-        if (newVal === '' || newVal <= this.variable_fps_min) return
-
-        this.$store.dispatch('server/timelapse/saveSetting', { variable_fps_max: newVal })
-    }
-
-    get duplicatelastframe() {
-        return this.$store.state.server.timelapse.settings.duplicatelastframe
-    }
-
-    set duplicatelastframe(newVal: number | string) {
-        if (newVal === '' || newVal < 0) return
-
-        this.$store.dispatch('server/timelapse/saveSetting', { duplicatelastframe: newVal })
-    }
-
-    get camera() {
-        const value = this.$store.state.server.timelapse.settings.camera ?? null
-
-        if (
-            value === null ||
-            this.blockedsettings.includes('snapshoturl') ||
-            this.availableSnapshotWebcams.length === 0 ||
-            this.availableSnapshotWebcams.find((webcam) => webcam.name === value) === undefined
-        ) {
-            return null
-        }
-
-        return this.$store.state.server.timelapse.settings.camera
-    }
-
-    set camera(newVal) {
-        this.$store.dispatch('server/timelapse/saveSetting', { camera: newVal })
-    }
-
-    get time_format_code() {
-        return this.$store.state.server.timelapse.settings.time_format_code
-    }
-
-    set time_format_code(newVal) {
-        this.$store.dispatch('server/timelapse/saveSetting', { time_format_code: newVal })
-    }
-}
+            output = caseInsensitiveSort(output, 'text')
+
+            if (this.camera === null) {
+                output.unshift({ value: null, text: this.$t('Settings.TimelapseTab.SelectWebcam') })
+            }
+
+            return output
+        },
+        blockedsettings() {
+            return this.$store.state.server.timelapse.settings.blockedsettings ?? []
+        },
+        enabled: {
+            get() {
+                return this.$store.state.server.timelapse.settings.enabled
+            },
+            setenabled(newVal) {
+                this.$store.dispatch('server/timelapse/saveSetting', { enabled: newVal })
+            },
+        },
+        mode: {
+            get() {
+                return this.$store.state.server.timelapse.settings.mode
+            },
+            setmode(newVal) {
+                this.$store.dispatch('server/timelapse/saveSetting', { mode: newVal })
+            },
+        },
+        hyperlapseCycle: {
+            get() {
+                return this.$store.state.server.timelapse.settings.hyperlapse_cycle
+            },
+            sethyperlapseCycle(newVal) {
+                this.$store.dispatch('server/timelapse/saveSetting', { hyperlapse_cycle: newVal })
+            },
+        },
+        autorender: {
+            get() {
+                return this.$store.state.server.timelapse.settings.autorender
+            },
+            setautorender(newVal) {
+                this.$store.dispatch('server/timelapse/saveSetting', { autorender: newVal })
+            },
+        },
+        saveframes: {
+            get() {
+                return this.$store.state.server.timelapse.settings.saveframes
+            },
+            setsaveframes(newVal) {
+                this.$store.dispatch('server/timelapse/saveSetting', { saveframes: newVal })
+            },
+        },
+        stream_delay_compensation: {
+            get() {
+                return this.$store.state.server.timelapse.settings.stream_delay_compensation
+            },
+            setstream_delay_compensation(newVal: number | string) {
+                if (newVal === '') newVal = 0
+
+                this.$store.dispatch('server/timelapse/saveSetting', { stream_delay_compensation: newVal })
+            },
+        },
+        previewimage: {
+            get() {
+                return this.$store.state.server.timelapse.settings.previewimage
+            },
+            setpreviewimage(newVal) {
+                this.$store.dispatch('server/timelapse/saveSetting', { previewimage: newVal })
+            },
+        },
+        gcode_verbose: {
+            get() {
+                return this.$store.state.server.timelapse.settings.gcode_verbose
+            },
+            setgcode_verbose(newVal) {
+                this.$store.dispatch('server/timelapse/saveSetting', { gcode_verbose: newVal })
+            },
+        },
+        parkhead: {
+            get() {
+                return this.$store.state.server.timelapse.settings.parkhead
+            },
+            setparkhead(newVal) {
+                this.$store.dispatch('server/timelapse/saveSetting', { parkhead: newVal })
+            },
+        },
+        parkpos: {
+            get() {
+                return this.$store.state.server.timelapse.settings.parkpos
+            },
+            setparkpos(newVal) {
+                this.$store.dispatch('server/timelapse/saveSetting', { parkpos: newVal })
+            },
+        },
+        park_custom_pos_x: {
+            get() {
+                return this.$store.state.server.timelapse.settings.park_custom_pos_x
+            },
+            setpark_custom_pos_x(newVal: number | string) {
+                if (newVal === '' || newVal < this.stepperXmin || newVal > this.stepperXmax) return
+
+                this.$store.dispatch('server/timelapse/saveSetting', { park_custom_pos_x: newVal })
+            },
+        },
+        stepperXmin() {
+            return this.$store.state.printer.configfile?.settings?.stepper_x?.position_min ?? 0
+        },
+        stepperXmax() {
+            return this.$store.state.printer.configfile?.settings?.stepper_x?.position_max ?? 200
+        },
+        park_custom_pos_y: {
+            get() {
+                return this.$store.state.server.timelapse.settings.park_custom_pos_y
+            },
+            setpark_custom_pos_y(newVal: number | string) {
+                if (newVal === '' || newVal < this.stepperYmin || newVal > this.stepperYmax) return
+
+                this.$store.dispatch('server/timelapse/saveSetting', { park_custom_pos_y: newVal })
+            },
+        },
+        stepperYmin() {
+            return this.$store.state.printer.configfile?.settings?.stepper_y?.position_min ?? 0
+        },
+        stepperYmax() {
+            return this.$store.state.printer.configfile?.settings?.stepper_y?.position_max ?? 200
+        },
+        park_custom_pos_dz: {
+            get() {
+                return this.$store.state.server.timelapse.settings.park_custom_pos_dz
+            },
+            setpark_custom_pos_dz(newVal: number | string) {
+                if (newVal === '' || newVal < 0) return
+
+                this.$store.dispatch('server/timelapse/saveSetting', { park_custom_pos_dz: newVal })
+            },
+        },
+        park_travel_speed: {
+            get() {
+                return this.$store.state.server.timelapse.settings.park_travel_speed
+            },
+            setpark_travel_speed(newVal: number | string) {
+                if (newVal === '' || newVal < 0) return
+
+                this.$store.dispatch('server/timelapse/saveSetting', { park_travel_speed: newVal })
+            },
+        },
+        park_retract_speed: {
+            get() {
+                return this.$store.state.server.timelapse.settings.park_retract_speed
+            },
+            setpark_retract_speed(newVal: number | string) {
+                if (newVal === '' || newVal <= 0) return
+
+                this.$store.dispatch('server/timelapse/saveSetting', { park_retract_speed: newVal })
+            },
+        },
+        park_extrude_speed: {
+            get() {
+                return this.$store.state.server.timelapse.settings.park_extrude_speed
+            },
+            setpark_extrude_speed(newVal: number | string) {
+                if (newVal === '' || newVal <= 0) return
+
+                this.$store.dispatch('server/timelapse/saveSetting', { park_extrude_speed: newVal })
+            },
+        },
+        park_retract_distance: {
+            get() {
+                return this.$store.state.server.timelapse.settings.park_retract_distance
+            },
+            setpark_retract_distance(newVal: number | string) {
+                if (newVal === '' || newVal < 0) return
+
+                this.$store.dispatch('server/timelapse/saveSetting', { park_retract_distance: newVal })
+            },
+        },
+        park_extrude_distance: {
+            get() {
+                return this.$store.state.server.timelapse.settings.park_extrude_distance
+            },
+            setpark_extrude_distance(newVal: number | string) {
+                if (newVal === '' || newVal < 0) return
+
+                this.$store.dispatch('server/timelapse/saveSetting', { park_extrude_distance: newVal })
+            },
+        },
+        park_time: {
+            get() {
+                return this.$store.state.server.timelapse.settings.park_time
+            },
+            setpark_time(newVal: number | string) {
+                if (newVal === '' || newVal < 0) return
+
+                this.$store.dispatch('server/timelapse/saveSetting', { park_time: newVal })
+            },
+        },
+        fw_retract: {
+            get() {
+                return this.$store.state.server.timelapse.settings.fw_retract
+            },
+            setfw_retract(newVal) {
+                this.$store.dispatch('server/timelapse/saveSetting', { fw_retract: newVal })
+            },
+        },
+        constant_rate_factor: {
+            get() {
+                return this.$store.state.server.timelapse.settings.constant_rate_factor
+            },
+            setconstant_rate_factor(newVal: number | string) {
+                if (newVal === '' || newVal <= 0) return
+
+                this.$store.dispatch('server/timelapse/saveSetting', { constant_rate_factor: newVal })
+            },
+        },
+        output_framerate: {
+            get() {
+                return this.$store.state.server.timelapse.settings.output_framerate
+            },
+            setoutput_framerate(newVal: number | string) {
+                if (newVal === '' || newVal <= 0) return
+
+                this.$store.dispatch('server/timelapse/saveSetting', { output_framerate: newVal })
+            },
+        },
+        pixelformat: {
+            get() {
+                return this.$store.state.server.timelapse.settings.pixelformat
+            },
+            setpixelformat(newVal) {
+                this.$store.dispatch('server/timelapse/saveSetting', { pixelformat: newVal })
+            },
+        },
+        extraoutputparams: {
+            get() {
+                return this.$store.state.server.timelapse.settings.extraoutputparams
+            },
+            setextraoutputparams(newVal) {
+                this.$store.dispatch('server/timelapse/saveSetting', { extraoutputparams: newVal })
+            },
+        },
+        variable_fps: {
+            get() {
+                return this.$store.state.server.timelapse.settings.variable_fps
+            },
+            setvariable_fps(newVal) {
+                this.$store.dispatch('server/timelapse/saveSetting', { variable_fps: newVal })
+            },
+        },
+        targetlength: {
+            get() {
+                return this.$store.state.server.timelapse.settings.targetlength
+            },
+            settargetlength(newVal: number | string) {
+                if (newVal === '' || newVal <= 0) return
+
+                this.$store.dispatch('server/timelapse/saveSetting', { targetlength: newVal })
+            },
+        },
+        variable_fps_min: {
+            get() {
+                return this.$store.state.server.timelapse.settings.variable_fps_min
+            },
+            setvariable_fps_min(newVal: number | string) {
+                if (newVal === '' || newVal <= 0) return
+
+                this.$store.dispatch('server/timelapse/saveSetting', { variable_fps_min: newVal })
+            },
+        },
+        variable_fps_max: {
+            get() {
+                return this.$store.state.server.timelapse.settings.variable_fps_max
+            },
+            setvariable_fps_max(newVal: number | string) {
+                if (newVal === '' || newVal <= this.variable_fps_min) return
+
+                this.$store.dispatch('server/timelapse/saveSetting', { variable_fps_max: newVal })
+            },
+        },
+        duplicatelastframe: {
+            get() {
+                return this.$store.state.server.timelapse.settings.duplicatelastframe
+            },
+            setduplicatelastframe(newVal: number | string) {
+                if (newVal === '' || newVal < 0) return
+
+                this.$store.dispatch('server/timelapse/saveSetting', { duplicatelastframe: newVal })
+            },
+        },
+        camera: {
+            get() {
+                const value = this.$store.state.server.timelapse.settings.camera ?? null
+
+                if (
+                    value === null ||
+                    this.blockedsettings.includes('snapshoturl') ||
+                    this.availableSnapshotWebcams.length === 0 ||
+                    this.availableSnapshotWebcams.find((webcam) => webcam.name === value) === undefined
+                ) {
+                    return null
+                }
+
+                return this.$store.state.server.timelapse.settings.camera
+            },
+            setcamera(newVal) {
+                this.$store.dispatch('server/timelapse/saveSetting', { camera: newVal })
+            },
+        },
+        time_format_code: {
+            get() {
+                return this.$store.state.server.timelapse.settings.time_format_code
+            },
+            settime_format_code(newVal) {
+                this.$store.dispatch('server/timelapse/saveSetting', { time_format_code: newVal })
+            },
+        },
+    },
+})
 </script>

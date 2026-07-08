@@ -1,4 +1,3 @@
-
 import { getDefaultState } from './index'
 import { MutationTree } from 'vuex'
 import { FarmPrinterState } from '@/store/farm/printer/types'

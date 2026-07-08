@@ -19,7 +19,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop, Ref, Watch } from 'vue-property-decorator'
+import { defineComponent, PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { GuiWebcamStateWebcam } from '@/store/gui/webcams/types'
 import WebcamMixin from '@/components/mixins/webcam'
@@ -35,172 +35,173 @@ interface RTCIceServerWithCredentialType extends RTCIceServer {
     credentialType?: string
 }
 
-@Component
-export default class WebrtcMediaMTX extends Mixins(BaseMixin, WebcamMixin) {
-    capitalize = capitalize
-
-    @Prop({ required: true }) readonly camSettings!: GuiWebcamStateWebcam
-    @Prop({ default: null }) readonly printerUrl!: string | null
-    @Prop({ type: String, default: null }) readonly page!: string | null
-    @Ref() readonly video!: HTMLVideoElement
-
-    pc: RTCPeerConnection | null = null
-    restartTimeout: ReturnType<typeof setTimeout> | null = null
-    status: string = 'connecting'
-    eTag: string | null = null
-    sessionUuid: string | null = null
-    queuedCandidates: RTCIceCandidate[] = []
-    offerData: OfferData = {
-        iceUfrag: '',
-        icePwd: '',
-        medias: [],
-    }
-    RESTART_PAUSE = 2000
-    aspectRatio: number | null = null
-
-    // stop the video and close the streams if the component is going to be destroyed so we don't leave hanging streams
-    beforeDestroy() {
-        this.terminate()
-
-        // clear any potentially open restart timeout
-        if (this.restartTimeout) clearTimeout(this.restartTimeout)
-    }
-
-    get wrapperStyle() {
-        return this.getWrapperStyle(this.aspectRatio, this.camSettings.rotation)
-    }
-
-    get webcamStyle() {
+export default defineComponent({
+    name: 'WebrtcMediaMTX',
+    mixins: [BaseMixin, WebcamMixin],
+    props: {
+        camSettings: { type: Object as PropType<GuiWebcamStateWebcam>, required: true },
+        printerUrl: { type: String, default: null },
+        page: { type: String, default: null },
+    },
+    data() {
         return {
-            transform: this.generateTransform(
-                this.camSettings.flip_horizontal ?? false,
-                this.camSettings.flip_vertical ?? false,
-                this.camSettings.rotation ?? 0,
-                this.aspectRatio ?? 1
-            ),
-        }
-    }
-
-    get url() {
-        let baseUrl = this.camSettings.stream_url
-        if (!baseUrl.endsWith('/')) baseUrl += '/'
-        baseUrl += 'whep'
-
-        return this.convertUrl(baseUrl, this.printerUrl)
-    }
-
-    // stop and restart the video if the url changes
-    @Watch('url')
-    changedUrl() {
-        this.terminate()
-        this.start()
-    }
-
-    get expanded(): boolean {
-        if (this.page !== 'dashboard') return true
-
-        return this.$store.getters['gui/getPanelExpand']('webcam-panel', this.viewport) ?? false
-    }
-
-    // start or stop the video when the expanded state changes
-    @Watch('expanded', { immediate: true })
-    expandChanged(newExpanded: boolean): void {
-        if (!newExpanded) {
-            this.terminate()
-            return
-        }
-
-        this.start()
-    }
-
-    log(msg: string, obj?: unknown) {
-        if (obj) {
-            window.console.log(`[WebRTC mediamtx] ${msg}`, obj)
-            return
-        }
-
-        window.console.log(`[WebRTC mediamtx] ${msg}`)
-    }
-
-    // webrtc player methods
-    // adapted from https://github.com/bluenviron/mediamtx/blob/main/internal/core/webrtc_read_index.html
-
-    unquoteCredential = (v: string) => JSON.parse(`"${v}"`)
-
-    linkToIceServers(links: string | null): RTCIceServer[] {
-        if (links === null) return []
-
-        return links.split(', ').map((link) => {
-            const m: RegExpMatchArray | null = link.match(
-                /^<(.+?)>; rel="ice-server"(; username="(.*?)"; credential="(.*?)"; credential-type="password")?/i
-            )
-
-            // break if match is null
-            if (m === null) return { urls: '' }
-
-            const ret: RTCIceServerWithCredentialType = {
-                urls: [m[1]],
-            }
-
-            if (m.length > 3) {
-                ret.username = this.unquoteCredential(m[3])
-                ret.credential = this.unquoteCredential(m[4])
-                ret.credentialType = 'password'
-            }
-
-            return ret
-        })
-    }
-
-    parseOffer(offer: string) {
-        const ret: OfferData = {
+            capitalize: capitalize,
+            pc: null as RTCPeerConnection | null,
+            restartTimeout: null as ReturnType<typeof setTimeout> | null,
+            status: 'connecting',
+            eTag: null as string | null,
+            sessionUuid: null as string | null,
+            queuedCandidates: [] as RTCIceCandidate[],
+            offerData: {
             iceUfrag: '',
             icePwd: '',
             medias: [],
+        } as OfferData,
+            RESTART_PAUSE: 2000,
+            aspectRatio: null as number | null,
+            // webrtc player methods
+            // adapted from https://github.com/bluenviron/mediamtx/blob/main/internal/core/webrtc_read_index.html
+            unquoteCredential: (v: string) => JSON.parse(`"${v}"`),
         }
-
-        for (const line of offer.split('\r\n')) {
-            if (line.startsWith('m=')) {
-                ret.medias.push(line.slice('m='.length))
-            } else if (ret.iceUfrag === '' && line.startsWith('a=ice-ufrag:')) {
-                ret.iceUfrag = line.slice('a=ice-ufrag:'.length)
-            } else if (ret.icePwd === '' && line.startsWith('a=ice-pwd:')) {
-                ret.icePwd = line.slice('a=ice-pwd:'.length)
+    },
+    computed: {
+        video(): HTMLVideoElement {
+            return this.$refs.video as HTMLVideoElement
+        },
+        wrapperStyle() {
+            return this.getWrapperStyle(this.aspectRatio, this.camSettings.rotation)
+        },
+        webcamStyle() {
+            return {
+                transform: this.generateTransform(
+                    this.camSettings.flip_horizontal ?? false,
+                    this.camSettings.flip_vertical ?? false,
+                    this.camSettings.rotation ?? 0,
+                    this.aspectRatio ?? 1
+                ),
             }
-        }
+        },
+        url() {
+            let baseUrl = this.camSettings.stream_url
+            if (!baseUrl.endsWith('/')) baseUrl += '/'
+            baseUrl += 'whep'
 
-        return ret
-    }
+            return this.convertUrl(baseUrl, this.printerUrl)
+        },
+        expanded(): boolean {
+            if (this.page !== 'dashboard') return true
 
-    generateSdpFragment(offerData: OfferData, candidates: RTCIceCandidate[]) {
-        // I don't found a specification for this, but it seems to be the only way to make it work
-        const candidatesByMedia: Record<number, RTCIceCandidate[]> = {}
-        for (const candidate of candidates) {
-            const mid = candidate.sdpMLineIndex
-            if (mid === null) continue
+            return this.$store.getters['gui/getPanelExpand']('webcam-panel', this.viewport) ?? false
+        },
+    },
+    watch: {
+        // stop and restart the video if the url changes
+        url() {
+            this.terminate()
+            this.start()
+        },
+        // start or stop the video when the expanded state changes
+        expanded: {
+            immediate: true,
+            handler(newExpanded: boolean): void {
+                if (!newExpanded) {
+                    this.terminate()
+                    return
+                }
 
-            // create the array if it doesn't exist
-            if (!(mid in candidatesByMedia)) candidatesByMedia[mid] = []
-            candidatesByMedia[mid].push(candidate)
-        }
+                this.start()
+            },
+        },
+    },
+    // stop the video and close the streams if the component is going to be destroyed so we don't leave hanging streams
+    beforeUnmount() {
+    this.terminate()
 
-        let frag = 'a=ice-ufrag:' + offerData.iceUfrag + '\r\n' + 'a=ice-pwd:' + offerData.icePwd + '\r\n'
-        let mid = 0
+    // clear any potentially open restart timeout
+    if (this.restartTimeout) clearTimeout(this.restartTimeout)
+},
+    methods: {
+        log(msg: string, obj?: unknown) {
+            if (obj) {
+                window.console.log(`[WebRTC mediamtx] ${msg}`, obj)
+                return
+            }
 
-        for (const media of offerData.medias) {
-            if (candidatesByMedia[mid] !== undefined) {
-                frag += 'm=' + media + '\r\n' + 'a=mid:' + mid + '\r\n'
+            window.console.log(`[WebRTC mediamtx] ${msg}`)
+        },
+        linkToIceServers(links: string | null): RTCIceServer[] {
+            if (links === null) return []
 
-                for (const candidate of candidatesByMedia[mid]) {
-                    frag += 'a=' + candidate.candidate + '\r\n'
+            return links.split(', ').map((link) => {
+                const m: RegExpMatchArray | null = link.match(
+                    /^<(.+?)>; rel="ice-server"(; username="(.*?)"; credential="(.*?)"; credential-type="password")?/i
+                )
+
+                // break if match is null
+                if (m === null) return { urls: '' }
+
+                const ret: RTCIceServerWithCredentialType = {
+                    urls: [m[1]],
+                }
+
+                if (m.length > 3) {
+                    ret.username = this.unquoteCredential(m[3])
+                    ret.credential = this.unquoteCredential(m[4])
+                    ret.credentialType = 'password'
+                }
+
+                return ret
+            })
+        },
+        parseOffer(offer: string) {
+            const ret: OfferData = {
+                iceUfrag: '',
+                icePwd: '',
+                medias: [],
+            }
+
+            for (const line of offer.split('\r\n')) {
+                if (line.startsWith('m=')) {
+                    ret.medias.push(line.slice('m='.length))
+                } else if (ret.iceUfrag === '' && line.startsWith('a=ice-ufrag:')) {
+                    ret.iceUfrag = line.slice('a=ice-ufrag:'.length)
+                } else if (ret.icePwd === '' && line.startsWith('a=ice-pwd:')) {
+                    ret.icePwd = line.slice('a=ice-pwd:'.length)
                 }
             }
 
-            mid++
-        }
+            return ret
+        },
+        generateSdpFragment(offerData: OfferData, candidates: RTCIceCandidate[]) {
+            // I don't found a specification for this, but it seems to be the only way to make it work
+            const candidatesByMedia: Record<number, RTCIceCandidate[]> = {}
+            for (const candidate of candidates) {
+                const mid = candidate.sdpMLineIndex
+                if (mid === null) continue
 
-        return frag
-    }
+                // create the array if it doesn't exist
+                if (!(mid in candidatesByMedia)) candidatesByMedia[mid] = []
+                candidatesByMedia[mid].push(candidate)
+            }
+
+            let frag = 'a=ice-ufrag:' + offerData.iceUfrag + '\r\n' + 'a=ice-pwd:' + offerData.icePwd + '\r\n'
+            let mid = 0
+
+            for (const media of offerData.medias) {
+                if (candidatesByMedia[mid] !== undefined) {
+                    frag += 'm=' + media + '\r\n' + 'a=mid:' + mid + '\r\n'
+
+                    for (const candidate of candidatesByMedia[mid]) {
+                        frag += 'a=' + candidate.candidate + '\r\n'
+                    }
+                }
+
+                mid++
+            }
+
+            return frag,
+    },
+})
 
     async start() {
         // clear any potentially open restart timeout

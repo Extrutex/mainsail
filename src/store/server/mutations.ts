@@ -1,4 +1,3 @@
-
 import { getDefaultState } from './index'
 import { MutationTree } from 'vuex'
 import { ServerState } from '@/store/server/types'

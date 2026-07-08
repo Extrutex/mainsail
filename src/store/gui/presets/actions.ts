@@ -49,6 +49,9 @@ export const actions: ActionTree<GuiPresetsState, RootState> = {
 
     delete({ commit }, payload) {
         commit('delete', payload)
-        getSocketClient().emit('server.database.delete_item', { namespace: 'mainsail', key: 'presets.presets.' + payload })
+        getSocketClient().emit('server.database.delete_item', {
+            namespace: 'mainsail',
+            key: 'presets.presets.' + payload,
+        })
     },
 }

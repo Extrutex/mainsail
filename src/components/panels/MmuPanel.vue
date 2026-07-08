@@ -1,41 +1,41 @@
 <template>
     <panel v-if="showPanel" :icon="mdiMulticast" :title="title" :collapsible="true" card-class="mmu-panel">
         <template #buttons>
-            <v-menu left offset-y :close-on-content-click="false">
-                <template #activator="{ on, attrs }">
-                    <v-btn icon tile v-bind="attrs" v-on="on">
+            <v-menu left location="bottom" :close-on-content-click="false">
+                <template #activator="{ props }">
+                    <v-btn icon tile v-bind="props">
                         <v-icon>{{ mdiDotsVertical }}</v-icon>
                     </v-btn>
                 </template>
-                <v-list dense>
+                <v-list density="compact">
                     <v-list-item :disabled="!enabled" :class="{ 'mmu-disabled': !enabled }">
-                        <v-btn small class="w-100" @click="showEditTtgMapDialog = true">
+                        <v-btn size="small" class="w-100" @click="showEditTtgMapDialog = true">
                             {{ $t('Panels.MmuPanel.EditTtgMap') }}
                         </v-btn>
                     </v-list-item>
                     <v-list-item :disabled="!enabled" :class="{ 'mmu-disabled': !enabled }">
-                        <v-btn small class="w-100" @click="showEditGateMapDialog = true">
+                        <v-btn size="small" class="w-100" @click="showEditGateMapDialog = true">
                             {{ $t('Panels.MmuPanel.EditGateMap') }}
                         </v-btn>
                     </v-list-item>
                     <v-list-item :disabled="!enabled" :class="{ 'mmu-disabled': !enabled }">
-                        <v-btn small class="w-100" :disabled="!canSend" @click="showRecoverStateDialog = true">
+                        <v-btn size="small" class="w-100" :disabled="!canSend" @click="showRecoverStateDialog = true">
                             {{ $t('Panels.MmuPanel.RecoverState') }}
                         </v-btn>
                     </v-list-item>
                     <v-list-item :disabled="!enabled" :class="{ 'mmu-disabled': !enabled }">
-                        <v-btn small class="w-100" :disabled="!canSend" @click="showMaintenanceDialog = true">
+                        <v-btn size="small" class="w-100" :disabled="!canSend" @click="showMaintenanceDialog = true">
                             {{ $t('Panels.MmuPanel.MmuMaintenance') }}
                         </v-btn>
                     </v-list-item>
                     <v-divider class="my-2" />
                     <v-list-item :disabled="!enabled" :class="{ 'mmu-disabled': !enabled }">
                         <v-btn
-                            small
+                            size="small"
                             class="w-100"
                             :loading="loadings.includes('mmu_stats')"
                             @click="doSend('MMU_STATS SHOWCOUNTS=1', 'mmu_stats')">
-                            <v-icon left>{{ mdiNoteText }}</v-icon>
+                            <v-icon start>{{ mdiNoteText }}</v-icon>
                             {{ $t('Panels.MmuPanel.ButtonPrintStats') }}
                         </v-btn>
                     </v-list-item>
@@ -43,22 +43,22 @@
                         :disabled="!enabled || mmuSpoolmanSupport === 'off'"
                         :class="{ 'mmu-disabled': !enabled || mmuSpoolmanSupport === 'off' }">
                         <v-btn
-                            small
+                            size="small"
                             class="w-100"
                             :loading="loadings.includes('mmu_spoolman')"
                             @click="handleSyncSpoolman()">
-                            <v-icon left>{{ mdiRefresh }}</v-icon>
+                            <v-icon start>{{ mdiRefresh }}</v-icon>
                             {{ $t('Panels.MmuPanel.ButtonSyncSpoolman') }}
                         </v-btn>
                     </v-list-item>
                     <v-list-item :disabled="!enabled" :class="{ 'mmu-disabled': !enabled }">
                         <v-btn
-                            small
+                            size="small"
                             class="w-100"
                             :disabled="!canSend"
                             :loading="loadings.includes('mmu_check_gates')"
                             @click="doSend('MMU_CHECK_GATES', 'mmu_check_gates')">
-                            <v-icon left>{{ mdiCheckAll }}</v-icon>
+                            <v-icon start>{{ mdiCheckAll }}</v-icon>
                             {{ $t('Panels.MmuPanel.ButtonCheckAllGates') }}
                         </v-btn>
                     </v-list-item>
@@ -132,7 +132,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import MmuMixin, { TOOL_GATE_BYPASS, TOOL_GATE_UNKNOWN } from '@/components/mixins/mmu'
 import { mdiMulticast, mdiDotsVertical, mdiCheckAll, mdiNoteText, mdiInformationOutline, mdiRefresh } from '@mdi/js'
@@ -144,7 +144,8 @@ import MmuGateSummary from '@/components/panels/Mmu/MmuGateSummary.vue'
 import MmuControls from '@/components/panels/Mmu/MmuControls.vue'
 import MmuTtgMap from '@/components/panels/Mmu/MmuTtgMap.vue'
 
-@Component({
+export default defineComponent({
+    name: 'MmuPanel',
     components: {
         Panel,
         MmuPanelSettings,
@@ -154,104 +155,95 @@ import MmuTtgMap from '@/components/panels/Mmu/MmuTtgMap.vue'
         MmuControls,
         MmuTtgMap,
     },
+    mixins: [BaseMixin, MmuMixin],
+    data() {
+        return {
+            mdiMulticast: mdiMulticast,
+            mdiDotsVertical: mdiDotsVertical,
+            mdiCheckAll: mdiCheckAll,
+            mdiNoteText: mdiNoteText,
+            mdiInformationOutline: mdiInformationOutline,
+            mdiRefresh: mdiRefresh,
+            showRecoverStateDialog: false,
+            showEditTtgMapDialog: false,
+            showEditGateMapDialog: false,
+            showMaintenanceDialog: false,
+        }
+    },
+    computed: {
+        showPanel() {
+            if (!this.klipperReadyForGui) return false
+
+            return 'mmu' in this.$store.state.printer
+        },
+        enabled(): boolean {
+            return this.mmu?.enabled ?? false
+        },
+        title() {
+            let headline = this.$t('Panels.MmuPanel.Headline').toString()
+            if (!this.enabled) {
+                const disabledText = this.$t('Panels.MmuPanel.Disabled').toString()
+
+                headline += ` (${disabledText})`
+            }
+
+            return headline
+        },
+        largeFilamentStatus() {
+            return this.$store.state.gui.view.mmu?.largeFilamentStatus ?? false
+        },
+        col1Size() {
+            return this.largeFilamentStatus ? 6 : 5
+        },
+        showClogDetection() {
+            return (this.hasMmuEncoder || this.hasSyncFeedback) && this.$store.state.gui.view.mmu.showClogDetection
+        },
+        showTtgMap() {
+            return this.$store.state.gui.view.mmu.showTtgMap ?? true
+        },
+        showDetails() {
+            return this.$store.state.gui.view.mmu.showDetails ?? true
+        },
+        toolchangeText() {
+            if (this.nextTool === TOOL_GATE_UNKNOWN) return ''
+
+            const label = (t: number) => (t === TOOL_GATE_BYPASS ? 'Bypass' : `T${t}`)
+            const parts: string[] = ['Changing tool']
+            if (this.lastTool !== TOOL_GATE_UNKNOWN) {
+                parts.push('from', label(this.lastTool))
+            }
+            parts.push('to', label(this.nextTool))
+            return parts.join(' ')
+        },
+        lastTool() {
+            return this.mmu?.last_tool ?? TOOL_GATE_UNKNOWN
+        },
+        nextTool() {
+            return this.mmu?.next_tool ?? TOOL_GATE_UNKNOWN
+        },
+        reasonForPause() {
+            return this.mmu?.reason_for_pause ?? null
+        },
+        fileForTtgMap() {
+            if (!this.printerIsPrinting) return null
+
+            return this.$store.state.printer.current_file ?? null
+        },
+    },
+    methods: {
+        selectGate(gateIndex: number) {
+            if (gateIndex === TOOL_GATE_BYPASS) {
+                this.doSend('MMU_SELECT BYPASS=1', 'mmu_select')
+                return
+            }
+
+            this.doSend(`MMU_SELECT GATE=${gateIndex}`, 'mmu_select')
+        },
+        handleSyncSpoolman() {
+            this.doSend('MMU_SPOOLMAN REFRESH=1 QUIET=1', 'mmu_spoolman')
+        },
+    },
 })
-export default class MmuPanel extends Mixins(BaseMixin, MmuMixin) {
-    mdiMulticast = mdiMulticast
-    mdiDotsVertical = mdiDotsVertical
-    mdiCheckAll = mdiCheckAll
-    mdiNoteText = mdiNoteText
-    mdiInformationOutline = mdiInformationOutline
-    mdiRefresh = mdiRefresh
-
-    showRecoverStateDialog = false
-    showEditTtgMapDialog = false
-    showEditGateMapDialog = false
-    showMaintenanceDialog = false
-
-    get showPanel() {
-        if (!this.klipperReadyForGui) return false
-
-        return 'mmu' in this.$store.state.printer
-    }
-
-    get enabled(): boolean {
-        return this.mmu?.enabled ?? false
-    }
-
-    get title() {
-        let headline = this.$t('Panels.MmuPanel.Headline').toString()
-        if (!this.enabled) {
-            const disabledText = this.$t('Panels.MmuPanel.Disabled').toString()
-
-            headline += ` (${disabledText})`
-        }
-
-        return headline
-    }
-
-    get largeFilamentStatus() {
-        return this.$store.state.gui.view.mmu?.largeFilamentStatus ?? false
-    }
-
-    get col1Size() {
-        return this.largeFilamentStatus ? 6 : 5
-    }
-
-    selectGate(gateIndex: number) {
-        if (gateIndex === TOOL_GATE_BYPASS) {
-            this.doSend('MMU_SELECT BYPASS=1', 'mmu_select')
-            return
-        }
-
-        this.doSend(`MMU_SELECT GATE=${gateIndex}`, 'mmu_select')
-    }
-
-    get showClogDetection() {
-        return (this.hasMmuEncoder || this.hasSyncFeedback) && this.$store.state.gui.view.mmu.showClogDetection
-    }
-
-    get showTtgMap() {
-        return this.$store.state.gui.view.mmu.showTtgMap ?? true
-    }
-
-    get showDetails() {
-        return this.$store.state.gui.view.mmu.showDetails ?? true
-    }
-
-    get toolchangeText() {
-        if (this.nextTool === TOOL_GATE_UNKNOWN) return ''
-
-        const label = (t: number) => (t === TOOL_GATE_BYPASS ? 'Bypass' : `T${t}`)
-        const parts: string[] = ['Changing tool']
-        if (this.lastTool !== TOOL_GATE_UNKNOWN) {
-            parts.push('from', label(this.lastTool))
-        }
-        parts.push('to', label(this.nextTool))
-        return parts.join(' ')
-    }
-
-    get lastTool() {
-        return this.mmu?.last_tool ?? TOOL_GATE_UNKNOWN
-    }
-
-    get nextTool() {
-        return this.mmu?.next_tool ?? TOOL_GATE_UNKNOWN
-    }
-
-    get reasonForPause() {
-        return this.mmu?.reason_for_pause ?? null
-    }
-
-    get fileForTtgMap() {
-        if (!this.printerIsPrinting) return null
-
-        return this.$store.state.printer.current_file ?? null
-    }
-
-    handleSyncSpoolman() {
-        this.doSend('MMU_SPOOLMAN REFRESH=1 QUIET=1', 'mmu_spoolman')
-    }
-}
 </script>
 
 <style scoped>

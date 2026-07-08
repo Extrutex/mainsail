@@ -4,50 +4,56 @@
     </v-list-item>
 </template>
 <script lang="ts">
-import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import AfcMixin from '@/components/mixins/afc'
 import { convertName } from '@/plugins/helpers'
 
-@Component
-export default class AfcPanelSettingsUnit extends Mixins(BaseMixin, AfcMixin) {
-    @Prop({ type: String, required: true }) readonly name!: string
+export default defineComponent({
+    name: 'AfcPanelSettingsUnit',
+    mixins: [BaseMixin, AfcMixin],
+    props: {
+        name: { type: String, required: true },
+    },
+    data() {
+        return {
+            value: true,
+        }
+    },
+    computed: {
+        label() {
+            const unitName = this.name.substring(this.name.indexOf(' ') + 1)
 
-    value = true
+            return this.$t(`Panels.AfcPanel.ShowUnit`, { name: convertName(unitName) }) as string
+        },
+    },
+    watch: {
+        value(newValue: boolean) {
+            if (newValue) {
+                this.removeFromHiddenUnits(this.name)
+                return
+            }
 
-    get label() {
-        const unitName = this.name.substring(this.name.indexOf(' ') + 1)
-
-        return this.$t(`Panels.AfcPanel.ShowUnit`, { name: convertName(unitName) }) as string
-    }
-
+            this.addToHiddenUnits(this.name)
+        },
+    },
     mounted() {
         this.value = !this.afcHiddenUnits.includes(this.name)
-    }
+    },
+    methods: {
+        removeFromHiddenUnits(name: string) {
+            const hiddenUnits = [...this.afcHiddenUnits]
+            const index = hiddenUnits.indexOf(name)
+            if (index > -1) hiddenUnits.splice(index, 1)
 
-    @Watch('value')
-    onValueChange(newValue: boolean) {
-        if (newValue) {
-            this.removeFromHiddenUnits(this.name)
-            return
-        }
+            this.$store.dispatch('gui/saveSetting', { name: 'view.afc.hiddenUnits', value: hiddenUnits })
+        },
+        addToHiddenUnits(name: string) {
+            const hiddenUnits = [...this.afcHiddenUnits]
+            if (!hiddenUnits.includes(name)) hiddenUnits.push(name)
 
-        this.addToHiddenUnits(this.name)
-    }
-
-    private removeFromHiddenUnits(name: string) {
-        const hiddenUnits = [...this.afcHiddenUnits]
-        const index = hiddenUnits.indexOf(name)
-        if (index > -1) hiddenUnits.splice(index, 1)
-
-        this.$store.dispatch('gui/saveSetting', { name: 'view.afc.hiddenUnits', value: hiddenUnits })
-    }
-
-    private addToHiddenUnits(name: string) {
-        const hiddenUnits = [...this.afcHiddenUnits]
-        if (!hiddenUnits.includes(name)) hiddenUnits.push(name)
-
-        this.$store.dispatch('gui/saveSetting', { name: 'view.afc.hiddenUnits', value: hiddenUnits })
-    }
-}
+            this.$store.dispatch('gui/saveSetting', { name: 'view.afc.hiddenUnits', value: hiddenUnits })
+        },
+    },
+})
 </script>

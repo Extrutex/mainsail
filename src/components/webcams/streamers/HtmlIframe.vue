@@ -5,50 +5,51 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent, PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { GuiWebcamStateWebcam } from '@/store/gui/webcams/types'
 import WebcamMixin from '@/components/mixins/webcam'
 
 const DEFAULT_ASPECT_RATIO = 16 / 9
 
-@Component
-export default class HtmlIframe extends Mixins(BaseMixin, WebcamMixin) {
-    @Prop({ required: true }) readonly camSettings!: GuiWebcamStateWebcam
-    @Prop({ default: null }) readonly printerUrl!: string | null
+export default defineComponent({
+    name: 'HtmlIframe',
+    mixins: [BaseMixin, WebcamMixin],
+    props: {
+        camSettings: { type: Object as PropType<GuiWebcamStateWebcam>, required: true },
+        printerUrl: { type: String, default: null },
+    },
+    computed: {
+        url() {
+            return this.convertUrl(this.camSettings?.stream_url, this.printerUrl)
+        },
+        wrapperStyle() {
+            return this.getWrapperStyle(this.aspectRatio, this.camSettings.rotation)
+        },
+        aspectRatio() {
+            const value = this.camSettings.aspect_ratio?.trim()
+            if (!value) return DEFAULT_ASPECT_RATIO
 
-    get url() {
-        return this.convertUrl(this.camSettings?.stream_url, this.printerUrl)
-    }
+            const match = value.match(/^(\d+)\s*[:/]\s*(\d+)$/)
+            if (!match) return DEFAULT_ASPECT_RATIO
 
-    get wrapperStyle() {
-        return this.getWrapperStyle(this.aspectRatio, this.camSettings.rotation)
-    }
+            const width = parseInt(match[1]) || 1
+            const height = parseInt(match[2]) || 1
 
-    get aspectRatio() {
-        const value = this.camSettings.aspect_ratio?.trim()
-        if (!value) return DEFAULT_ASPECT_RATIO
-
-        const match = value.match(/^(\d+)\s*[:/]\s*(\d+)$/)
-        if (!match) return DEFAULT_ASPECT_RATIO
-
-        const width = parseInt(match[1]) || 1
-        const height = parseInt(match[2]) || 1
-
-        return width / height
-    }
-
-    get iframeStyle() {
-        return {
-            border: 'none',
-            transform: this.generateTransform(
-                this.camSettings.flip_horizontal ?? false,
-                this.camSettings.flip_vertical ?? false,
-                this.camSettings.rotation ?? 0,
-                this.aspectRatio
-            ),
-            'aspect-ratio': this.aspectRatio,
-        }
-    }
-}
+            return width / height
+        },
+        iframeStyle() {
+            return {
+                border: 'none',
+                transform: this.generateTransform(
+                    this.camSettings.flip_horizontal ?? false,
+                    this.camSettings.flip_vertical ?? false,
+                    this.camSettings.rotation ?? 0,
+                    this.aspectRatio
+                ),
+                'aspect-ratio': this.aspectRatio,
+            }
+        },
+    },
+})
 </script>

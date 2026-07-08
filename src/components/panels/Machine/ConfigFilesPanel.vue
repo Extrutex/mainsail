@@ -7,19 +7,19 @@
             :collapsible="true">
             <v-card-text>
                 <v-row>
-                    <v-col class="col-12 col-lg pr-lg-0">
+                    <v-col cols="12" class="col-lg pr-lg-0">
                         <v-select
                             v-model="root"
                             class="machine-configfiles-panel__root-select"
                             :items="registeredDirectoriesSelectItems"
                             :label="$t('Machine.ConfigFilesPanel.Root')"
-                            outlined
+                            variant="outlined"
                             hide-details
-                            dense
+                            density="compact"
                             attach=".machine-configfiles-panel__root-select"
                             @change="changeRoot" />
                     </v-col>
-                    <v-col class="col col-lg-auto pl-lg-0 text-right">
+                    <v-col lg="auto" class="pl-lg-0 text-right">
                         <input ref="fileUpload" type="file" style="display: none" multiple @change="uploadFile" />
                         <v-btn
                             v-for="button in filteredToolbarButtons"
@@ -29,15 +29,15 @@
                             :loading="button.loadingName !== null && loadings.includes(button.loadingName)"
                             @click="button.click">
                             <v-tooltip top>
-                                <template #activator="{ on, attrs }">
-                                    <v-icon v-bind="attrs" v-on="on">{{ button.icon }}</v-icon>
+                                <template #activator="{ props }">
+                                    <v-icon v-bind="props">{{ button.icon }}</v-icon>
                                 </template>
                                 <span>{{ button.text }}</span>
                             </v-tooltip>
                         </v-btn>
-                        <v-menu offset-y left :title="$t('Machine.ConfigFilesPanel.SetupCurrentList')">
-                            <template #activator="{ on, attrs }">
-                                <v-btn class="px-2 minwidth-0 ml-3" v-bind="attrs" v-on="on">
+                        <v-menu location="bottom" left :title="$t('Machine.ConfigFilesPanel.SetupCurrentList')">
+                            <template #activator="{ props }">
+                                <v-btn class="px-2 minwidth-0 ml-3" v-bind="props">
                                     <v-icon class="machine-configfiles-panel__settings-icon">{{ mdiCog }}</v-icon>
                                 </v-btn>
                             </template>
@@ -63,7 +63,7 @@
             </v-card-text>
             <v-card-text>
                 <v-row>
-                    <v-col class="col-12 py-2 d-flex align-center">
+                    <v-col cols="12" class="py-2 d-flex align-center">
                         <span>
                             <b class="mr-1">{{ $t('Machine.ConfigFilesPanel.CurrentPath') }}:</b>
                             <path-navigation
@@ -74,8 +74,8 @@
                         <v-spacer />
                         <template v-if="disk_usage !== null && !showMissingConfigRootWarning">
                             <v-tooltip top>
-                                <template #activator="{ on, attrs }">
-                                    <span v-bind="attrs" v-on="on">
+                                <template #activator="{ props }">
+                                    <span v-bind="props">
                                         <b>{{ $t('Machine.ConfigFilesPanel.FreeDisk') }}:</b>
                                         {{ formatFilesize(disk_usage.free) }}
                                     </span>
@@ -100,11 +100,11 @@
                 :items="files"
                 class="files-table"
                 :headers="headers"
-                :page.sync="currentPage"
+                v-model:page="currentPage"
                 :custom-sort="sortFiles"
-                :sort-by.sync="sortBy"
-                :sort-desc.sync="sortDesc"
-                :items-per-page.sync="countPerPage"
+                v-model:sort-by="sortBy"
+                v-model:sort-desc="sortDesc"
+                v-model:items-per-page="countPerPage"
                 :footer-props="{
                     itemsPerPageText: $t('Machine.ConfigFilesPanel.Files'),
                     itemsPerPageAllText: $t('Machine.ConfigFilesPanel.AllFiles'),
@@ -169,9 +169,9 @@
             </v-data-table>
             <v-card-text v-else>
                 <v-row>
-                    <v-col class="col-12 col-lg pr-lg-0">
+                    <v-col cols="12" class="col-lg pr-lg-0">
                         <v-alert
-                            dense
+                            density="compact"
                             text
                             type="warning"
                             elevation="2"
@@ -184,7 +184,12 @@
                 </v-row>
             </v-card-text>
         </panel>
-        <v-menu v-model="contextMenu.shown" :position-x="contextMenu.x" :position-y="contextMenu.y" absolute offset-y>
+        <v-menu
+            v-model="contextMenu.shown"
+            :position-x="contextMenu.x"
+            :position-y="contextMenu.y"
+            absolute
+            location="bottom">
             <v-list>
                 <v-list-item v-if="!contextMenu.item.isDirectory" @click="clickRow(contextMenu.item, true)">
                     <v-icon class="mr-1">{{ mdiFileDocumentEditOutline }}</v-icon>
@@ -288,10 +293,10 @@
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer />
-                    <v-btn color="" text @click="dialogCreateFile.show = false">
+                    <v-btn color="" variant="text" @click="dialogCreateFile.show = false">
                         {{ $t('Buttons.Cancel') }}
                     </v-btn>
-                    <v-btn :disabled="isInvalidName" color="primary" text @click="createFileAction">
+                    <v-btn :disabled="isInvalidName" color="primary" variant="text" @click="createFileAction">
                         {{ $t('Machine.ConfigFilesPanel.Create') }}
                     </v-btn>
                 </v-card-actions>
@@ -319,10 +324,10 @@
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer />
-                    <v-btn color="" text @click="dialogRenameFile.show = false">
+                    <v-btn color="" variant="text" @click="dialogRenameFile.show = false">
                         {{ $t('Buttons.Cancel') }}
                     </v-btn>
-                    <v-btn :disabled="isInvalidName" color="primary" text @click="renameFileAction">
+                    <v-btn :disabled="isInvalidName" color="primary" variant="text" @click="renameFileAction">
                         {{ $t('Machine.ConfigFilesPanel.Rename') }}
                     </v-btn>
                 </v-card-actions>
@@ -350,10 +355,10 @@
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer />
-                    <v-btn color="" text @click="dialogDuplicateFile.show = false">
+                    <v-btn color="" variant="text" @click="dialogDuplicateFile.show = false">
                         {{ $t('Buttons.Cancel') }}
                     </v-btn>
-                    <v-btn :disabled="isInvalidName" color="primary" text @click="duplicateFileAction">
+                    <v-btn :disabled="isInvalidName" color="primary" variant="text" @click="duplicateFileAction">
                         {{ $t('Machine.ConfigFilesPanel.Duplicate') }}
                     </v-btn>
                 </v-card-actions>
@@ -381,10 +386,10 @@
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer />
-                    <v-btn color="" text @click="dialogCreateDirectory.show = false">
+                    <v-btn color="" variant="text" @click="dialogCreateDirectory.show = false">
                         {{ $t('Buttons.Cancel') }}
                     </v-btn>
-                    <v-btn :disabled="isInvalidName" color="primary" text @click="createDirectoryAction">
+                    <v-btn :disabled="isInvalidName" color="primary" variant="text" @click="createDirectoryAction">
                         {{ $t('Machine.ConfigFilesPanel.Create') }}
                     </v-btn>
                 </v-card-actions>
@@ -412,10 +417,10 @@
                 </v-card-text>
                 <v-card-actions>
                     <v-spacer />
-                    <v-btn color="" text @click="dialogRenameDirectory.show = false">
+                    <v-btn color="" variant="text" @click="dialogRenameDirectory.show = false">
                         {{ $t('Buttons.Cancel') }}
                     </v-btn>
-                    <v-btn :disabled="isInvalidName" color="primary" text @click="renameDirectoryAction">
+                    <v-btn :disabled="isInvalidName" color="primary" variant="text" @click="renameDirectoryAction">
                         {{ $t('Machine.ConfigFilesPanel.Rename') }}
                     </v-btn>
                 </v-card-actions>
@@ -454,7 +459,7 @@
             <br />
             <v-progress-linear class="mt-2" :value="uploadSnackbar.percent" />
             <template #action="{ attrs }">
-                <v-btn color="red" text v-bind="attrs" style="min-width: auto" @click="cancelUpload">
+                <v-btn color="red" variant="text" v-bind="props" style="min-width: auto" @click="cancelUpload">
                     <v-icon class="0">{{ mdiClose }}</v-icon>
                 </v-btn>
             </template>
@@ -463,7 +468,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Ref } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import ThemeMixin from '@/components/mixins/theme'
 import { escapePath, formatFilesize, generateTimestamp, sortFiles } from '@/plugins/helpers'
@@ -540,741 +545,703 @@ interface draggingFile {
     item: FileStateFile
 }
 
-@Component({
+export default defineComponent({
+    name: 'ConfigFilesPanel',
     components: { ConfirmationDialog, Panel, PathNavigation },
-})
-export default class ConfigFilesPanel extends Mixins(BaseMixin, ThemeMixin) {
-    mdiInformation = mdiInformation
-    mdiClose = mdiClose
-    mdiCog = mdiCog
-    mdiFolder = mdiFolder
-    mdiFolderUpload = mdiFolderUpload
-    mdiFileDocumentEditOutline = mdiFileDocumentEditOutline
-    mdiFile = mdiFile
-    mdiCloudDownload = mdiCloudDownload
-    mdiRenameBox = mdiRenameBox
-    mdiDelete = mdiDelete
-    mdiCloseThick = mdiCloseThick
-    mdiLockOutline = mdiLockOutline
-    mdiContentCopy = mdiContentCopy
-
-    sortFiles = sortFiles
-    formatFilesize = formatFilesize
-
-    @Ref() readonly inputDialogCreateFileName!: FocusableRef
-    @Ref() readonly inputDialogRenameFileName!: FocusableRef
-    @Ref() readonly inputDialogDuplicateFileName!: FocusableRef
-    @Ref() readonly inputDialogCreateDirectoryName!: FocusableRef
-    @Ref() readonly inputDialogRenameDirectoryName!: FocusableRef
-    @Ref() readonly fileUpload!: HTMLInputElement
-
-    currentPage = 1
-
-    contextMenu: contextMenu = {
-        shown: false,
-        isDirectory: false,
-        touchTimer: null,
-        x: 0,
-        y: 0,
-        item: {
-            isDirectory: false,
-            filename: '',
-            permissions: '',
-            modified: new Date(),
-        },
-    }
-
-    dialogImage: dialogImageObject = {
-        show: false,
-        item: {
-            name: null,
-            url: null,
-            svg: null,
-        },
-    }
-
-    dialogCreateFile = {
-        show: false,
-        name: '',
-    }
-
-    dialogRenameFile: dialogRenameObject = {
-        show: false,
-        newName: '',
-        item: {
-            isDirectory: false,
-            filename: '',
-            permissions: '',
-            modified: new Date(),
-        },
-    }
-
-    dialogDuplicateFile: dialogRenameObject = {
-        show: false,
-        newName: '',
-        item: {
-            isDirectory: false,
-            filename: '',
-            permissions: '',
-            modified: new Date(),
-        },
-    }
-
-    dialogCreateDirectory = {
-        show: false,
-        name: '',
-    }
-
-    dialogRenameDirectory: dialogRenameObject = {
-        show: false,
-        newName: '',
-        item: {
-            isDirectory: false,
-            filename: '',
-            permissions: '',
-            modified: new Date(),
-        },
-    }
-
-    dialogDeleteDirectory: dialogDeleteObject = {
-        show: false,
-        item: {
-            isDirectory: false,
-            filename: '',
-            permissions: '',
-            modified: new Date(),
-        },
-    }
-
-    uploadSnackbar: uploadSnackbar = {
-        status: false,
-        filename: '',
-        percent: 0,
-        speed: 0,
-        total: 0,
-        number: 0,
-        max: 0,
-        cancelTokenSource: null,
-    }
-
-    draggingFile: draggingFile = {
-        item: {
-            isDirectory: false,
-            filename: '',
-            permissions: '',
-            modified: new Date(),
-        },
-    }
-
-    deleteDialog = false
-    deleteSelectedDialog = false
-
-    isInvalidName = true
-    nameInputRules = [
-        (value: string) => !!value || this.$t('Files.InvalidNameEmpty'),
-        (value: string) => !this.existsFilename(value) || this.$t('Files.InvalidNameAlreadyExists'),
-    ]
-
-    existsFilename(name: string) {
-        return this.files.findIndex((file) => file.filename === name) >= 0
-    }
-
-    get blockFileUpload() {
-        return this.$store.state.gui.view.blockFileUpload ?? false
-    }
-
-    set blockFileUpload(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.blockFileUpload', value: newVal })
-    }
-
-    get toolbarButtons() {
-        return [
-            {
-                text: this.$t('Machine.ConfigFilesPanel.Download'),
-                color: 'primary',
-                icon: mdiCloudDownload,
-                loadingName: 'configDownloadZip',
-                onlyWriteable: false,
-                condition: this.selectedFiles.length > 0,
-                click: () => {
-                    this.downloadSelectedFiles()
+    mixins: [BaseMixin, ThemeMixin],
+    data() {
+        return {
+            mdiInformation: mdiInformation,
+            mdiClose: mdiClose,
+            mdiCog: mdiCog,
+            mdiFolder: mdiFolder,
+            mdiFolderUpload: mdiFolderUpload,
+            mdiFileDocumentEditOutline: mdiFileDocumentEditOutline,
+            mdiFile: mdiFile,
+            mdiCloudDownload: mdiCloudDownload,
+            mdiRenameBox: mdiRenameBox,
+            mdiDelete: mdiDelete,
+            mdiCloseThick: mdiCloseThick,
+            mdiLockOutline: mdiLockOutline,
+            mdiContentCopy: mdiContentCopy,
+            sortFiles: sortFiles,
+            formatFilesize: formatFilesize,
+            currentPage: 1,
+            contextMenu: {
+                shown: false,
+                isDirectory: false,
+                touchTimer: null,
+                x: 0,
+                y: 0,
+                item: {
+                    isDirectory: false,
+                    filename: '',
+                    permissions: '',
+                    modified: new Date(),
                 },
-            },
-            {
-                text: this.$t('Buttons.Delete'),
-                color: 'error',
-                icon: mdiDelete,
-                loadingName: null,
-                onlyWriteable: true,
-                condition: this.selectedFiles.length > 0,
-                click: () => {
-                    this.deleteSelectedDialog = true
+            } as contextMenu,
+            dialogImage: {
+                show: false,
+                item: {
+                    name: null,
+                    url: null,
+                    svg: null,
                 },
+            } as dialogImageObject,
+            dialogCreateFile: {
+                show: false,
+                name: '',
             },
-            {
-                text: this.$t('Machine.ConfigFilesPanel.UploadFile'),
-                color: this.machineButtonCol,
-                icon: mdiFileUpload,
-                loadingName: null,
-                onlyWriteable: true,
-                condition: true,
-                click: this.uploadFileButton,
+            dialogRenameFile: {
+                show: false,
+                newName: '',
+                item: {
+                    isDirectory: false,
+                    filename: '',
+                    permissions: '',
+                    modified: new Date(),
+                },
+            } as dialogRenameObject,
+            dialogDuplicateFile: {
+                show: false,
+                newName: '',
+                item: {
+                    isDirectory: false,
+                    filename: '',
+                    permissions: '',
+                    modified: new Date(),
+                },
+            } as dialogRenameObject,
+            dialogCreateDirectory: {
+                show: false,
+                name: '',
             },
-            {
-                text: this.$t('Machine.ConfigFilesPanel.CreateFile'),
-                color: this.machineButtonCol,
-                icon: mdiFilePlus,
-                loadingName: null,
-                onlyWriteable: true,
-                condition: true,
-                click: this.createFile,
-            },
-            {
-                text: this.$t('Machine.ConfigFilesPanel.CreateDirectory'),
-                color: this.machineButtonCol,
-                icon: mdiFolderPlus,
-                loadingName: null,
-                onlyWriteable: true,
-                condition: true,
-                click: this.createDirectory,
-            },
-            {
-                text: this.$t('Machine.ConfigFilesPanel.RefreshDirectory'),
-                color: this.machineButtonCol,
-                icon: mdiRefresh,
-                loadingName: null,
-                onlyWriteable: false,
-                condition: true,
-                click: this.refreshFileList,
-            },
-        ].filter((rule) => rule.condition)
-    }
-
-    get filteredToolbarButtons() {
-        return this.toolbarButtons.filter((button) => {
-            return (this.directoryPermissions.includes('w') && button.onlyWriteable) || !button.onlyWriteable
-        })
-    }
-
-    get absolutePath() {
-        let path = '/' + this.root
-        if (this.currentPath) path += this.currentPath
-
-        return path
-    }
-
-    get directory() {
-        return this.$store.getters['files/getDirectory'](this.absolutePath)
-    }
-
-    get disk_usage() {
-        return this.directory?.disk_usage ?? { used: 0, free: 0, total: 0 }
-    }
-
-    get directoryPermissions() {
-        return this.directory?.permissions ?? 'r'
-    }
-
-    get files() {
-        let files = [...(this.directory?.childrens ?? [])]
-
-        if (!this.showHiddenFiles) {
-            files = files.filter((file) => file.filename.slice(0, 1) !== '.')
+            dialogRenameDirectory: {
+                show: false,
+                newName: '',
+                item: {
+                    isDirectory: false,
+                    filename: '',
+                    permissions: '',
+                    modified: new Date(),
+                },
+            } as dialogRenameObject,
+            dialogDeleteDirectory: {
+                show: false,
+                item: {
+                    isDirectory: false,
+                    filename: '',
+                    permissions: '',
+                    modified: new Date(),
+                },
+            } as dialogDeleteObject,
+            uploadSnackbar: {
+                status: false,
+                filename: '',
+                percent: 0,
+                speed: 0,
+                total: 0,
+                number: 0,
+                max: 0,
+                cancelTokenSource: null,
+            } as uploadSnackbar,
+            draggingFile: {
+                item: {
+                    isDirectory: false,
+                    filename: '',
+                    permissions: '',
+                    modified: new Date(),
+                },
+            } as draggingFile,
+            deleteDialog: false,
+            deleteSelectedDialog: false,
+            isInvalidName: true,
+            nameInputRules: [
+                (value: string) => !!value || this.$t('Files.InvalidNameEmpty'),
+                (value: string) => !this.existsFilename(value) || this.$t('Files.InvalidNameAlreadyExists'),
+            ],
         }
+    },
+    computed: {
+        inputDialogCreateFileName(): FocusableRef {
+            return this.$refs.inputDialogCreateFileName as FocusableRef
+        },
+        inputDialogRenameFileName(): FocusableRef {
+            return this.$refs.inputDialogRenameFileName as FocusableRef
+        },
+        inputDialogDuplicateFileName(): FocusableRef {
+            return this.$refs.inputDialogDuplicateFileName as FocusableRef
+        },
+        inputDialogCreateDirectoryName(): FocusableRef {
+            return this.$refs.inputDialogCreateDirectoryName as FocusableRef
+        },
+        inputDialogRenameDirectoryName(): FocusableRef {
+            return this.$refs.inputDialogRenameDirectoryName as FocusableRef
+        },
+        fileUpload(): HTMLInputElement {
+            return this.$refs.fileUpload as HTMLInputElement
+        },
+        blockFileUpload: {
+            get() {
+                return this.$store.state.gui.view.blockFileUpload ?? false
+            },
+            setblockFileUpload(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.blockFileUpload', value: newVal })
+            },
+        },
+        toolbarButtons() {
+            return [
+                {
+                    text: this.$t('Machine.ConfigFilesPanel.Download'),
+                    color: 'primary',
+                    icon: mdiCloudDownload,
+                    loadingName: 'configDownloadZip',
+                    onlyWriteable: false,
+                    condition: this.selectedFiles.length > 0,
+                    click: () => {
+                        this.downloadSelectedFiles()
+                    },
+                },
+                {
+                    text: this.$t('Buttons.Delete'),
+                    color: 'error',
+                    icon: mdiDelete,
+                    loadingName: null,
+                    onlyWriteable: true,
+                    condition: this.selectedFiles.length > 0,
+                    click: () => {
+                        this.deleteSelectedDialog = true
+                    },
+                },
+                {
+                    text: this.$t('Machine.ConfigFilesPanel.UploadFile'),
+                    color: this.machineButtonCol,
+                    icon: mdiFileUpload,
+                    loadingName: null,
+                    onlyWriteable: true,
+                    condition: true,
+                    click: this.uploadFileButton,
+                },
+                {
+                    text: this.$t('Machine.ConfigFilesPanel.CreateFile'),
+                    color: this.machineButtonCol,
+                    icon: mdiFilePlus,
+                    loadingName: null,
+                    onlyWriteable: true,
+                    condition: true,
+                    click: this.createFile,
+                },
+                {
+                    text: this.$t('Machine.ConfigFilesPanel.CreateDirectory'),
+                    color: this.machineButtonCol,
+                    icon: mdiFolderPlus,
+                    loadingName: null,
+                    onlyWriteable: true,
+                    condition: true,
+                    click: this.createDirectory,
+                },
+                {
+                    text: this.$t('Machine.ConfigFilesPanel.RefreshDirectory'),
+                    color: this.machineButtonCol,
+                    icon: mdiRefresh,
+                    loadingName: null,
+                    onlyWriteable: false,
+                    condition: true,
+                    click: this.refreshFileList,
+                },
+            ].filter((rule) => rule.condition)
+        },
+        filteredToolbarButtons() {
+            return this.toolbarButtons.filter((button) => {
+                return (this.directoryPermissions.includes('w') && button.onlyWriteable) || !button.onlyWriteable
+            })
+        },
+        absolutePath() {
+            let path = '/' + this.root
+            if (this.currentPath) path += this.currentPath
 
-        if (this.hideBackupFiles) {
-            const klipperBackupFileMatcher = /^printer-\d{8}_\d{6}\.cfg$/
-            const crowsnestBackupFileMatcher = /^crowsnest\.conf\.\d{4}-\d{2}-\d{2}-\d{4}$/
+            return path
+        },
+        directory() {
+            return this.$store.getters['files/getDirectory'](this.absolutePath)
+        },
+        disk_usage() {
+            return this.directory?.disk_usage ?? { used: 0, free: 0, total: 0 }
+        },
+        directoryPermissions() {
+            return this.directory?.permissions ?? 'r'
+        },
+        files() {
+            let files = [...(this.directory?.childrens ?? [])]
 
-            files = files.filter(
-                (file) =>
-                    !file.filename.match(klipperBackupFileMatcher) &&
-                    !file.filename.match(crowsnestBackupFileMatcher) &&
-                    !file.filename.endsWith('.bkp')
+            if (!this.showHiddenFiles) {
+                files = files.filter((file) => file.filename.slice(0, 1) !== '.')
+            }
+
+            if (this.hideBackupFiles) {
+                const klipperBackupFileMatcher = /^printer-\d{8}_\d{6}\.cfg$/
+                const crowsnestBackupFileMatcher = /^crowsnest\.conf\.\d{4}-\d{2}-\d{2}-\d{4}$/
+
+                files = files.filter(
+                    (file) =>
+                        !file.filename.match(klipperBackupFileMatcher) &&
+                        !file.filename.match(crowsnestBackupFileMatcher) &&
+                        !file.filename.endsWith('.bkp')
+                )
+            }
+
+            return files
+        },
+        headers() {
+            return [
+                { text: '', value: '', sortable: false },
+                { text: this.$t('Machine.ConfigFilesPanel.Name'), value: 'filename' },
+                { text: this.$t('Machine.ConfigFilesPanel.Filesize'), value: 'size', align: 'right' },
+                { text: this.$t('Machine.ConfigFilesPanel.LastModified'), value: 'modified', align: 'right' },
+            ]
+        },
+        selectedFiles: {
+            get() {
+                return this.$store.state.gui.view.configfiles.selectedFiles ?? []
+            },
+            setselectedFiles(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.configfiles.selectedFiles', value: newVal })
+            },
+        },
+        countPerPage: {
+            get() {
+                return this.$store.state.gui.view.configfiles.countPerPage
+            },
+            setcountPerPage(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.configfiles.countPerPage', value: newVal })
+            },
+        },
+        showHiddenFiles: {
+            get() {
+                return this.$store.state.gui.view.configfiles.showHiddenFiles
+            },
+            setshowHiddenFiles(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.configfiles.showHiddenFiles', value: newVal })
+            },
+        },
+        hideBackupFiles: {
+            get() {
+                return this.$store.state.gui.view.configfiles.hideBackupFiles
+            },
+            sethideBackupFiles(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.configfiles.hideBackupFiles', value: newVal })
+            },
+        },
+        sortBy: {
+            get() {
+                return this.$store.state.gui.view.configfiles.sortBy
+            },
+            setsortBy(newVal) {
+                if (newVal === undefined) newVal = 'filename'
+
+                this.$store.dispatch('gui/saveSetting', { name: 'view.configfiles.sortBy', value: newVal })
+            },
+        },
+        sortDesc: {
+            get() {
+                return this.$store.state.gui.view.configfiles.sortDesc
+            },
+            setsortDesc(newVal) {
+                if (newVal === undefined) newVal = false
+
+                this.$store.dispatch('gui/saveSetting', { name: 'view.configfiles.sortDesc', value: newVal })
+            },
+        },
+        registeredDirectories() {
+            return this.$store.state.server.registered_directories ?? []
+        },
+        existConfigRoot() {
+            return this.registeredDirectories.findIndex((root: string) => root === 'config') !== -1
+        },
+        showMissingConfigRootWarning() {
+            return (
+                this.absolutePath.startsWith('/config') &&
+                !this.absolutePath.startsWith('/config_example') &&
+                !this.existConfigRoot
             )
-        }
+        },
+        registeredDirectoriesSelectItems() {
+            const items = this.registeredDirectories
+                .filter((dir: string) => !hiddenRootDirectories.includes(dir))
+                .sort()
+            if (!this.existConfigRoot) items.push('config')
 
-        return files
-    }
+            return items
+        },
+        root: {
+            get() {
+                return this.$store.state.gui.view.configfiles.rootPath
+            },
+            setroot(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.configfiles.rootPath', value: newVal })
+            },
+        },
+        currentPath: {
+            get() {
+                return this.$store.state.gui.view.configfiles.currentPath
+            },
+            setcurrentPath(newVal) {
+                this.selectedFiles = []
 
-    get headers() {
-        return [
-            { text: '', value: '', sortable: false },
-            { text: this.$t('Machine.ConfigFilesPanel.Name'), value: 'filename' },
-            { text: this.$t('Machine.ConfigFilesPanel.Filesize'), value: 'size', align: 'right' },
-            { text: this.$t('Machine.ConfigFilesPanel.LastModified'), value: 'modified', align: 'right' },
-        ]
-    }
+                this.$store.dispatch('gui/saveSetting', { name: 'view.configfiles.currentPath', value: newVal })
+            },
+        },
+        deleteSelectedDialogText(): string {
+            if (this.selectedFiles.length === 1) {
+                return this.$t('Machine.ConfigFilesPanel.DeleteSingleFileQuestion', {
+                    name: this.selectedFiles[0].filename,
+                }).toString()
+            }
 
-    get selectedFiles() {
-        return this.$store.state.gui.view.configfiles.selectedFiles ?? []
-    }
-
-    set selectedFiles(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.configfiles.selectedFiles', value: newVal })
-    }
-
-    get countPerPage() {
-        return this.$store.state.gui.view.configfiles.countPerPage
-    }
-
-    set countPerPage(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.configfiles.countPerPage', value: newVal })
-    }
-
-    get showHiddenFiles() {
-        return this.$store.state.gui.view.configfiles.showHiddenFiles
-    }
-
-    set showHiddenFiles(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.configfiles.showHiddenFiles', value: newVal })
-    }
-
-    get hideBackupFiles() {
-        return this.$store.state.gui.view.configfiles.hideBackupFiles
-    }
-
-    set hideBackupFiles(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.configfiles.hideBackupFiles', value: newVal })
-    }
-
-    get sortBy() {
-        return this.$store.state.gui.view.configfiles.sortBy
-    }
-
-    set sortBy(newVal) {
-        if (newVal === undefined) newVal = 'filename'
-
-        this.$store.dispatch('gui/saveSetting', { name: 'view.configfiles.sortBy', value: newVal })
-    }
-
-    get sortDesc() {
-        return this.$store.state.gui.view.configfiles.sortDesc
-    }
-
-    set sortDesc(newVal) {
-        if (newVal === undefined) newVal = false
-
-        this.$store.dispatch('gui/saveSetting', { name: 'view.configfiles.sortDesc', value: newVal })
-    }
-
-    get registeredDirectories() {
-        return this.$store.state.server.registered_directories ?? []
-    }
-
-    get existConfigRoot() {
-        return this.registeredDirectories.findIndex((root: string) => root === 'config') !== -1
-    }
-
-    get showMissingConfigRootWarning() {
-        return (
-            this.absolutePath.startsWith('/config') &&
-            !this.absolutePath.startsWith('/config_example') &&
-            !this.existConfigRoot
-        )
-    }
-
-    get registeredDirectoriesSelectItems() {
-        const items = this.registeredDirectories.filter((dir: string) => !hiddenRootDirectories.includes(dir)).sort()
-        if (!this.existConfigRoot) items.push('config')
-
-        return items
-    }
-
-    get root() {
-        return this.$store.state.gui.view.configfiles.rootPath
-    }
-
-    set root(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.configfiles.rootPath', value: newVal })
-    }
-
-    get currentPath() {
-        return this.$store.state.gui.view.configfiles.currentPath
-    }
-
-    set currentPath(newVal) {
-        this.selectedFiles = []
-
-        this.$store.dispatch('gui/saveSetting', { name: 'view.configfiles.currentPath', value: newVal })
-    }
-
-    get deleteSelectedDialogText(): string {
-        if (this.selectedFiles.length === 1) {
-            return this.$t('Machine.ConfigFilesPanel.DeleteSingleFileQuestion', {
-                name: this.selectedFiles[0].filename,
+            return this.$t('Machine.ConfigFilesPanel.DeleteSelectedQuestion', {
+                count: this.selectedFiles.length,
             }).toString()
-        }
+        },
+    },
+    methods: {
+        existsFilename(name: string) {
+            return this.files.findIndex((file) => file.filename === name) >= 0
+        },
+        refreshFileList() {
+            this.$socket.emit(
+                'server.files.get_directory',
+                { path: this.absolutePath.substring(1) },
+                { action: 'files/getDirectory' }
+            )
+        },
+        changeRoot() {
+            this.currentPath = ''
+        },
+        clickRow(item: FileStateFile, force = false) {
+            if (this.contextMenu.shown && !force) return
+            if (force) this.contextMenu.shown = false
 
-        return this.$t('Machine.ConfigFilesPanel.DeleteSelectedQuestion', {
-            count: this.selectedFiles.length,
-        }).toString()
-    }
+            if (item.isDirectory) {
+                this.currentPath += '/' + item.filename
+                this.currentPage = 1
 
-    refreshFileList() {
-        this.$socket.emit(
-            'server.files.get_directory',
-            { path: this.absolutePath.substring(1) },
-            { action: 'files/getDirectory' }
-        )
-    }
+                return
+            }
 
-    changeRoot() {
-        this.currentPath = ''
-    }
+            const extension = item.filename.split('.').pop()?.toLowerCase() ?? ''
+            const url = `${this.apiUrl}/server/files${this.absolutePath}/${item.filename}?t=${Date.now()}`
 
-    clickRow(item: FileStateFile, force = false) {
-        if (this.contextMenu.shown && !force) return
-        if (force) this.contextMenu.shown = false
+            if (extension === 'svg') {
+                fetch(url)
+                    .then((res) => res.text())
+                    .then((svg) => {
+                        this.dialogImage.show = true
+                        this.dialogImage.item.name = item.filename
+                        this.dialogImage.item.svg = svg
+                    })
 
-        if (item.isDirectory) {
-            this.currentPath += '/' + item.filename
-            this.currentPage = 1
+                return
+            }
 
-            return
-        }
+            if (['png', 'jpeg', 'jpg', 'gif', 'bmp', 'tif'].includes(extension)) {
+                this.dialogImage.show = true
+                this.dialogImage.item.name = item.filename
+                this.dialogImage.item.url = url
+                return
+            }
 
-        const extension = item.filename.split('.').pop()?.toLowerCase() ?? ''
-        const url = `${this.apiUrl}/server/files${this.absolutePath}/${item.filename}?t=${Date.now()}`
+            this.$store.dispatch('editor/openFile', {
+                root: this.root,
+                path: this.currentPath,
+                filename: item.filename,
+                size: item.size,
+                permissions: item.permissions,
+            })
+        },
+        clickRowGoBack() {
+            this.currentPath = this.currentPath.slice(0, this.currentPath.lastIndexOf('/'))
+        },
+        clickPathNavGoToDirectory(segment: { location: string }) {
+            this.currentPath = segment.location
+        },
+        setIsInvalidName(bool: boolean) {
+            this.isInvalidName = bool
+        },
+        showContextMenu(e: MouseEvent | LongpressEvent, item: FileStateFile) {
+            e?.preventDefault()
+            this.contextMenu.x = e?.clientX || e?.pageX || window.screenX / 2
+            this.contextMenu.y = e?.clientY || e?.pageY || window.screenY / 2
+            this.contextMenu.item = item
+            this.contextMenu.shown = true
+        },
+        startDownloadFile(filename: string) {
+            const filepath = `${this.absolutePath}/${filename}`
+            const href = `${this.apiUrl}/server/files${escapePath(filepath)}`
+            window.open(href)
+        },
+        downloadFile() {
+            this.startDownloadFile(this.contextMenu.item.filename)
+            this.contextMenu.shown = false
+        },
+        async downloadSelectedFiles() {
+            if (this.selectedFiles.length === 1) {
+                this.startDownloadFile(this.selectedFiles[0].filename)
+                this.selectedFiles = []
+                return
+            }
 
-        if (extension === 'svg') {
-            fetch(url)
-                .then((res) => res.text())
-                .then((svg) => {
-                    this.dialogImage.show = true
-                    this.dialogImage.item.name = item.filename
-                    this.dialogImage.item.svg = svg
+            const items: string[] = []
+
+            const addElementToItems = async (absolutPath: string, directory: FileStateFile[]) => {
+                for (const file of directory) {
+                    const filePath = `${absolutPath}/${file.filename}`
+
+                    if (file.isDirectory && file.childrens) {
+                        await addElementToItems(filePath, file.childrens)
+
+                        continue
+                    }
+
+                    items.push(filePath)
+                }
+            }
+
+            await addElementToItems(this.absolutePath, this.selectedFiles)
+
+            this.$socket.emit(
+                'server.files.zip',
+                { items, dest: `config/${this.root}-${generateTimestamp()}.zip` },
+                { action: 'files/downloadZip', loading: 'configDownloadZip' }
+            )
+
+            this.selectedFiles = []
+        },
+        createDirectory() {
+            this.dialogCreateDirectory.name = ''
+            this.dialogCreateDirectory.show = true
+
+            setTimeout(() => {
+                this.inputDialogCreateDirectoryName?.focus()
+            }, 200)
+        },
+        createDirectoryAction() {
+            this.dialogCreateDirectory.show = false
+
+            this.$socket.emit(
+                'server.files.post_directory',
+                {
+                    path: this.absolutePath.substring(1) + '/' + this.dialogCreateDirectory.name,
+                },
+                { action: 'files/getCreateDir' }
+            )
+        },
+        renameDirectory(item: FileStateFile) {
+            this.dialogRenameDirectory.item = item
+            this.dialogRenameDirectory.newName = item.filename
+            this.dialogRenameDirectory.show = true
+
+            setTimeout(() => {
+                this.inputDialogRenameDirectoryName?.focus()
+            }, 200)
+        },
+        renameDirectoryAction() {
+            this.dialogRenameDirectory.show = false
+            this.$socket.emit(
+                'server.files.move',
+                {
+                    source: (this.absolutePath + '/' + this.dialogRenameDirectory.item.filename).slice(1),
+                    dest: (this.absolutePath + '/' + this.dialogRenameDirectory.newName).slice(1),
+                },
+                { action: 'files/getMove' }
+            )
+        },
+        deleteDirectory(item: FileStateFile) {
+            this.dialogDeleteDirectory.item = item
+            this.dialogDeleteDirectory.show = true
+        },
+        deleteDirectoryAction() {
+            this.$socket.emit(
+                'server.files.delete_directory',
+                { path: this.absolutePath + '/' + this.dialogDeleteDirectory.item.filename, force: true },
+                { action: 'files/getDeleteDir' }
+            )
+        },
+        createFile() {
+            this.dialogCreateFile.name = ''
+            this.dialogCreateFile.show = true
+
+            setTimeout(() => {
+                this.inputDialogCreateFileName?.focus()
+            }, 200)
+        },
+        createFileAction() {
+            const file = new File([''], this.dialogCreateFile.name)
+
+            const formData = new FormData()
+            formData.append('file', file)
+            formData.append('root', this.root)
+            if (this.currentPath.length) formData.append('path', this.currentPath.slice(1))
+
+            axios
+                .post(this.apiUrl + '/server/files/upload', formData, {
+                    headers: { 'Content-Type': 'multipart/form-data' },
+                })
+                .then(() => {
+                    this.$toast.success(
+                        this.$t('Files.SuccessfullyCreated', { filename: this.dialogCreateFile.name }).toString()
+                    )
+                    this.dialogCreateFile.show = false
+                    this.dialogCreateFile.name = ''
+                })
+                .catch(() => {
+                    window.console.error('Error create file: ' + this.dialogCreateFile.name)
+                })
+        },
+        renameFile(item: FileStateFile) {
+            this.dialogRenameFile.item = item
+            this.dialogRenameFile.newName = item.filename
+            this.dialogRenameFile.show = true
+
+            setTimeout(() => {
+                this.inputDialogRenameFileName?.focus()
+            }, 200)
+        },
+        renameFileAction() {
+            this.dialogRenameFile.show = false
+            this.$socket.emit(
+                'server.files.move',
+                {
+                    source: (this.absolutePath + '/' + this.dialogRenameFile.item.filename).slice(1),
+                    dest: (this.absolutePath + '/' + this.dialogRenameFile.newName).slice(1),
+                },
+                { action: 'files/getMove' }
+            )
+        },
+        duplicateFile(item: FileStateFile) {
+            this.dialogDuplicateFile.item = item
+            this.dialogDuplicateFile.newName = item.filename
+            this.dialogDuplicateFile.show = true
+
+            setTimeout(() => {
+                this.inputDialogDuplicateFileName?.focus()
+            }, 200)
+        },
+        duplicateFileAction() {
+            this.dialogDuplicateFile.show = false
+            this.$socket.emit('server.files.copy', {
+                source: (this.absolutePath + '/' + this.dialogDuplicateFile.item.filename).slice(1),
+                dest: (this.absolutePath + '/' + this.dialogDuplicateFile.newName).slice(1),
+            })
+        },
+        removeFile() {
+            this.$socket.emit(
+                'server.files.delete_file',
+                { path: this.absolutePath + '/' + this.contextMenu.item.filename },
+                { action: 'files/getDeleteFile' }
+            )
+        },
+        deleteSelectedFiles() {
+            this.selectedFiles.forEach((item: FileStateGcodefile) => {
+                if (item.isDirectory) {
+                    this.$socket.emit(
+                        'server.files.delete_directory',
+                        { path: this.absolutePath + '/' + item.filename, force: true },
+                        { action: 'files/getDeleteDir' }
+                    )
+                } else {
+                    this.$socket.emit(
+                        'server.files.delete_file',
+                        { path: this.absolutePath + '/' + item.filename },
+                        { action: 'files/getDeleteFile' }
+                    )
+                }
+            })
+
+            this.selectedFiles = []
+        },
+        uploadFileButton() {
+            this.fileUpload.click()
+        },
+        async uploadFile() {
+            const files = [...(this.fileUpload.files ?? [])]
+            if (files.length === 0) return
+
+            this.fileUpload.value = ''
+
+            await this.$store.dispatch('socket/addLoading', { name: 'configFileUpload' })
+            await this.$store.dispatch('files/uploadSetCurrentNumber', 0)
+            await this.$store.dispatch('files/uploadSetMaxNumber', files.length)
+
+            for (const file of files) {
+                await this.$store.dispatch('files/uploadIncrementCurrentNumber')
+                const path = this.currentPath.slice(0, 1) === '/' ? this.currentPath.slice(1) : this.currentPath
+                const result = await this.$store.dispatch('files/uploadFile', {
+                    file,
+                    path,
+                    root: 'config',
                 })
 
-            return
-        }
-
-        if (['png', 'jpeg', 'jpg', 'gif', 'bmp', 'tif'].includes(extension)) {
-            this.dialogImage.show = true
-            this.dialogImage.item.name = item.filename
-            this.dialogImage.item.url = url
-            return
-        }
-
-        this.$store.dispatch('editor/openFile', {
-            root: this.root,
-            path: this.currentPath,
-            filename: item.filename,
-            size: item.size,
-            permissions: item.permissions,
-        })
-    }
-
-    clickRowGoBack() {
-        this.currentPath = this.currentPath.slice(0, this.currentPath.lastIndexOf('/'))
-    }
-
-    clickPathNavGoToDirectory(segment: { location: string }) {
-        this.currentPath = segment.location
-    }
-
-    setIsInvalidName(bool: boolean) {
-        this.isInvalidName = bool
-    }
-
-    showContextMenu(e: MouseEvent | LongpressEvent, item: FileStateFile) {
-        e?.preventDefault()
-        this.contextMenu.x = e?.clientX || e?.pageX || window.screenX / 2
-        this.contextMenu.y = e?.clientY || e?.pageY || window.screenY / 2
-        this.contextMenu.item = item
-        this.contextMenu.shown = true
-    }
-
-    private startDownloadFile(filename: string) {
-        const filepath = `${this.absolutePath}/${filename}`
-        const href = `${this.apiUrl}/server/files${escapePath(filepath)}`
-        window.open(href)
-    }
-
-    downloadFile() {
-        this.startDownloadFile(this.contextMenu.item.filename)
-        this.contextMenu.shown = false
-    }
-
-    async downloadSelectedFiles() {
-        if (this.selectedFiles.length === 1) {
-            this.startDownloadFile(this.selectedFiles[0].filename)
-            this.selectedFiles = []
-            return
-        }
-
-        const items: string[] = []
-
-        const addElementToItems = async (absolutPath: string, directory: FileStateFile[]) => {
-            for (const file of directory) {
-                const filePath = `${absolutPath}/${file.filename}`
-
-                if (file.isDirectory && file.childrens) {
-                    await addElementToItems(filePath, file.childrens)
-
-                    continue
-                }
-
-                items.push(filePath)
+                if (result !== false)
+                    this.$toast.success(this.$t('Files.SuccessfullyUploaded', { filename: result }).toString())
             }
-        }
 
-        await addElementToItems(this.absolutePath, this.selectedFiles)
-
-        this.$socket.emit(
-            'server.files.zip',
-            { items, dest: `config/${this.root}-${generateTimestamp()}.zip` },
-            { action: 'files/downloadZip', loading: 'configDownloadZip' }
-        )
-
-        this.selectedFiles = []
-    }
-
-    createDirectory() {
-        this.dialogCreateDirectory.name = ''
-        this.dialogCreateDirectory.show = true
-
-        setTimeout(() => {
-            this.inputDialogCreateDirectoryName?.focus()
-        }, 200)
-    }
-
-    createDirectoryAction() {
-        this.dialogCreateDirectory.show = false
-
-        this.$socket.emit(
-            'server.files.post_directory',
-            {
-                path: this.absolutePath.substring(1) + '/' + this.dialogCreateDirectory.name,
-            },
-            { action: 'files/getCreateDir' }
-        )
-    }
-
-    renameDirectory(item: FileStateFile) {
-        this.dialogRenameDirectory.item = item
-        this.dialogRenameDirectory.newName = item.filename
-        this.dialogRenameDirectory.show = true
-
-        setTimeout(() => {
-            this.inputDialogRenameDirectoryName?.focus()
-        }, 200)
-    }
-
-    renameDirectoryAction() {
-        this.dialogRenameDirectory.show = false
-        this.$socket.emit(
-            'server.files.move',
-            {
-                source: (this.absolutePath + '/' + this.dialogRenameDirectory.item.filename).slice(1),
-                dest: (this.absolutePath + '/' + this.dialogRenameDirectory.newName).slice(1),
-            },
-            { action: 'files/getMove' }
-        )
-    }
-
-    deleteDirectory(item: FileStateFile) {
-        this.dialogDeleteDirectory.item = item
-        this.dialogDeleteDirectory.show = true
-    }
-
-    deleteDirectoryAction() {
-        this.$socket.emit(
-            'server.files.delete_directory',
-            { path: this.absolutePath + '/' + this.dialogDeleteDirectory.item.filename, force: true },
-            { action: 'files/getDeleteDir' }
-        )
-    }
-
-    createFile() {
-        this.dialogCreateFile.name = ''
-        this.dialogCreateFile.show = true
-
-        setTimeout(() => {
-            this.inputDialogCreateFileName?.focus()
-        }, 200)
-    }
-
-    createFileAction() {
-        const file = new File([''], this.dialogCreateFile.name)
-
-        const formData = new FormData()
-        formData.append('file', file)
-        formData.append('root', this.root)
-        if (this.currentPath.length) formData.append('path', this.currentPath.slice(1))
-
-        axios
-            .post(this.apiUrl + '/server/files/upload', formData, {
-                headers: { 'Content-Type': 'multipart/form-data' },
-            })
-            .then(() => {
-                this.$toast.success(
-                    this.$t('Files.SuccessfullyCreated', { filename: this.dialogCreateFile.name }).toString()
-                )
-                this.dialogCreateFile.show = false
-                this.dialogCreateFile.name = ''
-            })
-            .catch(() => {
-                window.console.error('Error create file: ' + this.dialogCreateFile.name)
-            })
-    }
-
-    renameFile(item: FileStateFile) {
-        this.dialogRenameFile.item = item
-        this.dialogRenameFile.newName = item.filename
-        this.dialogRenameFile.show = true
-
-        setTimeout(() => {
-            this.inputDialogRenameFileName?.focus()
-        }, 200)
-    }
-
-    renameFileAction() {
-        this.dialogRenameFile.show = false
-        this.$socket.emit(
-            'server.files.move',
-            {
-                source: (this.absolutePath + '/' + this.dialogRenameFile.item.filename).slice(1),
-                dest: (this.absolutePath + '/' + this.dialogRenameFile.newName).slice(1),
-            },
-            { action: 'files/getMove' }
-        )
-    }
-
-    duplicateFile(item: FileStateFile) {
-        this.dialogDuplicateFile.item = item
-        this.dialogDuplicateFile.newName = item.filename
-        this.dialogDuplicateFile.show = true
-
-        setTimeout(() => {
-            this.inputDialogDuplicateFileName?.focus()
-        }, 200)
-    }
-
-    duplicateFileAction() {
-        this.dialogDuplicateFile.show = false
-        this.$socket.emit('server.files.copy', {
-            source: (this.absolutePath + '/' + this.dialogDuplicateFile.item.filename).slice(1),
-            dest: (this.absolutePath + '/' + this.dialogDuplicateFile.newName).slice(1),
-        })
-    }
-
-    removeFile() {
-        this.$socket.emit(
-            'server.files.delete_file',
-            { path: this.absolutePath + '/' + this.contextMenu.item.filename },
-            { action: 'files/getDeleteFile' }
-        )
-    }
-
-    deleteSelectedFiles() {
-        this.selectedFiles.forEach((item: FileStateGcodefile) => {
-            if (item.isDirectory) {
-                this.$socket.emit(
-                    'server.files.delete_directory',
-                    { path: this.absolutePath + '/' + item.filename, force: true },
-                    { action: 'files/getDeleteDir' }
-                )
-            } else {
-                this.$socket.emit(
-                    'server.files.delete_file',
-                    { path: this.absolutePath + '/' + item.filename },
-                    { action: 'files/getDeleteFile' }
-                )
+            await this.$store.dispatch('socket/removeLoading', { name: 'configFileUpload' })
+        },
+        cancelUpload() {
+            this.uploadSnackbar.cancelTokenSource?.cancel()
+            this.uploadSnackbar.status = false
+        },
+        dragFile(e: Event, item: FileStateFile) {
+            e.preventDefault()
+            this.blockFileUpload = true
+            this.draggingFile.item = item
+        },
+        dragendFile(e: Event) {
+            e.preventDefault()
+            this.blockFileUpload = false
+            this.draggingFile.item = {
+                isDirectory: false,
+                filename: '',
+                permissions: '',
+                modified: new Date(),
             }
-        })
+        },
+        dragOverFilelist(e: DragEvent, row: FileStateFile) {
+            if (!this.blockFileUpload) return
+            e.preventDefault()
 
-        this.selectedFiles = []
-    }
+            const parentElement = (e.target as HTMLElement | null)?.parentElement
+            if (row.isDirectory && parentElement) parentElement.style.backgroundColor = '#43A04720'
+        },
+        dragLeaveFilelist(e: DragEvent) {
+            if (!this.blockFileUpload) return
+            e.preventDefault()
+            e.stopPropagation()
 
-    uploadFileButton() {
-        this.fileUpload.click()
-    }
+            const parentElement = (e.target as HTMLElement | null)?.parentElement
+            if (parentElement) parentElement.style.backgroundColor = 'transparent'
+        },
+        async dragDropFilelist(e: DragEvent, row: FileStateFile) {
+            if (!this.blockFileUpload) return
+            e.preventDefault()
+            const parentElement = (e.target as HTMLElement | null)?.parentElement
+            if (parentElement) parentElement.style.backgroundColor = 'transparent'
 
-    async uploadFile() {
-        const files = [...(this.fileUpload.files ?? [])]
-        if (files.length === 0) return
+            let dest = this.absolutePath + '/' + row.filename + '/' + this.draggingFile.item.filename
+            if (row.filename === '..') {
+                dest =
+                    this.absolutePath.slice(1, this.absolutePath.lastIndexOf('/') + 1) + this.draggingFile.item.filename
+            }
 
-        this.fileUpload.value = ''
-
-        await this.$store.dispatch('socket/addLoading', { name: 'configFileUpload' })
-        await this.$store.dispatch('files/uploadSetCurrentNumber', 0)
-        await this.$store.dispatch('files/uploadSetMaxNumber', files.length)
-
-        for (const file of files) {
-            await this.$store.dispatch('files/uploadIncrementCurrentNumber')
-            const path = this.currentPath.slice(0, 1) === '/' ? this.currentPath.slice(1) : this.currentPath
-            const result = await this.$store.dispatch('files/uploadFile', {
-                file,
-                path,
-                root: 'config',
-            })
-
-            if (result !== false)
-                this.$toast.success(this.$t('Files.SuccessfullyUploaded', { filename: result }).toString())
-        }
-
-        await this.$store.dispatch('socket/removeLoading', { name: 'configFileUpload' })
-    }
-
-    cancelUpload() {
-        this.uploadSnackbar.cancelTokenSource?.cancel()
-        this.uploadSnackbar.status = false
-    }
-
-    dragFile(e: Event, item: FileStateFile) {
-        e.preventDefault()
-        this.blockFileUpload = true
-        this.draggingFile.item = item
-    }
-
-    dragendFile(e: Event) {
-        e.preventDefault()
-        this.blockFileUpload = false
-        this.draggingFile.item = {
-            isDirectory: false,
-            filename: '',
-            permissions: '',
-            modified: new Date(),
-        }
-    }
-
-    dragOverFilelist(e: DragEvent, row: FileStateFile) {
-        if (!this.blockFileUpload) return
-        e.preventDefault()
-
-        const parentElement = (e.target as HTMLElement | null)?.parentElement
-        if (row.isDirectory && parentElement) parentElement.style.backgroundColor = '#43A04720'
-    }
-
-    dragLeaveFilelist(e: DragEvent) {
-        if (!this.blockFileUpload) return
-        e.preventDefault()
-        e.stopPropagation()
-
-        const parentElement = (e.target as HTMLElement | null)?.parentElement
-        if (parentElement) parentElement.style.backgroundColor = 'transparent'
-    }
-
-    async dragDropFilelist(e: DragEvent, row: FileStateFile) {
-        if (!this.blockFileUpload) return
-        e.preventDefault()
-        const parentElement = (e.target as HTMLElement | null)?.parentElement
-        if (parentElement) parentElement.style.backgroundColor = 'transparent'
-
-        let dest = this.absolutePath + '/' + row.filename + '/' + this.draggingFile.item.filename
-        if (row.filename === '..') {
-            dest = this.absolutePath.slice(1, this.absolutePath.lastIndexOf('/') + 1) + this.draggingFile.item.filename
-        }
-
-        this.$socket.emit(
-            'server.files.move',
-            {
-                source: this.absolutePath.slice(1) + '/' + this.draggingFile.item.filename,
-                dest: dest,
-            },
-            { action: 'files/getMove' }
-        )
-    }
-}
+            this.$socket.emit(
+                'server.files.move',
+                {
+                    source: this.absolutePath.slice(1) + '/' + this.draggingFile.item.filename,
+                    dest: dest,
+                },
+                { action: 'files/getMove' }
+            )
+        },
+    },
+})
 </script>

@@ -6,8 +6,8 @@
         card-class="machine-systemload-panel"
         :collapsible="true">
         <template #buttons>
-            <v-btn text tile class="d-none d-md-flex" @click="dialogDevices = true">
-                <v-icon small class="mr-1">{{ mdiUsb }}</v-icon>
+            <v-btn variant="text" tile class="d-none d-md-flex" @click="dialogDevices = true">
+                <v-icon size="small" class="mr-1">{{ mdiUsb }}</v-icon>
                 {{ $t('Editor.DeviceDialog') }}
             </v-btn>
         </template>
@@ -26,39 +26,42 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '../../mixins/base'
 import Panel from '@/components/ui/Panel.vue'
 import { caseInsensitiveSort } from '@/plugins/helpers'
 import { mdiCloseThick, mdiMemory, mdiUsb } from '@mdi/js'
 import SystemPanelHost from '@/components/panels/Machine/SystemPanelHost.vue'
 import SystemPanelMcu from '@/components/panels/Machine/SystemPanelMcu.vue'
-@Component({
+
+export default defineComponent({
+    name: 'SystemPanel',
     components: { SystemPanelMcu, SystemPanelHost, Panel },
+    mixins: [BaseMixin],
+    data() {
+        return {
+            mdiCloseThick: mdiCloseThick,
+            mdiMemory: mdiMemory,
+            mdiUsb: mdiUsb,
+            dialogDevices: false,
+        }
+    },
+    computed: {
+        mcus() {
+            if (!this.klipperReadyForGui) return []
+
+            const mcus = this.$store.getters['printer/getMcus'] ?? []
+
+            return caseInsensitiveSort(mcus, 'name')
+        },
+        hostStats() {
+            return this.$store.getters['server/getHostStats'] ?? null
+        },
+        showPanel() {
+            return this.mcus.length > 0 || this.hostStats
+        },
+    },
 })
-export default class SystemPanel extends Mixins(BaseMixin) {
-    mdiCloseThick = mdiCloseThick
-    mdiMemory = mdiMemory
-    mdiUsb = mdiUsb
-
-    dialogDevices = false
-
-    get mcus() {
-        if (!this.klipperReadyForGui) return []
-
-        const mcus = this.$store.getters['printer/getMcus'] ?? []
-
-        return caseInsensitiveSort(mcus, 'name')
-    }
-
-    get hostStats() {
-        return this.$store.getters['server/getHostStats'] ?? null
-    }
-
-    get showPanel() {
-        return this.mcus.length > 0 || this.hostStats
-    }
-}
 </script>
 
 <style scoped>

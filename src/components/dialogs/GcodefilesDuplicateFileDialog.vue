@@ -18,8 +18,12 @@
             </v-card-text>
             <v-card-actions>
                 <v-spacer />
-                <v-btn text @click="closePrompt">{{ $t('Buttons.Cancel') }}</v-btn>
-                <v-btn :disabled="isInvalidName || name.length === 0" color="primary" text @click="duplicateFileAction">
+                <v-btn variant="text" @click="closePrompt">{{ $t('Buttons.Cancel') }}</v-btn>
+                <v-btn
+                    :disabled="isInvalidName || name.length === 0"
+                    color="primary"
+                    variant="text"
+                    @click="duplicateFileAction">
                     {{ $t('Files.Duplicate') }}
                 </v-btn>
             </v-card-actions>
@@ -28,7 +32,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop, Ref, VModel, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import type { FocusableRef } from '@/types/vuetify'
 import BaseMixin from '@/components/mixins/base'
 import Panel from '@/components/ui/Panel.vue'
@@ -36,51 +40,66 @@ import { mdiCloseThick } from '@mdi/js'
 import GcodefilesMixin from '@/components/mixins/gcodefiles'
 import { FileStateGcodefile } from '@/store/files/types'
 
-@Component({
+export default defineComponent({
+    name: 'GcodefilesDuplicateFileDialog',
     components: { Panel },
+    mixins: [BaseMixin, GcodefilesMixin],
+    props: {
+        modelValue: { type: Boolean },
+        item: { type: Object, required: true },
+    },
+    emits: ['update:modelValue'],
+    data() {
+        return {
+            mdiCloseThick: mdiCloseThick,
+            name: '',
+            isInvalidName: true,
+            nameInputRules: [
+                (value: string) => !!value || this.$t('Files.InvalidNameEmpty'),
+                (value: string) => !this.existsFilename(value) || this.$t('Files.InvalidNameAlreadyExists'),
+            ],
+        }
+    },
+    computed: {
+        showDialog: {
+            get(): boolean {
+                return this.modelValue
+            },
+            set(value: boolean) {
+                this.$emit('update:modelValue', value)
+            },
+        },
+        inputField(): FocusableRef {
+            return this.$refs.inputField as FocusableRef
+        },
+    },
+    watch: {
+        showDialog(newVal: boolean) {
+            if (!newVal) return
+
+            this.name = this.item.filename
+            this.isInvalidName = true
+
+            setTimeout(() => {
+                this.inputField?.focus()
+            })
+        },
+    },
+    methods: {
+        updateIsInvalidName(value: boolean) {
+            this.isInvalidName = value
+        },
+        duplicateFileAction() {
+            this.$socket.emit('server.files.copy', {
+                source: 'gcodes' + this.currentPath + '/' + this.item.filename,
+                dest: 'gcodes' + this.currentPath + '/' + this.name,
+            })
+
+            this.closePrompt()
+        },
+        closePrompt() {
+            this.showDialog = false
+        },
+    },
 })
-export default class GcodefilesDuplicateFileDialog extends Mixins(BaseMixin, GcodefilesMixin) {
-    mdiCloseThick = mdiCloseThick
-
-    name = ''
-    isInvalidName = true
-
-    @VModel({ type: Boolean }) showDialog!: boolean
-    @Prop({ type: Object, required: true }) item!: FileStateGcodefile
-    @Ref() readonly inputField!: FocusableRef
-
-    nameInputRules = [
-        (value: string) => !!value || this.$t('Files.InvalidNameEmpty'),
-        (value: string) => !this.existsFilename(value) || this.$t('Files.InvalidNameAlreadyExists'),
-    ]
-
-    updateIsInvalidName(value: boolean) {
-        this.isInvalidName = value
-    }
-
-    duplicateFileAction() {
-        this.$socket.emit('server.files.copy', {
-            source: 'gcodes' + this.currentPath + '/' + this.item.filename,
-            dest: 'gcodes' + this.currentPath + '/' + this.name,
-        })
-
-        this.closePrompt()
-    }
-
-    closePrompt() {
-        this.showDialog = false
-    }
-
-    @Watch('showDialog')
-    onShowDialogChanged(newVal: boolean) {
-        if (!newVal) return
-
-        this.name = this.item.filename
-        this.isInvalidName = true
-
-        setTimeout(() => {
-            this.inputField?.focus()
-        })
-    }
-}
 </script>

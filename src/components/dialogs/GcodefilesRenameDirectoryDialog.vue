@@ -21,11 +21,11 @@
             </v-card-text>
             <v-card-actions>
                 <v-spacer />
-                <v-btn text @click="closePrompt">{{ $t('Buttons.Cancel') }}</v-btn>
+                <v-btn variant="text" @click="closePrompt">{{ $t('Buttons.Cancel') }}</v-btn>
                 <v-btn
                     :disabled="isInvalidName || name.length === 0"
                     color="primary"
-                    text
+                    variant="text"
                     @click="renameDirectoryAction">
                     {{ $t('Files.Rename') }}
                 </v-btn>
@@ -35,60 +35,76 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop, Ref, VModel, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import type { FocusableRef } from '@/types/vuetify'
 import BaseMixin from '@/components/mixins/base'
 import { mdiCloseThick } from '@mdi/js'
 import GcodefilesMixin from '@/components/mixins/gcodefiles'
 import { FileStateGcodefile } from '@/store/files/types'
 
-@Component
-export default class GcodefilesRenameDirectoryDialog extends Mixins(BaseMixin, GcodefilesMixin) {
-    mdiCloseThick = mdiCloseThick
-
-    name = ''
-    isInvalidName = true
-
-    @VModel({ type: Boolean }) showDialog!: boolean
-    @Prop({ type: Object, required: true }) item!: FileStateGcodefile
-    @Ref() readonly inputField!: FocusableRef
-
-    nameInputRules = [
-        (value: string) => !!value || this.$t('Files.InvalidNameEmpty'),
-        (value: string) => !this.existsFilename(value) || this.$t('Files.InvalidNameAlreadyExists'),
-    ]
-
-    updateIsInvalidName(value: boolean) {
-        this.isInvalidName = value
-    }
-
-    renameDirectoryAction() {
-        this.$socket.emit(
-            'server.files.move',
-            {
-                source: 'gcodes' + this.currentPath + '/' + this.item.filename,
-                dest: 'gcodes' + this.currentPath + '/' + this.name,
+export default defineComponent({
+    name: 'GcodefilesRenameDirectoryDialog',
+    mixins: [BaseMixin, GcodefilesMixin],
+    props: {
+        modelValue: { type: Boolean },
+        item: { type: Object, required: true },
+    },
+    emits: ['update:modelValue'],
+    data() {
+        return {
+            mdiCloseThick: mdiCloseThick,
+            name: '',
+            isInvalidName: true,
+            nameInputRules: [
+                (value: string) => !!value || this.$t('Files.InvalidNameEmpty'),
+                (value: string) => !this.existsFilename(value) || this.$t('Files.InvalidNameAlreadyExists'),
+            ],
+        }
+    },
+    computed: {
+        showDialog: {
+            get(): boolean {
+                return this.modelValue
             },
-            { action: 'files/getMove' }
-        )
+            set(value: boolean) {
+                this.$emit('update:modelValue', value)
+            },
+        },
+        inputField(): FocusableRef {
+            return this.$refs.inputField as FocusableRef
+        },
+    },
+    watch: {
+        showDialog(newVal: boolean) {
+            if (!newVal) return
 
-        this.closePrompt()
-    }
+            this.name = this.item.filename
+            this.isInvalidName = true
 
-    closePrompt() {
-        this.showDialog = false
-    }
+            setTimeout(() => {
+                this.inputField?.focus()
+            })
+        },
+    },
+    methods: {
+        updateIsInvalidName(value: boolean) {
+            this.isInvalidName = value
+        },
+        renameDirectoryAction() {
+            this.$socket.emit(
+                'server.files.move',
+                {
+                    source: 'gcodes' + this.currentPath + '/' + this.item.filename,
+                    dest: 'gcodes' + this.currentPath + '/' + this.name,
+                },
+                { action: 'files/getMove' }
+            )
 
-    @Watch('showDialog')
-    onShowDialogChanged(newVal: boolean) {
-        if (!newVal) return
-
-        this.name = this.item.filename
-        this.isInvalidName = true
-
-        setTimeout(() => {
-            this.inputField?.focus()
-        })
-    }
-}
+            this.closePrompt()
+        },
+        closePrompt() {
+            this.showDialog = false
+        },
+    },
+})
 </script>

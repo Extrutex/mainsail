@@ -1,4 +1,3 @@
-
 import { MutationTree } from 'vuex'
 import { RootState } from './types'
 

@@ -7,8 +7,8 @@
                     v-model="presetname"
                     hide-details="auto"
                     :rules="[rules.required, rules.presetUnique]"
-                    dense
-                    outlined />
+                    density="compact"
+                    variant="outlined" />
             </settings-row>
             <v-divider class="my-2" />
             <settings-row :title="$t('Settings.MiscellaneousTab.Color')">
@@ -89,20 +89,20 @@
         </v-card-text>
         <v-card-actions>
             <v-spacer />
-            <v-btn text @click="close">{{ $t('Buttons.Cancel') }}</v-btn>
-            <v-btn v-if="presetId !== null" text color="primary" @click="updatePreset">
+            <v-btn variant="text" @click="close">{{ $t('Buttons.Cancel') }}</v-btn>
+            <v-btn v-if="presetId !== null" variant="text" color="primary" @click="updatePreset">
                 {{ $t('Settings.Update') }}
             </v-btn>
-            <v-btn v-else text color="primary" @click="storePreset">{{ $t('Settings.Store') }}</v-btn>
+            <v-btn v-else variant="text" color="primary" @click="storePreset">{{ $t('Settings.Store') }}</v-btn>
         </v-card-actions>
     </div>
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import SettingsRow from '@/components/settings/SettingsRow.vue'
-import { caseInsensitiveSort } from '@/plugins/helpers'
+import { debounce, caseInsensitiveSort } from '@/plugins/helpers'
 import { GuiMiscellaneousStateEntry, GuiMiscellaneousStateEntryPreset } from '@/store/gui/miscellaneous/types'
 import { ColorPickerProps } from '@jaames/iro/dist/ColorPicker'
 import iro from '@jaames/iro'
@@ -117,313 +117,298 @@ interface ColorData {
     [key: string]: number | null
 }
 
-@Component({
+export default defineComponent({
+    name: 'SettingsMiscellaneousTabLightPresetsForm',
     components: { SettingsRow },
-})
-export default class SettingsMiscellaneousTabLightPresetsForm extends Mixins(BaseMixin) {
-    presetname = ''
-    red: number | null = null
-    green: number | null = null
-    blue: number | null = null
-    white: number | null = null
-
-    rules = {
-        required: (value: string) => value !== '' || 'required',
-        presetUnique: (value: string) => !this.existsPresetName(value) || 'Name already exists',
-        min: (value: number) => value >= 0 || 'Must be minimum 0',
-        max: (value: number) => value <= 255 || 'Must be smaller then 256',
-    }
-
-    @Prop({ type: String, default: null }) declare type: string | null
-    @Prop({ type: String, default: null }) declare name: string | null
-    @Prop({ type: String, default: null }) declare presetId: string | null
-
-    get title() {
-        if (this.presetId) return this.$t('Settings.MiscellaneousTab.EditPreset')
-
-        return this.$t('Settings.MiscellaneousTab.CreatePreset')
-    }
-
-    get settings() {
-        if (!this.type || !this.name) return null
-
-        const key = `${this.type.toLowerCase()} ${this.name.toLowerCase()}`
-        return this.$store.state.printer?.configfile?.settings[key] ?? {}
-    }
-
-    get colorOrder() {
-        if (this.type?.toLowerCase() === 'led') {
-            let colorOrder = ''
-            if ('red_pin' in this.settings) colorOrder += 'R'
-            if ('green_pin' in this.settings) colorOrder += 'G'
-            if ('blue_pin' in this.settings) colorOrder += 'B'
-            if ('white_pin' in this.settings) colorOrder += 'W'
-
-            return colorOrder
+    mixins: [BaseMixin],
+    props: {
+        type: { type: String, default: null },
+        name: { type: String, default: null },
+        presetId: { type: String, default: null },
+    },
+    emits: ['close'],
+    data() {
+        return {
+            presetname: '',
+            red: null as number | null,
+            green: null as number | null,
+            blue: null as number | null,
+            white: null as number | null,
+            rules: {
+                required: (value: string) => value !== '' || 'required',
+                presetUnique: (value: string) => !this.existsPresetName(value) || 'Name already exists',
+                min: (value: number) => value >= 0 || 'Must be minimum 0',
+                max: (value: number) => value <= 255 || 'Must be smaller then 256',
+            },
         }
+    },
+    computed: {
+        title() {
+            if (this.presetId) return this.$t('Settings.MiscellaneousTab.EditPreset')
 
-        // is array
-        if (Array.isArray(this.settings.color_order)) {
-            return this.settings.color_order[0] ?? ''
-        }
+            return this.$t('Settings.MiscellaneousTab.CreatePreset')
+        },
+        settings() {
+            if (!this.type || !this.name) return null
 
-        return this.settings.color_order ?? ''
-    }
+            const key = `${this.type.toLowerCase()} ${this.name.toLowerCase()}`
+            return this.$store.state.printer?.configfile?.settings[key] ?? {}
+        },
+        colorOrder() {
+            if (this.type?.toLowerCase() === 'led') {
+                let colorOrder = ''
+                if ('red_pin' in this.settings) colorOrder += 'R'
+                if ('green_pin' in this.settings) colorOrder += 'G'
+                if ('blue_pin' in this.settings) colorOrder += 'B'
+                if ('white_pin' in this.settings) colorOrder += 'W'
 
-    get existRed() {
-        return this.colorOrder.includes('R')
-    }
+                return colorOrder
+            }
 
-    get existGreen() {
-        return this.colorOrder.includes('G')
-    }
+            // is array
+            if (Array.isArray(this.settings.color_order)) {
+                return this.settings.color_order[0] ?? ''
+            }
 
-    get existBlue() {
-        return this.colorOrder.includes('B')
-    }
+            return this.settings.color_order ?? ''
+        },
+        existRed() {
+            return this.colorOrder.includes('R')
+        },
+        existGreen() {
+            return this.colorOrder.includes('G')
+        },
+        existBlue() {
+            return this.colorOrder.includes('B')
+        },
+        existWhite() {
+            return this.colorOrder.includes('W')
+        },
+        colorRGB() {
+            return `rgb(${this.redInt}, ${this.greenInt}, ${this.blueInt})`
+        },
+        colorRGBW() {
+            const white = this.whiteInt / 255
 
-    get existWhite() {
-        return this.colorOrder.includes('W')
-    }
+            return `rgba(255, 255, 255, ${white})`
+        },
+        light() {
+            if (!this.type || !this.name) return null
 
-    get colorRGB() {
-        return `rgb(${this.redInt}, ${this.greenInt}, ${this.blueInt})`
-    }
+            const key = `${this.type} ${this.name}`
+            return this.$store.state.printer[key] ?? {}
+        },
+        entry(): GuiMiscellaneousStateEntry {
+            const entries = this.$store.state.gui.miscellaneous.entries ?? {}
 
-    get colorRGBW() {
-        const white = this.whiteInt / 255
-
-        return `rgba(255, 255, 255, ${white})`
-    }
-
-    get light() {
-        if (!this.type || !this.name) return null
-
-        const key = `${this.type} ${this.name}`
-        return this.$store.state.printer[key] ?? {}
-    }
-
-    get entry(): GuiMiscellaneousStateEntry {
-        const entries = this.$store.state.gui.miscellaneous.entries ?? {}
-
-        const key = Object.keys(entries).find((key) => {
-            const entry = entries[key]
-            return entry.type === this.type && entry.name === this.name
-        })
-
-        return entries[key ?? ''] ?? {}
-    }
-
-    get presets() {
-        if (!this.entry?.lightgroups) return []
-
-        const presets: GuiMiscellaneousStateEntryPreset[] = []
-        Object.keys(this.entry.presets).forEach((key) => {
-            const preset = this.entry.presets[key]
-
-            presets.push({
-                ...preset,
-                id: key,
+            const key = Object.keys(entries).find((key) => {
+                const entry = entries[key]
+                return entry.type === this.type && entry.name === this.name
             })
-        })
 
-        return caseInsensitiveSort(presets, 'name')
-    }
+            return entries[key ?? ''] ?? {}
+        },
+        presets() {
+            if (!this.entry?.lightgroups) return []
 
-    get preset() {
-        if (!this.presetId) return null
+            const presets: GuiMiscellaneousStateEntryPreset[] = []
+            Object.keys(this.entry.presets).forEach((key) => {
+                const preset = this.entry.presets[key]
 
-        return this.presets.find((preset) => preset.id === this.presetId) ?? null
-    }
+                presets.push({
+                    ...preset,
+                    id: key,
+                })
+            })
 
-    get redInt() {
-        return Math.round(this.red ?? 0)
-    }
+            return caseInsensitiveSort(presets, 'name')
+        },
+        preset() {
+            if (!this.presetId) return null
 
-    get greenInt() {
-        return Math.round(this.green ?? 0)
-    }
+            return this.presets.find((preset) => preset.id === this.presetId) ?? null
+        },
+        redInt() {
+            return Math.round(this.red ?? 0)
+        },
+        greenInt() {
+            return Math.round(this.green ?? 0)
+        },
+        blueInt() {
+            return Math.round(this.blue ?? 0)
+        },
+        whiteInt() {
+            return Math.round(this.white ?? 0)
+        },
+        colorPickerOptions() {
+            const options: ColorPickerProps = {
+                width: 200,
+                margin: 15,
+                layout: [],
+            }
+            const layout: ColorPickerProps['layout'] = []
 
-    get blueInt() {
-        return Math.round(this.blue ?? 0)
-    }
+            if (this.existRed && this.existGreen && this.existBlue) {
+                options.layout = [
+                    {
+                        component: iro.ui.Wheel,
+                    },
+                    {
+                        component: iro.ui.Slider,
+                        options: {
+                            sliderType: 'value',
+                        },
+                    },
+                ]
 
-    get whiteInt() {
-        return Math.round(this.white ?? 0)
-    }
+                return options
+            }
 
-    get colorPickerOptions() {
-        const options: ColorPickerProps = {
-            width: 200,
-            margin: 15,
-            layout: [],
-        }
-        const layout: ColorPickerProps['layout'] = []
-
-        if (this.existRed && this.existGreen && this.existBlue) {
-            options.layout = [
-                {
-                    component: iro.ui.Wheel,
-                },
-                {
+            if (this.existRed) {
+                layout.push({
                     component: iro.ui.Slider,
                     options: {
-                        sliderType: 'value',
+                        sliderType: 'red',
                     },
-                },
-            ]
+                })
+            }
+
+            if (this.existGreen) {
+                layout.push({
+                    component: iro.ui.Slider,
+                    options: {
+                        sliderType: 'green',
+                    },
+                })
+            }
+
+            if (this.existBlue) {
+                layout.push({
+                    component: iro.ui.Slider,
+                    options: {
+                        sliderType: 'blue',
+                    },
+                })
+            }
+
+            options.layout = layout
+            return options
+        },
+        colorPickerWhiteOptions() {
+            const options: ColorPickerProps = {
+                width: 200,
+                margin: 15,
+                layout: [
+                    {
+                        component: iro.ui.Slider,
+                        options: {
+                            sliderType: 'alpha',
+                        },
+                    },
+                ],
+            }
 
             return options
-        }
-
-        if (this.existRed) {
-            layout.push({
-                component: iro.ui.Slider,
-                options: {
-                    sliderType: 'red',
-                },
-            })
-        }
-
-        if (this.existGreen) {
-            layout.push({
-                component: iro.ui.Slider,
-                options: {
-                    sliderType: 'green',
-                },
-            })
-        }
-
-        if (this.existBlue) {
-            layout.push({
-                component: iro.ui.Slider,
-                options: {
-                    sliderType: 'blue',
-                },
-            })
-        }
-
-        options.layout = layout
-        return options
-    }
-
-    get colorPickerWhiteOptions() {
-        const options: ColorPickerProps = {
-            width: 200,
-            margin: 15,
-            layout: [
-                {
-                    component: iro.ui.Slider,
-                    options: {
-                        sliderType: 'alpha',
-                    },
-                },
-            ],
-        }
-
-        return options
-    }
-
-    @Debounce({ time: 250 })
-    onColorRGBChanged(payload: IroColor) {
-        const color: ColorData = {
-            red: payload.red,
-            green: payload.green,
-            blue: payload.blue,
-            white: this.white,
-        }
-
-        this.colorChanged(color)
-    }
-
-    @Debounce({ time: 250 })
-    onColorWhiteChanged(payload: IroColor) {
-        const color: ColorData = {
-            red: this.red,
-            green: this.green,
-            blue: this.blue,
-            white: this.white,
-        }
-
-        color.white = payload.alpha * 255
-
-        this.colorChanged(color)
-    }
-
-    onColorInput(payload: { name: string; value: number }) {
-        const color: ColorData = {
-            red: this.red,
-            green: this.green,
-            blue: this.blue,
-            white: this.white,
-        }
-
-        color[payload.name] = payload.value
-
-        this.colorChanged(color)
-    }
-
-    colorChanged(color: ColorData) {
-        this.red = color.red
-        this.green = color.green
-        this.blue = color.blue
-        this.white = color.white
-    }
-
-    @Watch('preset', { immediate: true })
-    onPresetChanged() {
-        this.presetname = this.preset?.name ?? ''
-        this.red = this.preset?.red ?? null
-        this.green = this.preset?.green ?? null
-        this.blue = this.preset?.blue ?? null
-        this.white = this.preset?.white ?? null
-    }
-
-    close() {
-        this.$emit('close')
-    }
-
-    storePreset() {
-        this.$store.dispatch('gui/miscellaneous/storePreset', {
-            type: this.type,
-            name: this.name,
-            preset: {
-                name: this.presetname,
-                // parseInt & toString is just to force a integer
-                red: this.red !== null ? parseInt(this.red.toString(), 10) : 0,
-                green: this.green !== null ? parseInt(this.green.toString(), 10) : 0,
-                blue: this.blue !== null ? parseInt(this.blue.toString(), 10) : 0,
-                white: this.white !== null ? parseInt(this.white.toString(), 10) : 0,
+        },
+    },
+    watch: {
+        preset: {
+            immediate: true,
+            handler() {
+                this.presetname = this.preset?.name ?? ''
+                this.red = this.preset?.red ?? null
+                this.green = this.preset?.green ?? null
+                this.blue = this.preset?.blue ?? null
+                this.white = this.preset?.white ?? null
             },
-        })
+        },
+    },
+    methods: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onColorRGBChanged: debounce(function (this: any, payload: IroColor) {
+            const color: ColorData = {
+                red: payload.red,
+                green: payload.green,
+                blue: payload.blue,
+                white: this.white,
+            }
 
-        this.close()
-    }
+            this.colorChanged(color)
+        }, 250),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        onColorWhiteChanged: debounce(function (this: any, payload: IroColor) {
+            const color: ColorData = {
+                red: this.red,
+                green: this.green,
+                blue: this.blue,
+                white: this.white,
+            }
 
-    updatePreset() {
-        this.$store.dispatch('gui/miscellaneous/updatePreset', {
-            type: this.type,
-            name: this.name,
-            presetId: this.presetId,
-            preset: {
-                name: this.presetname,
-                // parseInt & toString is just to force a integer
-                red: this.red !== null ? parseInt(this.red.toString(), 10) : 0,
-                green: this.green !== null ? parseInt(this.green.toString(), 10) : 0,
-                blue: this.blue !== null ? parseInt(this.blue.toString(), 10) : 0,
-                white: this.white !== null ? parseInt(this.white.toString(), 10) : 0,
-            },
-        })
+            color.white = payload.alpha * 255
 
-        this.close()
-    }
+            this.colorChanged(color)
+        }, 250),
+        onColorInput(payload: { name: string; value: number }) {
+            const color: ColorData = {
+                red: this.red,
+                green: this.green,
+                blue: this.blue,
+                white: this.white,
+            }
 
-    existsPresetName(name: string) {
-        return (
-            this.presets.findIndex(
-                (preset: GuiMiscellaneousStateEntryPreset) => preset.name === name && preset.id !== this.presetId
-            ) >= 0
-        )
-    }
-}
+            color[payload.name] = payload.value
+
+            this.colorChanged(color)
+        },
+        colorChanged(color: ColorData) {
+            this.red = color.red
+            this.green = color.green
+            this.blue = color.blue
+            this.white = color.white
+        },
+        close() {
+            this.$emit('close')
+        },
+        storePreset() {
+            this.$store.dispatch('gui/miscellaneous/storePreset', {
+                type: this.type,
+                name: this.name,
+                preset: {
+                    name: this.presetname,
+                    // parseInt & toString is just to force a integer
+                    red: this.red !== null ? parseInt(this.red.toString(), 10) : 0,
+                    green: this.green !== null ? parseInt(this.green.toString(), 10) : 0,
+                    blue: this.blue !== null ? parseInt(this.blue.toString(), 10) : 0,
+                    white: this.white !== null ? parseInt(this.white.toString(), 10) : 0,
+                },
+            })
+
+            this.close()
+        },
+        updatePreset() {
+            this.$store.dispatch('gui/miscellaneous/updatePreset', {
+                type: this.type,
+                name: this.name,
+                presetId: this.presetId,
+                preset: {
+                    name: this.presetname,
+                    // parseInt & toString is just to force a integer
+                    red: this.red !== null ? parseInt(this.red.toString(), 10) : 0,
+                    green: this.green !== null ? parseInt(this.green.toString(), 10) : 0,
+                    blue: this.blue !== null ? parseInt(this.blue.toString(), 10) : 0,
+                    white: this.white !== null ? parseInt(this.white.toString(), 10) : 0,
+                },
+            })
+
+            this.close()
+        },
+        existsPresetName(name: string) {
+            return (
+                this.presets.findIndex(
+                    (preset: GuiMiscellaneousStateEntryPreset) => preset.name === name && preset.id !== this.presetId
+                ) >= 0
+            )
+        },
+    },
+})
 </script>

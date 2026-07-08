@@ -23,7 +23,7 @@
             :position-x="showContextMenuX"
             :position-y="showContextMenuY"
             absolute
-            offset-y>
+            location="bottom">
             <v-list>
                 <v-list-item @click="showRenameDirectoryDialog = true">
                     <v-icon class="mr-1">{{ mdiRenameBox }}</v-icon>
@@ -45,7 +45,7 @@
     </tr>
 </template>
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import type { LongpressEvent } from '@/directives/longpress'
 import BaseMixin from '@/components/mixins/base'
 import GcodefilesMixin from '@/components/mixins/gcodefiles'
@@ -53,103 +53,99 @@ import { FileStateGcodefile } from '@/store/files/types'
 import { mdiDelete, mdiFolder, mdiRenameBox } from '@mdi/js'
 import { CLOSE_CONTEXT_MENU, EventBus } from '@/plugins/eventBus'
 
-@Component
-export default class GcodefilesPanelTableRowDirectory extends Mixins(BaseMixin, GcodefilesMixin) {
-    mdiDelete = mdiDelete
-    mdiFolder = mdiFolder
-    mdiRenameBox = mdiRenameBox
-
-    showContextMenu = false
-    showContextMenuX = 0
-    showContextMenuY = 0
-
-    showRenameDirectoryDialog = false
-    showDeleteDirectoryDialog = false
-
-    isHover = false
-
-    @Prop({ type: Object, required: true }) readonly item!: FileStateGcodefile
-    @Prop({ type: Boolean, required: true }) readonly isSelected!: boolean
-    @Prop({ type: Function, required: true }) readonly select!: (value: boolean) => void
-
-    get trClasses() {
+export default defineComponent({
+    name: 'GcodefilesPanelTableRowDirectory',
+    mixins: [BaseMixin, GcodefilesMixin],
+    props: {
+        item: { type: Object, required: true },
+        isSelected: { type: Boolean, required: true },
+        select: { type: Function, required: true },
+    },
+    data() {
         return {
-            'file-list-cursor': true,
-            'user-select-none': true,
-            'file-list-row-hover': this.isHover,
+            mdiDelete: mdiDelete,
+            mdiFolder: mdiFolder,
+            mdiRenameBox: mdiRenameBox,
+            showContextMenu: false,
+            showContextMenuX: 0,
+            showContextMenuY: 0,
+            showRenameDirectoryDialog: false,
+            showDeleteDirectoryDialog: false,
+            isHover: false,
         }
-    }
-
-    showContextMenuAction(e: MouseEvent | LongpressEvent) {
-        e?.preventDefault()
-        EventBus.$emit(CLOSE_CONTEXT_MENU)
-
-        this.showContextMenuX = e?.clientX || e?.pageX || window.screenX / 2
-        this.showContextMenuY = e?.clientY || e?.pageY || window.screenY / 2
-
-        this.showContextMenu = true
-    }
-
-    closeContextMenu() {
-        this.showContextMenu = false
-    }
-
-    goToDirectory() {
-        this.currentPath += '/' + this.item.filename
-    }
-
-    deleteDirectory() {
-        this.$socket.emit(
-            'server.files.delete_directory',
-            { path: 'gcodes' + this.currentPath + '/' + this.item.filename, force: true },
-            { action: 'files/getDeleteDir' }
-        )
-    }
-
-    onDrop(e: DragEvent) {
-        e.preventDefault()
-        this.isHover = false
-
-        const dragFilename = e.dataTransfer?.getData('filename')
-
-        const source = [this.currentPath, dragFilename].join('/')
-        const dest = [this.currentPath, this.item.filename, dragFilename].join('/')
-
-        this.$socket.emit(
-            'server.files.move',
-            {
-                source: 'gcodes' + source,
-                dest: 'gcodes' + dest,
-            },
-            { action: 'files/getMove' }
-        )
-    }
-
-    // this function is important to disable the browser default function to activate the onDrop function
-    onDragOver(e: DragEvent) {
-        e.preventDefault()
-    }
-
-    onDragStart(e: DragEvent) {
-        if (e.dataTransfer === null) return
-
-        e.dataTransfer.setData('filename', this.item.filename)
-        e.dataTransfer.effectAllowed = 'move'
-    }
-
-    onDrag(e: DragEvent) {
-        e.preventDefault()
-        e.stopPropagation()
-    }
-
+    },
+    computed: {
+        trClasses() {
+            return {
+                'file-list-cursor': true,
+                'user-select-none': true,
+                'file-list-row-hover': this.isHover,
+            }
+        },
+    },
     mounted() {
         EventBus.$on(CLOSE_CONTEXT_MENU, this.closeContextMenu)
-    }
-
-    beforeDestroy() {
+    },
+    beforeUnmount() {
         EventBus.$off(CLOSE_CONTEXT_MENU, this.closeContextMenu)
-    }
-}
+    },
+    methods: {
+        showContextMenuAction(e: MouseEvent | LongpressEvent) {
+            e?.preventDefault()
+            EventBus.$emit(CLOSE_CONTEXT_MENU)
+
+            this.showContextMenuX = e?.clientX || e?.pageX || window.screenX / 2
+            this.showContextMenuY = e?.clientY || e?.pageY || window.screenY / 2
+
+            this.showContextMenu = true
+        },
+        closeContextMenu() {
+            this.showContextMenu = false
+        },
+        goToDirectory() {
+            this.currentPath += '/' + this.item.filename
+        },
+        deleteDirectory() {
+            this.$socket.emit(
+                'server.files.delete_directory',
+                { path: 'gcodes' + this.currentPath + '/' + this.item.filename, force: true },
+                { action: 'files/getDeleteDir' }
+            )
+        },
+        onDrop(e: DragEvent) {
+            e.preventDefault()
+            this.isHover = false
+
+            const dragFilename = e.dataTransfer?.getData('filename')
+
+            const source = [this.currentPath, dragFilename].join('/')
+            const dest = [this.currentPath, this.item.filename, dragFilename].join('/')
+
+            this.$socket.emit(
+                'server.files.move',
+                {
+                    source: 'gcodes' + source,
+                    dest: 'gcodes' + dest,
+                },
+                { action: 'files/getMove' }
+            )
+        },
+        // this function is important to disable the browser default function to activate the onDrop function
+        onDragOver(e: DragEvent) {
+            e.preventDefault()
+        },
+        onDragStart(e: DragEvent) {
+            if (e.dataTransfer === null) return
+
+            e.dataTransfer.setData('filename', this.item.filename)
+            e.dataTransfer.effectAllowed = 'move'
+        },
+        onDrag(e: DragEvent) {
+            e.preventDefault()
+            e.stopPropagation()
+        },
+    },
+})
 </script>
 
 <style scoped>

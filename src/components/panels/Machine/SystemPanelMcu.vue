@@ -26,8 +26,8 @@
                                     mcu.tempSensor.measured_max_temp !== null
                                 ">
                                 <v-tooltip top>
-                                    <template #activator="{ on, attrs }">
-                                        <span v-bind="attrs" v-on="on">
+                                    <template #activator="{ props }">
+                                        <span v-bind="props">
                                             {{
                                                 $t('Machine.SystemPanel.Values.Temp', {
                                                     temp: mcu.tempSensor.temperature,
@@ -61,7 +61,7 @@
                     </div>
                 </div>
             </v-col>
-            <v-col class="px-2 col-auto d-flex justify-center align-center">
+            <v-col cols="auto" class="px-2 d-flex justify-center align-center">
                 <v-progress-circular
                     :rotate="-90"
                     :size="55"
@@ -121,20 +121,26 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent, PropType } from 'vue'
 import BaseMixin from '../../mixins/base'
 import { formatFilesize } from '@/plugins/helpers'
 import { PrinterStateMcu } from '@/store/printer/types'
 import Panel from '@/components/ui/Panel.vue'
 import { mdiCloseThick } from '@mdi/js'
-@Component({
-    components: { Panel },
-})
-export default class SystemPanelMcu extends Mixins(BaseMixin) {
-    formatFilesize = formatFilesize
-    mdiCloseThick = mdiCloseThick
 
-    @Prop({ required: true }) readonly mcu!: PrinterStateMcu
-    private mcuDetailsDialog = false
-}
+export default defineComponent({
+    name: 'SystemPanelMcu',
+    components: { Panel },
+    mixins: [BaseMixin],
+    props: {
+        mcu: { type: Object as PropType<PrinterStateMcu>, required: true },
+    },
+    data() {
+        return {
+            formatFilesize: formatFilesize,
+            mdiCloseThick: mdiCloseThick,
+            mcuDetailsDialog: false,
+        }
+    },
+})
 </script>

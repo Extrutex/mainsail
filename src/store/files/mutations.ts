@@ -1,4 +1,3 @@
-
 import { getDefaultState } from './index'
 import { findDirectory } from '@/plugins/helpers'
 import { MutationTree } from 'vuex'

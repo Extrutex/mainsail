@@ -31,8 +31,8 @@
             <v-divider />
             <v-card-actions>
                 <v-spacer />
-                <v-btn text @click="closeDialog">{{ $t('Machine.UpdatePanel.Abort') }}</v-btn>
-                <v-btn text color="primary" :disabled="!checkboxUpdateQuestion" @click="updateAll">
+                <v-btn variant="text" @click="closeDialog">{{ $t('Machine.UpdatePanel.Abort') }}</v-btn>
+                <v-btn variant="text" color="primary" :disabled="!checkboxUpdateQuestion" @click="updateAll">
                     {{ $t('Machine.UpdatePanel.StartUpdate') }}
                 </v-btn>
             </v-card-actions>
@@ -42,7 +42,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, VModel } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { ServerUpdateManagerStateGitRepo, ServerUpdateManagerStateGuiList } from '@/store/server/updateManager/types'
 import { mdiProgressQuestion, mdiCloseThick } from '@mdi/js'
@@ -51,52 +51,64 @@ import GitCommitsListDay from '@/components/panels/Machine/UpdatePanel/GitCommit
 import UpdateHintAlert from '@/components/panels/Machine/UpdatePanel/UpdateHintAlert.vue'
 import semver from 'semver'
 
-@Component({
+export default defineComponent({
+    name: 'UpdateHintAll',
     components: { GitCommitsListDay, Panel, UpdateHintAlert },
+    mixins: [BaseMixin],
+    props: {
+        modelValue: { type: Boolean },
+    },
+    emits: ['update-all', 'update:modelValue'],
+    data() {
+        return {
+            mdiCloseThick: mdiCloseThick,
+            mdiProgressQuestion: mdiProgressQuestion,
+            checkboxUpdateQuestion: false,
+            boolShowCommitHistory: false,
+            showCommitsRepo: null as ServerUpdateManagerStateGitRepo | null,
+        }
+    },
+    computed: {
+        showDialog: {
+            get(): boolean {
+                return this.modelValue
+            },
+            set(value: boolean) {
+                this.$emit('update:modelValue', value)
+            },
+        },
+        modules() {
+            return this.$store.getters['server/updateManager/getUpdateManagerList'] ?? []
+        },
+        filteredModules() {
+            return this.modules.filter((module: ServerUpdateManagerStateGuiList) => {
+                // check git repos for updates
+                if (module.type === 'git' && module.data?.commits_behind?.length) return true
+
+                // check client web for updates
+                if (
+                    module.type === 'web' &&
+                    semver.valid(module.data?.remote_version, { loose: true }) &&
+                    semver.valid(module.data?.version, { loose: true }) &&
+                    semver.gt(module.data?.remote_version, module.data?.version, { loose: true })
+                )
+                    return true
+
+                return false
+            })
+        },
+    },
+    methods: {
+        openCommitHistory(repo: ServerUpdateManagerStateGitRepo) {
+            this.showCommitsRepo = repo
+            this.boolShowCommitHistory = true
+        },
+        closeDialog() {
+            this.showDialog = false
+        },
+        updateAll() {
+            this.$emit('update-all')
+        },
+    },
 })
-export default class UpdateHintAll extends Mixins(BaseMixin) {
-    mdiCloseThick = mdiCloseThick
-    mdiProgressQuestion = mdiProgressQuestion
-
-    checkboxUpdateQuestion = false
-    boolShowCommitHistory = false
-    showCommitsRepo: ServerUpdateManagerStateGitRepo | null = null
-
-    @VModel({ type: Boolean }) showDialog!: boolean
-
-    get modules() {
-        return this.$store.getters['server/updateManager/getUpdateManagerList'] ?? []
-    }
-
-    get filteredModules() {
-        return this.modules.filter((module: ServerUpdateManagerStateGuiList) => {
-            // check git repos for updates
-            if (module.type === 'git' && module.data?.commits_behind?.length) return true
-
-            // check client web for updates
-            if (
-                module.type === 'web' &&
-                semver.valid(module.data?.remote_version, { loose: true }) &&
-                semver.valid(module.data?.version, { loose: true }) &&
-                semver.gt(module.data?.remote_version, module.data?.version, { loose: true })
-            )
-                return true
-
-            return false
-        })
-    }
-
-    openCommitHistory(repo: ServerUpdateManagerStateGitRepo) {
-        this.showCommitsRepo = repo
-        this.boolShowCommitHistory = true
-    }
-
-    closeDialog() {
-        this.showDialog = false
-    }
-
-    updateAll() {
-        this.$emit('update-all')
-    }
-}
 </script>

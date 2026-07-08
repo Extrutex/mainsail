@@ -20,7 +20,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import NavigationMixin, { NaviPoint } from '@/components/mixins/navigation'
 import ThemeMixin from '@/components/mixins/theme'
@@ -28,27 +28,30 @@ import SettingsRow from '@/components/settings/SettingsRow.vue'
 import draggable from 'vuedraggable'
 import SettingsNavigationTabItem from '@/components/settings/SettingsNavigationTabItem.vue'
 
-@Component({
+export default defineComponent({
+    name: 'SettingsNavigationTab',
     components: { SettingsNavigationTabItem, SettingsRow, draggable },
+    mixins: [NavigationMixin, BaseMixin, ThemeMixin],
+    computed: {
+        sortableNaviPoints: {
+            get() {
+                return this.naviPoints.filter((naviPoint) => naviPoint.position > 0)
+            },
+            setsortableNaviPoints(newVal: NaviPoint[]) {
+                // update store with new positions
+                newVal.forEach((naviPoint, index) => {
+                    this.$store.dispatch('gui/navigation/updatePos', {
+                        type: naviPoint.type,
+                        title: naviPoint.orgTitle ?? naviPoint.title,
+                        visible: naviPoint.visible,
+                        position: index + 1,
+                    })
+                })
+
+                // upload to moonraker db
+                this.$store.dispatch('gui/navigation/upload')
+            },
+        },
+    },
 })
-export default class SettingsNavigationTab extends Mixins(NavigationMixin, BaseMixin, ThemeMixin) {
-    get sortableNaviPoints() {
-        return this.naviPoints.filter((naviPoint) => naviPoint.position > 0)
-    }
-
-    set sortableNaviPoints(newVal: NaviPoint[]) {
-        // update store with new positions
-        newVal.forEach((naviPoint, index) => {
-            this.$store.dispatch('gui/navigation/updatePos', {
-                type: naviPoint.type,
-                title: naviPoint.orgTitle ?? naviPoint.title,
-                visible: naviPoint.visible,
-                position: index + 1,
-            })
-        })
-
-        // upload to moonraker db
-        this.$store.dispatch('gui/navigation/upload')
-    }
-}
 </script>

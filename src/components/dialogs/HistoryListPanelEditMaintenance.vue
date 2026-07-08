@@ -18,13 +18,13 @@
                             :rules="nameInputRules"
                             :label="$t('History.Name')"
                             hide-details="auto"
-                            outlined
-                            dense />
+                            variant="outlined"
+                            density="compact" />
                     </v-col>
                 </v-row>
                 <v-row>
                     <v-col>
-                        <v-textarea v-model="note" outlined hide-details="auto" :label="$t('History.Note')" />
+                        <v-textarea v-model="note" variant="outlined" hide-details="auto" :label="$t('History.Note')" />
                     </v-col>
                 </v-row>
                 <v-row>
@@ -34,8 +34,8 @@
                                 v-model="reminder"
                                 :items="reminderItems"
                                 :disabled="item.end_time !== null"
-                                outlined
-                                dense
+                                variant="outlined"
+                                density="compact"
                                 hide-details
                                 class="mt-0" />
                         </settings-row>
@@ -59,8 +59,8 @@
                                     hide-details="auto"
                                     type="number"
                                     class="mt-0"
-                                    outlined
-                                    dense
+                                    variant="outlined"
+                                    density="compact"
                                     :suffix="$t('History.Meter')" />
                             </settings-row>
                         </v-col>
@@ -82,8 +82,8 @@
                                     hide-details="auto"
                                     type="number"
                                     class="mt-0"
-                                    outlined
-                                    dense
+                                    variant="outlined"
+                                    density="compact"
                                     :suffix="$t('History.Hours')" />
                             </settings-row>
                         </v-col>
@@ -105,8 +105,8 @@
                                     hide-details="auto"
                                     type="number"
                                     class="mt-0"
-                                    outlined
-                                    dense
+                                    variant="outlined"
+                                    density="compact"
                                     :suffix="$t('History.Days')" />
                             </settings-row>
                         </v-col>
@@ -115,128 +115,139 @@
             </v-card-text>
             <v-card-actions>
                 <v-spacer />
-                <v-btn text @click="closeDialog">{{ $t('Buttons.Cancel') }}</v-btn>
-                <v-btn color="primary" text :disabled="!isValid" @click="save">{{ $t('Buttons.Save') }}</v-btn>
+                <v-btn variant="text" @click="closeDialog">{{ $t('Buttons.Cancel') }}</v-btn>
+                <v-btn color="primary" variant="text" :disabled="!isValid" @click="save">
+                    {{ $t('Buttons.Save') }}
+                </v-btn>
             </v-card-actions>
         </panel>
     </v-dialog>
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop, VModel, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import SettingsRow from '@/components/settings/SettingsRow.vue'
 import Panel from '@/components/ui/Panel.vue'
 import { mdiAdjust, mdiAlarm, mdiCalendar, mdiCloseThick, mdiNotebook } from '@mdi/js'
 import { GuiMaintenanceStateEntry } from '@/store/gui/maintenance/types'
 
-@Component({
+export default defineComponent({
+    name: 'HistoryListPanelAddMaintenance',
     components: {
         Panel,
         SettingsRow,
     },
+    mixins: [BaseMixin],
+    props: {
+        modelValue: { type: Boolean },
+        item: { type: Object, required: true },
+    },
+    emits: ['update:modelValue'],
+    data() {
+        return {
+            mdiAdjust: mdiAdjust,
+            mdiAlarm: mdiAlarm,
+            mdiCalendar: mdiCalendar,
+            mdiCloseThick: mdiCloseThick,
+            mdiNotebook: mdiNotebook,
+            name: '',
+            note: '',
+            reminder: null as 'one-time' | 'repeat' | null,
+            reminderFilament: false,
+            reminderFilamentValue: 0,
+            reminderPrinttime: false,
+            reminderPrinttimeValue: 0,
+            reminderDate: false,
+            reminderDateValue: 0,
+            nameInputRules: [(value: string) => !!value || this.$t('History.InvalidNameEmpty')],
+        }
+    },
+    computed: {
+        showDialog: {
+            get(): boolean {
+                return this.modelValue
+            },
+            set(value: boolean) {
+                this.$emit('update:modelValue', value)
+            },
+        },
+        reminderItems() {
+            return [
+                {
+                    text: this.$t('History.NoReminder').toString(),
+                    value: null,
+                },
+                {
+                    text: this.$t('History.OneTime').toString(),
+                    value: 'one-time',
+                },
+                {
+                    text: this.$t('History.Repeat').toString(),
+                    value: 'repeat',
+                },
+            ]
+        },
+        isValid() {
+            if (this.name === '') return false
+
+            if (this.reminder !== null) {
+                if (!this.reminderFilament && !this.reminderPrinttime && !this.reminderDate) return false
+
+                if (this.reminderFilament && this.reminderFilamentValue <= 0) return false
+                if (this.reminderPrinttime && this.reminderPrinttimeValue <= 0) return false
+                if (this.reminderDate && this.reminderDateValue <= 0) return false
+            }
+
+            return true
+        },
+    },
+    watch: {
+        showDialog(newVal: boolean) {
+            if (!newVal || !this.item) return
+
+            this.name = this.item.name
+            this.note = this.item.note
+            this.reminder = this.item.reminder?.type ?? null
+            this.reminderFilament = this.item.reminder?.filament.bool ?? false
+            this.reminderFilamentValue = this.item.reminder?.filament.value ?? 0
+            this.reminderPrinttime = this.item.reminder?.printtime.bool ?? false
+            this.reminderPrinttimeValue = this.item.reminder?.printtime.value ?? 0
+            this.reminderDate = this.item.reminder?.date.bool ?? false
+            this.reminderDateValue = this.item.reminder?.date.value ?? 0
+        },
+    },
+    methods: {
+        closeDialog() {
+            this.showDialog = false
+        },
+        save() {
+            // Remove type from item, this is not needed and comes from the history list
+            const item = { ...this.item } as GuiMaintenanceStateEntry & { type?: string }
+            delete item.type
+
+            item.name = this.name
+            item.note = this.note
+            item.reminder = {
+                type: this.reminder,
+                filament: {
+                    bool: this.reminderFilament,
+                    value: this.reminderFilamentValue,
+                },
+                printtime: {
+                    bool: this.reminderPrinttime,
+                    value: this.reminderPrinttimeValue,
+                },
+                date: {
+                    bool: this.reminderDate,
+                    value: this.reminderDateValue,
+                },
+            }
+
+            this.$store.dispatch('gui/maintenance/update', item)
+
+            this.closeDialog()
+        },
+    },
 })
-export default class HistoryListPanelAddMaintenance extends Mixins(BaseMixin) {
-    mdiAdjust = mdiAdjust
-    mdiAlarm = mdiAlarm
-    mdiCalendar = mdiCalendar
-    mdiCloseThick = mdiCloseThick
-    mdiNotebook = mdiNotebook
-
-    @VModel({ type: Boolean }) showDialog!: boolean
-    @Prop({ type: Object, required: true }) readonly item!: GuiMaintenanceStateEntry
-
-    name: string = ''
-    note: string = ''
-    reminder: 'one-time' | 'repeat' | null = null
-
-    reminderFilament: boolean = false
-    reminderFilamentValue: number = 0
-
-    reminderPrinttime: boolean = false
-    reminderPrinttimeValue: number = 0
-
-    reminderDate: boolean = false
-    reminderDateValue: number = 0
-
-    nameInputRules = [(value: string) => !!value || this.$t('History.InvalidNameEmpty')]
-
-    get reminderItems() {
-        return [
-            {
-                text: this.$t('History.NoReminder').toString(),
-                value: null,
-            },
-            {
-                text: this.$t('History.OneTime').toString(),
-                value: 'one-time',
-            },
-            {
-                text: this.$t('History.Repeat').toString(),
-                value: 'repeat',
-            },
-        ]
-    }
-
-    get isValid() {
-        if (this.name === '') return false
-
-        if (this.reminder !== null) {
-            if (!this.reminderFilament && !this.reminderPrinttime && !this.reminderDate) return false
-
-            if (this.reminderFilament && this.reminderFilamentValue <= 0) return false
-            if (this.reminderPrinttime && this.reminderPrinttimeValue <= 0) return false
-            if (this.reminderDate && this.reminderDateValue <= 0) return false
-        }
-
-        return true
-    }
-
-    closeDialog() {
-        this.showDialog = false
-    }
-
-    save() {
-        // Remove type from item, this is not needed and comes from the history list
-        const item = { ...this.item } as GuiMaintenanceStateEntry & { type?: string }
-        delete item.type
-
-        item.name = this.name
-        item.note = this.note
-        item.reminder = {
-            type: this.reminder,
-            filament: {
-                bool: this.reminderFilament,
-                value: this.reminderFilamentValue,
-            },
-            printtime: {
-                bool: this.reminderPrinttime,
-                value: this.reminderPrinttimeValue,
-            },
-            date: {
-                bool: this.reminderDate,
-                value: this.reminderDateValue,
-            },
-        }
-
-        this.$store.dispatch('gui/maintenance/update', item)
-
-        this.closeDialog()
-    }
-
-    @Watch('showDialog')
-    onShowDialogChanged(newVal: boolean) {
-        if (!newVal || !this.item) return
-
-        this.name = this.item.name
-        this.note = this.item.note
-        this.reminder = this.item.reminder?.type ?? null
-        this.reminderFilament = this.item.reminder?.filament.bool ?? false
-        this.reminderFilamentValue = this.item.reminder?.filament.value ?? 0
-        this.reminderPrinttime = this.item.reminder?.printtime.bool ?? false
-        this.reminderPrinttimeValue = this.item.reminder?.printtime.value ?? 0
-        this.reminderDate = this.item.reminder?.date.bool ?? false
-        this.reminderDateValue = this.item.reminder?.date.value ?? 0
-    }
-}
 </script>

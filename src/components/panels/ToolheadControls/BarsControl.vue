@@ -2,9 +2,9 @@
     <div>
         <!-- HOME ALL / ACTION BUTTON -->
         <v-row no-gutters>
-            <v-col class="col-12 pb-0 text-center">
+            <v-col cols="12" class="pb-0 text-center">
                 <v-btn
-                    small
+                    size="small"
                     :disabled="['printing'].includes(printer_state)"
                     :loading="loadings.includes('homeAll')"
                     :color="homedAxes.includes('xyz') ? 'primary' : 'warning'"
@@ -17,7 +17,7 @@
                     :disabled="['printing'].includes(printer_state)"
                     :loading="loadings.includes('homeAll')"
                     :color="homedAxes.includes('xy') ? 'primary' : 'warning'"
-                    small
+                    size="small"
                     class="ml-2"
                     @click="doHomeXY">
                     <v-icon class="mr-1">{{ mdiHome }}</v-icon>
@@ -26,7 +26,7 @@
                 <v-btn
                     v-if="existsQGL"
                     :disabled="['printing'].includes(printer_state)"
-                    small
+                    size="small"
                     :loading="loadings.includes('qgl')"
                     :color="colorQuadGantryLevel"
                     class="ml-2"
@@ -36,7 +36,7 @@
                 <v-btn
                     v-if="existsZtilt"
                     :disabled="['printing'].includes(printer_state)"
-                    small
+                    size="small"
                     :loading="loadings.includes('zTilt')"
                     :color="colorZTilt"
                     class="ml-2"
@@ -44,7 +44,7 @@
                     {{ $t('Panels.ToolheadControlPanel.ZTilt') }}
                 </v-btn>
                 <v-btn
-                    small
+                    size="small"
                     :disabled="['printing'].includes(printer_state)"
                     :color="homedAxes !== '' ? 'primary' : 'warning'"
                     class="ml-2"
@@ -54,7 +54,7 @@
             </v-col>
         </v-row>
         <!-- X MOVEMENT BUTTONGROUPS -->
-        <v-row dense>
+        <v-row density="compact">
             <v-col class="text-center">
                 <v-item-group class="_btn-group row no-gutters">
                     <v-btn
@@ -85,7 +85,7 @@
             </v-col>
         </v-row>
         <!-- Y MOVEMENT BUTTONGROUPS -->
-        <v-row dense>
+        <v-row density="compact">
             <v-col class="text-center">
                 <v-item-group class="_btn-group row no-gutters">
                     <v-btn
@@ -116,7 +116,7 @@
             </v-col>
         </v-row>
         <!-- Z MOVEMENT BUTTONGROUPS -->
-        <v-row dense>
+        <v-row density="compact">
             <v-col class="text-center">
                 <v-item-group class="_btn-group row no-gutters">
                     <v-btn
@@ -150,44 +150,46 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import ControlMixin from '@/components/mixins/control'
 import { mdiEngineOff, mdiHome } from '@mdi/js'
 
-@Component
-export default class BarsControl extends Mixins(BaseMixin, ControlMixin) {
-    mdiEngineOff = mdiEngineOff
-    mdiHome = mdiHome
-
-    get enableXYHoming(): boolean {
-        return this.$store.state.gui.control.enableXYHoming
-    }
-
-    get stepsXYsorted() {
-        return [...this.$store.state.gui.control.stepsXY].sort(function (a, b) {
-            return b - a
-        })
-    }
-
-    get stepsXYsortedReverse() {
-        return [...this.$store.state.gui.control.stepsXY].sort(function (a, b) {
-            return a - b
-        })
-    }
-
-    get stepsZsorted() {
-        return [...this.$store.state.gui.control.stepsZ].sort(function (a, b) {
-            return b - a
-        })
-    }
-
-    get stepsZsortedReverse() {
-        return [...this.$store.state.gui.control.stepsZ].sort(function (a, b) {
-            return a - b
-        })
-    }
-}
+export default defineComponent({
+    name: 'BarsControl',
+    mixins: [BaseMixin, ControlMixin],
+    data() {
+        return {
+            mdiEngineOff: mdiEngineOff,
+            mdiHome: mdiHome,
+        }
+    },
+    computed: {
+        enableXYHoming(): boolean {
+            return this.$store.state.gui.control.enableXYHoming
+        },
+        stepsXYsorted() {
+            return [...this.$store.state.gui.control.stepsXY].sort(function (a, b) {
+                return b - a
+            })
+        },
+        stepsXYsortedReverse() {
+            return [...this.$store.state.gui.control.stepsXY].sort(function (a, b) {
+                return a - b
+            })
+        },
+        stepsZsorted() {
+            return [...this.$store.state.gui.control.stepsZ].sort(function (a, b) {
+                return b - a
+            })
+        },
+        stepsZsortedReverse() {
+            return [...this.$store.state.gui.control.stepsZ].sort(function (a, b) {
+                return a - b
+            })
+        },
+    },
+})
 </script>
 
 <style scoped>

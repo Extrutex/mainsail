@@ -13,12 +13,7 @@
                 <template #activator="{ props }">
                     <vue-load-image class="text-center width-32">
                         <template #image>
-                            <img
-                                :src="smallThumbnail"
-                                :width="32"
-                                :height="32"
-                                :alt="job.filename"
-                                v-bind="props" />
+                            <img :src="smallThumbnail" :width="32" :height="32" :alt="job.filename" v-bind="props" />
                         </template>
                         <template #preloader>
                             <div>

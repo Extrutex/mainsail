@@ -25,8 +25,8 @@
                 </v-card-text>
                 <v-divider class="mt-3 mb-0" />
                 <v-card-text class="pt-0 mb-0 pb-0">
-                    <v-timeline align-top dense>
-                        <v-timeline-item class="pb-1" small>
+                    <v-timeline align-top density="compact">
+                        <v-timeline-item class="pb-1" size="small">
                             <strong>{{ outputFirstPointOfHistory }}</strong>
                         </v-timeline-item>
                         <history-list-panel-detail-maintenance-history-entry
@@ -41,8 +41,8 @@
             <v-divider class="mt-0" />
             <v-card-actions>
                 <v-spacer />
-                <v-btn text @click="closeDialog">{{ $t('Buttons.Cancel') }}</v-btn>
-                <v-btn v-if="showPerformButton" text color="primary" @click="showPerformDialog = true">
+                <v-btn variant="text" @click="closeDialog">{{ $t('Buttons.Cancel') }}</v-btn>
+                <v-btn v-if="showPerformButton" variant="text" color="primary" @click="showPerformDialog = true">
                     {{ $t('History.Perform') }}
                 </v-btn>
             </v-card-actions>
@@ -56,7 +56,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop, VModel } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import Panel from '@/components/ui/Panel.vue'
 import { mdiCloseThick, mdiNotebook, mdiPencil } from '@mdi/js'
@@ -64,61 +64,71 @@ import { GuiMaintenanceStateEntry } from '@/store/gui/maintenance/types'
 import HistoryListPanelDetailMaintenanceHistoryEntry from '@/components/dialogs/HistoryListPanelDetailMaintenanceHistoryEntry.vue'
 import HistoryListPanelPerformMaintenance from '@/components/dialogs/HistoryListPanelPerformMaintenance.vue'
 
-@Component({
+export default defineComponent({
+    name: 'HistoryListPanelDetailMaintenance',
     components: { HistoryListPanelPerformMaintenance, Panel, HistoryListPanelDetailMaintenanceHistoryEntry },
-})
-export default class HistoryListPanelDetailMaintenance extends Mixins(BaseMixin) {
-    mdiCloseThick = mdiCloseThick
-    mdiNotebook = mdiNotebook
-    mdiPencil = mdiPencil
-
-    @VModel({ type: Boolean }) showDialog!: boolean
-    @Prop({ type: Object, default: false }) readonly item!: GuiMaintenanceStateEntry
-
-    showEditDialog = false
-    showPerformDialog = false
-
-    get date() {
-        return this.formatDateTime(this.item.start_time * 1000, false)
-    }
-
-    get note() {
-        return this.item.note.replaceAll('\n', '<br>')
-    }
-
-    get showPerformButton() {
-        if (this.item.end_time) return false
-
-        return this.item.reminder?.type ?? false
-    }
-
-    get allEntries() {
-        return this.$store.getters['gui/maintenance/getEntries'] ?? []
-    }
-
-    get history() {
-        const array = []
-
-        let latest_entry_id = this.item.id
-        while (latest_entry_id) {
-            const entry = this.allEntries.find((entry: GuiMaintenanceStateEntry) => entry.id === latest_entry_id)
-            if (!entry) break
-            array.push(entry)
-            latest_entry_id = entry.last_entry
+    mixins: [BaseMixin],
+    props: {
+        modelValue: { type: Boolean },
+        item: { type: Object, default: false },
+    },
+    emits: ['update:modelValue'],
+    data() {
+        return {
+            mdiCloseThick: mdiCloseThick,
+            mdiNotebook: mdiNotebook,
+            mdiPencil: mdiPencil,
+            showEditDialog: false,
+            showPerformDialog: false,
         }
+    },
+    computed: {
+        showDialog: {
+            get(): boolean {
+                return this.modelValue
+            },
+            set(value: boolean) {
+                this.$emit('update:modelValue', value)
+            },
+        },
+        date() {
+            return this.formatDateTime(this.item.start_time * 1000, false)
+        },
+        note() {
+            return this.item.note.replaceAll('\n', '<br>')
+        },
+        showPerformButton() {
+            if (this.item.end_time) return false
 
-        return array
-    }
+            return this.item.reminder?.type ?? false
+        },
+        allEntries() {
+            return this.$store.getters['gui/maintenance/getEntries'] ?? []
+        },
+        history() {
+            const array = []
 
-    get outputFirstPointOfHistory() {
-        if (this.item.reminder.type === null) return this.$t('History.EntrySince')
-        if (this.item.end_time === null) return this.$t('History.EntryNextPerform')
+            let latest_entry_id = this.item.id
+            while (latest_entry_id) {
+                const entry = this.allEntries.find((entry: GuiMaintenanceStateEntry) => entry.id === latest_entry_id)
+                if (!entry) break
+                array.push(entry)
+                latest_entry_id = entry.last_entry
+            }
 
-        return this.$t('History.EntryPerformedAt', { date: this.formatDateTime(this.item.end_time * 1000) })
-    }
+            return array
+        },
+        outputFirstPointOfHistory() {
+            if (this.item.reminder.type === null) return this.$t('History.EntrySince')
+            if (this.item.end_time === null) return this.$t('History.EntryNextPerform')
 
-    closeDialog() {
-        this.showDialog = false
-    }
-}
+            return this.$t('History.EntryPerformedAt', { date: this.formatDateTime(this.item.end_time * 1000) })
+        },
+    },
+    methods: {
+        closeDialog() {
+            this.showDialog = false
+        },
+    },
+})
 </script>

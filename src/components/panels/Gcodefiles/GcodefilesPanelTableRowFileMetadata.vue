@@ -2,50 +2,53 @@
     <td :class="tdClass">{{ value }}</td>
 </template>
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import GcodefilesMixin, { tableColumnSetting } from '@/components/mixins/gcodefiles'
 import { FileStateGcodefile } from '@/store/files/types'
 import { formatFilesize, formatPrintTime } from '@/plugins/helpers'
 
-@Component
-export default class GcodefilesPanelTableRowFileMetadata extends Mixins(BaseMixin, GcodefilesMixin) {
-    @Prop({ type: Object, required: true }) readonly item!: FileStateGcodefile
-    @Prop({ type: Object, required: true }) readonly col!: tableColumnSetting
+export default defineComponent({
+    name: 'GcodefilesPanelTableRowFileMetadata',
+    mixins: [BaseMixin, GcodefilesMixin],
+    props: {
+        item: { type: Object, required: true },
+        col: { type: Object, required: true },
+    },
+    computed: {
+        tdClass() {
+            return this.col.outputType !== 'date' ? 'text-no-wrap' : ''
+        },
+        value() {
+            const value = this.col.value in this.item ? this.item[this.col.value] : null
 
-    get tdClass() {
-        return this.col.outputType !== 'date' ? 'text-no-wrap' : ''
-    }
+            if (value === null) return '--'
 
-    get value() {
-        const value = this.col.value in this.item ? this.item[this.col.value] : null
+            switch (this.col.outputType) {
+                case 'filesize':
+                    return formatFilesize(value)
 
-        if (value === null) return '--'
+                case 'date':
+                    return this.formatDateTime(value)
 
-        switch (this.col.outputType) {
-            case 'filesize':
-                return formatFilesize(value)
+                case 'time':
+                    return formatPrintTime(value)
 
-            case 'date':
-                return this.formatDateTime(value)
+                case 'temp':
+                    return value.toFixed() + ' °C'
 
-            case 'time':
-                return formatPrintTime(value)
+                case 'length':
+                    if (value > 1000) return (value / 1000).toFixed(2) + ' m'
 
-            case 'temp':
-                return value.toFixed() + ' °C'
+                    return value.toFixed(2) + ' mm'
 
-            case 'length':
-                if (value > 1000) return (value / 1000).toFixed(2) + ' m'
+                case 'weight':
+                    return value.toFixed(2) + ' g'
 
-                return value.toFixed(2) + ' mm'
-
-            case 'weight':
-                return value.toFixed(2) + ' g'
-
-            default:
-                return value
-        }
-    }
-}
+                default:
+                    return value
+            }
+        },
+    },
+})
 </script>

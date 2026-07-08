@@ -4,10 +4,10 @@
             <template slot="progress">
                 <v-progress-linear color="primary" indeterminate></v-progress-linear>
             </template>
-            <v-toolbar flat dense>
+            <v-toolbar flat density="compact">
                 <v-toolbar-title>
                     <span class="subheading">
-                        <v-icon left>{{ mdiUpdate }}</v-icon>
+                        <v-icon start>{{ mdiUpdate }}</v-icon>
                         <template v-if="application.substr(0, 8) === 'recover_' && !complete">
                             {{ $t('App.UpdateDialog.Recovering', { software: application.substr(8) }) }}
                         </template>
@@ -60,7 +60,7 @@
                 </v-row>
                 <v-row>
                     <v-col class="text-center pt-5">
-                        <v-btn text :disabled="!complete" color="primary" @click="close">
+                        <v-btn variant="text" :disabled="!complete" color="primary" @click="close">
                             {{ $t('Buttons.Close') }}
                         </v-btn>
                     </v-col>
@@ -71,106 +71,110 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, Ref, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { ServerUpdateManagerStateMessages } from '@/store/server/updateManager/types'
 import { mdiUpdate } from '@mdi/js'
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-vue'
 
-@Component
-export default class TheUpdateDialog extends Mixins(BaseMixin) {
-    @Ref() readonly updaterLogScroll!: OverlayScrollbarsComponent
-    @Ref() readonly updaterLog!: HTMLDivElement
-
-    mdiUpdate = mdiUpdate
-
-    headers = [
-        {
-            text: 'Date',
-            value: 'date',
-            width: '1%',
-            dateType: 'Date',
-        },
-        {
-            text: 'Message',
-            sortable: false,
-            value: 'message',
-            width: '99%',
-        },
-    ]
-
-    get application() {
-        return this.$store.state.server.updateManager.updateResponse.application ?? ''
-    }
-
-    get messages(): ServerUpdateManagerStateMessages[] {
-        return this.$store.state.server.updateManager.updateResponse.messages ?? []
-    }
-
-    get complete() {
-        return this.$store.state.server.updateManager.updateResponse.complete ?? true
-    }
-
-    customSort(items: ServerUpdateManagerStateMessages[], sortBy: string[], sortDesc: boolean[]) {
-        const sortKey = sortBy[0]
-        const isDescending = sortDesc[0]
-
-        items.sort((a, b) => {
-            if (sortKey === 'date') {
-                const aDate = new Date(a.date).getTime()
-                const bDate = new Date(b.date).getTime()
-
-                if (!isDescending) return bDate - aDate
-
-                return aDate - bDate
-            }
-
-            if (sortKey === 'message') {
-                if (!isDescending) return a.message.toLowerCase().localeCompare(b.message.toLowerCase())
-
-                return b.message.toLowerCase().localeCompare(a.message.toLowerCase())
-            }
-
-            return 0
-        })
-
-        return items
-    }
-
-    formatTime(date: Date) {
-        const hours = date.getHours() < 10 ? '0' + date.getHours().toString() : date.getHours()
-        const minutes = date.getMinutes() < 10 ? '0' + date.getMinutes().toString() : date.getMinutes()
-        const seconds = date.getSeconds() < 10 ? '0' + date.getSeconds().toString() : date.getSeconds()
-
-        return hours + ':' + minutes + ':' + seconds
-    }
-
-    close() {
-        if (
-            this.application !== null &&
-            this.complete &&
-            ['client', 'mainsail', 'full'].includes(this.application.toLowerCase())
-        ) {
-            window.location.reload()
-            return
+export default defineComponent({
+    name: 'TheUpdateDialog',
+    mixins: [BaseMixin],
+    data() {
+        return {
+            mdiUpdate: mdiUpdate,
+            headers: [
+                {
+                    text: 'Date',
+                    value: 'date',
+                    width: '1%',
+                    dateType: 'Date',
+                },
+                {
+                    text: 'Message',
+                    sortable: false,
+                    value: 'message',
+                    width: '99%',
+                },
+            ],
         }
+    },
+    computed: {
+        updaterLogScroll(): OverlayScrollbarsComponent {
+            return this.$refs.updaterLogScroll as OverlayScrollbarsComponent
+        },
+        updaterLog(): HTMLDivElement {
+            return this.$refs.updaterLog as HTMLDivElement
+        },
+        application() {
+            return this.$store.state.server.updateManager.updateResponse.application ?? ''
+        },
+        messages(): ServerUpdateManagerStateMessages[] {
+            return this.$store.state.server.updateManager.updateResponse.messages ?? []
+        },
+        complete() {
+            return this.$store.state.server.updateManager.updateResponse.complete ?? true
+        },
+    },
+    watch: {
+        messages() {
+            setTimeout(() => {
+                this.updaterLogScroll.osInstance()?.scroll({ y: '100%' })
+            }, 50)
+        },
+    },
+    methods: {
+        customSort(items: ServerUpdateManagerStateMessages[], sortBy: string[], sortDesc: boolean[]) {
+            const sortKey = sortBy[0]
+            const isDescending = sortDesc[0]
 
-        this.$store.commit('server/updateManager/resetUpdateResponse')
-        this.$socket.emit(
-            'machine.update.status',
-            { refresh: false },
-            { action: 'server/updateManager/onUpdateStatus' }
-        )
-    }
+            items.sort((a, b) => {
+                if (sortKey === 'date') {
+                    const aDate = new Date(a.date).getTime()
+                    const bDate = new Date(b.date).getTime()
 
-    @Watch('messages')
-    messagesChanged() {
-        setTimeout(() => {
-            this.updaterLogScroll.osInstance()?.scroll({ y: '100%' })
-        }, 50)
-    }
-}
+                    if (!isDescending) return bDate - aDate
+
+                    return aDate - bDate
+                }
+
+                if (sortKey === 'message') {
+                    if (!isDescending) return a.message.toLowerCase().localeCompare(b.message.toLowerCase())
+
+                    return b.message.toLowerCase().localeCompare(a.message.toLowerCase())
+                }
+
+                return 0
+            })
+
+            return items
+        },
+        formatTime(date: Date) {
+            const hours = date.getHours() < 10 ? '0' + date.getHours().toString() : date.getHours()
+            const minutes = date.getMinutes() < 10 ? '0' + date.getMinutes().toString() : date.getMinutes()
+            const seconds = date.getSeconds() < 10 ? '0' + date.getSeconds().toString() : date.getSeconds()
+
+            return hours + ':' + minutes + ':' + seconds
+        },
+        close() {
+            if (
+                this.application !== null &&
+                this.complete &&
+                ['client', 'mainsail', 'full'].includes(this.application.toLowerCase())
+            ) {
+                window.location.reload()
+                return
+            }
+
+            this.$store.commit('server/updateManager/resetUpdateResponse')
+            this.$socket.emit(
+                'machine.update.status',
+                { refresh: false },
+                { action: 'server/updateManager/onUpdateStatus' }
+            )
+        },
+    },
+})
 </script>
 
 <style scoped>

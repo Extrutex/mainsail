@@ -9,37 +9,38 @@
     </div>
 </template>
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import AfcMixin from '@/components/mixins/afc'
 
-@Component
-export default class AfcPanelUnitLane extends Mixins(BaseMixin, AfcMixin) {
-    @Prop({ type: String, required: true }) readonly name!: string
+export default defineComponent({
+    name: 'AfcPanelUnitLane',
+    mixins: [BaseMixin, AfcMixin],
+    props: {
+        name: { type: String, required: true },
+    },
+    computed: {
+        lane() {
+            return this.getAfcLaneObject(this.name)
+        },
+        laneActive() {
+            const activeLaneName = this.afcCurrentLane?.name ?? ''
 
-    get lane() {
-        return this.getAfcLaneObject(this.name)
-    }
-
-    get laneActive() {
-        const activeLaneName = this.afcCurrentLane?.name ?? ''
-
-        return this.name === activeLaneName
-    }
-
-    get laneStatusClass() {
-        return {
-            'darken-3': this.$vuetify.theme.dark,
-            'lighten-2': !this.$vuetify.theme.dark,
-            'border-error': this.laneActive && this.afcErrorState,
-            'border-success': this.laneActive && !this.afcErrorState,
-        }
-    }
-
-    get laneReady() {
-        return this.lane.load && this.lane.prep
-    }
-}
+            return this.name === activeLaneName
+        },
+        laneStatusClass() {
+            return {
+                'darken-3': this.$vuetify.theme.dark,
+                'lighten-2': !this.$vuetify.theme.dark,
+                'border-error': this.laneActive && this.afcErrorState,
+                'border-success': this.laneActive && !this.afcErrorState,
+            }
+        },
+        laneReady() {
+            return this.lane.load && this.lane.prep
+        },
+    },
+})
 </script>
 
 <style scoped>

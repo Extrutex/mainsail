@@ -11,27 +11,33 @@
 </template>
 
 <script lang="ts">
+import { defineComponent } from 'vue'
 import { mdiPrinter3dNozzle } from '@mdi/js'
-import { Component, Mixins } from 'vue-property-decorator'
 import BaseMixin from '@/components/mixins/base'
 import ControlMixin from '@/components/mixins/control'
 
-@Component({})
-export default class ExtruderControlPanel extends Mixins(BaseMixin, ControlMixin) {
-    mdiPrinter3dNozzle = mdiPrinter3dNozzle
-
-    get rows() {
-        const len = this.toolchangeMacros.length
-        const cols = Math.ceil(len / Math.ceil(len / 6))
-        const rows = []
-
-        for (let i = 0; i < this.toolchangeMacros.length; i += cols) {
-            rows.push(this.toolchangeMacros.slice(i, i + cols))
+export default defineComponent({
+    name: 'ExtruderControlPanel',
+    mixins: [BaseMixin, ControlMixin],
+    data() {
+        return {
+            mdiPrinter3dNozzle: mdiPrinter3dNozzle,
         }
+    },
+    computed: {
+        rows() {
+            const len = this.toolchangeMacros.length
+            const cols = Math.ceil(len / Math.ceil(len / 6))
+            const rows = []
 
-        return rows
-    }
-}
+            for (let i = 0; i < this.toolchangeMacros.length; i += cols) {
+                rows.push(this.toolchangeMacros.slice(i, i + cols))
+            }
+
+            return rows
+        },
+    },
+})
 </script>
 
 <style scoped>

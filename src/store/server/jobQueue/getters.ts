@@ -18,7 +18,11 @@ export const getters: GetterTree<ServerJobQueueState, RootState> = {
 
             const file = rootGetters['files/getFile']('gcodes/' + job.filename)
             if (!file?.metadataPulled)
-                getSocketClient().emit('server.files.metadata', { filename: job.filename }, { action: 'files/getMetadata' })
+                getSocketClient().emit(
+                    'server.files.metadata',
+                    { filename: job.filename },
+                    { action: 'files/getMetadata' }
+                )
             job.metadata = file
             job.combinedIds = []
 

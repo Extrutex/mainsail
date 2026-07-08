@@ -198,86 +198,83 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '../../mixins/base'
 import Panel from '@/components/ui/Panel.vue'
 import { formatFilesize } from '@/plugins/helpers'
 import { mdiTextBoxSearchOutline, mdiCloseThick } from '@mdi/js'
-@Component({
+
+export default defineComponent({
+    name: 'SystemPanelHost',
     components: { Panel },
-})
-export default class SystemPanelHost extends Mixins(BaseMixin) {
-    formatFilesize = formatFilesize
-    mdiCloseThick = mdiCloseThick
-    mdiTextBoxSearchOutline = mdiTextBoxSearchOutline
-
-    private hostDetailsDialog = false
-
-    get hostStats() {
-        return this.$store.getters['server/getHostStats'] ?? null
-    }
-
-    get systemInfo() {
-        return this.$store.state.server?.system_info ?? {}
-    }
-
-    get releaseName() {
-        const name = this.hostStats.release_info?.name ?? ''
-
-        if (name.startsWith('#')) return this.hostStats.release_info?.id ?? null
-        if (name.startsWith('0.')) return null
-
-        return name
-    }
-
-    get directory() {
-        return this.$store.getters['files/getDirectory']('gcodes')
-    }
-
-    get disk_usage() {
-        return this.directory?.disk_usage ?? { used: 0, free: 0, total: 0 }
-    }
-
-    get cpuUsage() {
-        return this.$store.getters['server/getCpuUsage'] ?? null
-    }
-
-    get cpuUsageColor() {
-        let color = 'primary'
-        if (this.cpuUsage > 95) color = 'error'
-        else if (this.cpuUsage > 80) color = 'warning'
-
-        return color
-    }
-
-    get networkInterfaces() {
-        return this.$store.getters['server/getNetworkInterfaces'] ?? null
-    }
-
-    getIpAddress(ip_addresses: { family: string; address: string }[]) {
-        const ipv4 = ip_addresses.find((address) => address.family === 'ipv4')
-        if (ipv4) return ` (${ipv4.address})`
-
-        const ipv6 = ip_addresses.find((address) => address.family === 'ipv6')
-        if (ipv6) return ` (${ipv6.address})`
-
-        return null
-    }
-
-    get cpuDesc() {
-        const output = this.hostStats.cpuDesc
-
-        return output
-    }
-
-    get cpuName() {
-        let output = this.hostStats.cpuName
-
-        if (this.hostStats.bits) {
-            output += `, ${this.hostStats.bits}`
+    mixins: [BaseMixin],
+    data() {
+        return {
+            formatFilesize: formatFilesize,
+            mdiCloseThick: mdiCloseThick,
+            mdiTextBoxSearchOutline: mdiTextBoxSearchOutline,
+            hostDetailsDialog: false,
         }
+    },
+    computed: {
+        hostStats() {
+            return this.$store.getters['server/getHostStats'] ?? null
+        },
+        systemInfo() {
+            return this.$store.state.server?.system_info ?? {}
+        },
+        releaseName() {
+            const name = this.hostStats.release_info?.name ?? ''
 
-        return output
-    }
-}
+            if (name.startsWith('#')) return this.hostStats.release_info?.id ?? null
+            if (name.startsWith('0.')) return null
+
+            return name
+        },
+        directory() {
+            return this.$store.getters['files/getDirectory']('gcodes')
+        },
+        disk_usage() {
+            return this.directory?.disk_usage ?? { used: 0, free: 0, total: 0 }
+        },
+        cpuUsage() {
+            return this.$store.getters['server/getCpuUsage'] ?? null
+        },
+        cpuUsageColor() {
+            let color = 'primary'
+            if (this.cpuUsage > 95) color = 'error'
+            else if (this.cpuUsage > 80) color = 'warning'
+
+            return color
+        },
+        networkInterfaces() {
+            return this.$store.getters['server/getNetworkInterfaces'] ?? null
+        },
+        cpuDesc() {
+            const output = this.hostStats.cpuDesc
+
+            return output
+        },
+        cpuName() {
+            let output = this.hostStats.cpuName
+
+            if (this.hostStats.bits) {
+                output += `, ${this.hostStats.bits}`
+            }
+
+            return output
+        },
+    },
+    methods: {
+        getIpAddress(ip_addresses: { family: string; address: string }[]) {
+            const ipv4 = ip_addresses.find((address) => address.family === 'ipv4')
+            if (ipv4) return ` (${ipv4.address})`
+
+            const ipv6 = ip_addresses.find((address) => address.family === 'ipv6')
+            if (ipv6) return ` (${ipv6.address})`
+
+            return null
+        },
+    },
+})
 </script>

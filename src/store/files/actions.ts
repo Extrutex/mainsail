@@ -10,7 +10,7 @@ import { RootState } from '@/store/types'
 import i18n from '@/plugins/i18n'
 import { hiddenDirectories, validGcodeExtensions } from '@/store/variables'
 import axios, { AxiosProgressEvent, AxiosResponse } from 'axios'
-import { getSocketClient,BatchMessage  } from '@/plugins/webSocketClient'
+import { getSocketClient, BatchMessage } from '@/plugins/webSocketClient'
 import { useToast } from 'vue-toast-notification'
 
 export const actions: ActionTree<FileState, RootState> = {
@@ -25,7 +25,11 @@ export const actions: ActionTree<FileState, RootState> = {
                     name: dirname,
                     permissions: 'r',
                 })
-                getSocketClient().emit('server.files.get_directory', { path: dirname }, { action: 'files/getDirectory' })
+                getSocketClient().emit(
+                    'server.files.get_directory',
+                    { path: dirname },
+                    { action: 'files/getDirectory' }
+                )
             }
         })
     },
@@ -274,7 +278,8 @@ export const actions: ActionTree<FileState, RootState> = {
             const sourceDir = payload.requestParams.source.substr(0, payload.requestParams.source.lastIndexOf('/'))
             const destDir = payload.requestParams.dest.substr(0, payload.requestParams.dest.lastIndexOf('/'))
 
-            if (sourceDir === destDir) useToast().success(<string>i18n.global.t('Files.SuccessfullyRenamed', { filename }))
+            if (sourceDir === destDir)
+                useToast().success(<string>i18n.global.t('Files.SuccessfullyRenamed', { filename }))
             else useToast().success(<string>i18n.global.t('Files.SuccessfullyMoved', { filename }))
         }
     },

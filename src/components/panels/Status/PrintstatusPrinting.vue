@@ -238,7 +238,9 @@ export default defineComponent({
 
         showToolchange() {
             return (
-                this.afcExists && this.current_file.filament_change_count > 10 && this.afcCurrentToolchange !== undefined
+                this.afcExists &&
+                this.current_file.filament_change_count > 10 &&
+                this.afcCurrentToolchange !== undefined
             )
         },
 

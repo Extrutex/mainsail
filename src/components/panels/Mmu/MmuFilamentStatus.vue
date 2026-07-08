@@ -336,8 +336,7 @@ export default defineComponent({
         },
 
         endOfBowdenPos() {
-            if (typeof this.toolheadSensor === 'boolean' && !this.configExtruderForceHoming)
-                return POSITIONS.END_BOWDEN
+            if (typeof this.toolheadSensor === 'boolean' && !this.configExtruderForceHoming) return POSITIONS.END_BOWDEN
 
             const extruderHomingEndstops = ['none', 'collision', 'mmu_gear_touch', 'filament_compression']
             if (extruderHomingEndstops.includes(this.configExtruderHomingEndstop)) return POSITIONS.EXTRUDER_ENTRANCE

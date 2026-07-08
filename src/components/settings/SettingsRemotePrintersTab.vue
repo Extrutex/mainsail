@@ -12,24 +12,28 @@
                         :title="formatPrinterName(printer)"
                         :loading="printer.socket.isConnecting"
                         :icon="printer.socket.isConnected ? mdiCheckboxMarkedCircle : mdiCancel">
-                        <v-btn small outlined :disabled="!canAddPrinters" @click="editPrinter(printer)">
-                            <v-icon left small>{{ mdiPencil }}</v-icon>
+                        <v-btn
+                            size="small"
+                            variant="outlined"
+                            :disabled="!canAddPrinters"
+                            @click="editPrinter(printer)">
+                            <v-icon start size="small">{{ mdiPencil }}</v-icon>
                             {{ $t('Settings.Edit') }}
                         </v-btn>
                         <v-btn
-                            small
-                            outlined
+                            size="small"
+                            variant="outlined"
                             class="ml-3 minwidth-0 px-2"
                             color="error"
                             :disabled="!canAddPrinters"
                             @click="delPrinter(printer.id)">
-                            <v-icon small>{{ mdiDelete }}</v-icon>
+                            <v-icon size="small">{{ mdiDelete }}</v-icon>
                         </v-btn>
                     </settings-row>
                 </div>
             </v-card-text>
             <v-card-actions class="d-flex justify-end">
-                <v-btn text color="primary" :disabled="!canAddPrinters" @click="createPrinter">
+                <v-btn variant="text" color="primary" :disabled="!canAddPrinters" @click="createPrinter">
                     {{ $t('Settings.RemotePrintersTab.AddPrinter') }}
                 </v-btn>
             </v-card-actions>
@@ -53,8 +57,8 @@
                         ]"
                         hide-details="auto"
                         required
-                        dense
-                        outlined />
+                        density="compact"
+                        variant="outlined" />
                 </settings-row>
                 <v-divider class="my-2" />
                 <settings-row :title="$t('Settings.RemotePrintersTab.Port')">
@@ -63,8 +67,8 @@
                         :rules="[(v) => !!v || 'Port is required']"
                         hide-details="auto"
                         required
-                        dense
-                        outlined />
+                        density="compact"
+                        variant="outlined" />
                 </settings-row>
                 <v-divider class="my-2" />
                 <settings-row :title="$t('Settings.RemotePrintersTab.Path')">
@@ -72,24 +76,24 @@
                         v-model="form.path"
                         :rules="[(v) => !v || v.startsWith('/') || 'Path must start with /']"
                         hide-details="auto"
-                        outlined
-                        dense />
+                        variant="outlined"
+                        density="compact" />
                 </settings-row>
                 <template v-if="instancesDB !== 'moonraker'">
                     <v-divider class="my-2" />
                     <settings-row
                         :title="$t('Settings.RemotePrintersTab.Name')"
                         :sub-title="$t('Settings.RemotePrintersTab.NameDescription')">
-                        <v-text-field v-model="form.name" outlined hide-details="auto" dense />
+                        <v-text-field v-model="form.name" variant="outlined" hide-details="auto" density="compact" />
                     </settings-row>
                 </template>
             </v-card-text>
             <v-card-actions class="d-flex justify-end">
-                <v-btn text @click="form.bool = false">{{ $t('Buttons.Cancel') }}</v-btn>
-                <v-btn v-if="form.id === null" text color="primary" @click="storePrinter">
+                <v-btn variant="text" @click="form.bool = false">{{ $t('Buttons.Cancel') }}</v-btn>
+                <v-btn v-if="form.id === null" variant="text" color="primary" @click="storePrinter">
                     {{ $t('Settings.RemotePrintersTab.AddPrinter') }}
                 </v-btn>
-                <v-btn v-else text color="primary" @click="updatePrinter">
+                <v-btn v-else variant="text" color="primary" @click="updatePrinter">
                     {{ $t('Settings.RemotePrintersTab.UpdatePrinter') }}
                 </v-btn>
             </v-card-actions>
@@ -98,7 +102,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '../mixins/base'
 import SettingsRow from '@/components/settings/SettingsRow.vue'
 import { GuiRemoteprintersStatePrinter } from '@/store/gui/remoteprinters/types'
@@ -114,98 +118,96 @@ interface printerForm {
     namespace: string | null
 }
 
-@Component({
+export default defineComponent({
+    name: 'SettingsRemotePrintersTab',
     components: { SettingsRow },
+    mixins: [BaseMixin],
+    data() {
+        return {
+            mdiCheckboxMarkedCircle: mdiCheckboxMarkedCircle,
+            mdiCancel: mdiCancel,
+            mdiPencil: mdiPencil,
+            mdiDelete: mdiDelete,
+            mdiAlertOutline: mdiAlertOutline,
+            form: {
+                bool: false,
+                hostname: '',
+                port: 7125,
+                path: '/',
+                name: '',
+                id: null,
+                namespace: null,
+            } as printerForm,
+        }
+    },
+    computed: {
+        printers() {
+            return this.$store.getters['gui/remoteprinters/getRemoteprinters'] ?? []
+        },
+        canAddPrinters() {
+            return this.$store.state.instancesDB !== 'json'
+        },
+        protocol() {
+            return this.$store.state.socket.protocol ?? 'ws'
+        },
+    },
+    methods: {
+        formatPrinterName(printer: GuiRemoteprintersStatePrinter) {
+            return printer.hostname + (printer.port !== 80 ? ':' + printer.port : '') + (printer.path ?? '')
+        },
+        createPrinter() {
+            this.form.hostname = ''
+            this.form.port = 7125
+            this.form.path = '/'
+            this.form.name = ''
+            this.form.id = null
+            this.form.namespace = null
+            this.form.bool = true
+        },
+        storePrinter() {
+            const printer = {
+                hostname: this.form.hostname,
+                port: this.form.port,
+                name: this.form.name,
+                path: this.form.path,
+            }
+
+            this.$store.dispatch('gui/remoteprinters/store', { values: printer })
+
+            this.form.hostname = ''
+            this.form.port = 7125
+            this.form.name = ''
+            this.form.id = null
+            this.form.bool = false
+        },
+        editPrinter(printer: GuiRemoteprintersStatePrinter) {
+            this.form.id = printer.id ?? null
+            this.form.hostname = printer.hostname
+            this.form.port = printer.port
+            this.form.path = printer.path ?? '/'
+            this.form.name = printer.name ?? ''
+            this.form.bool = true
+        },
+        updatePrinter() {
+            const values = {
+                hostname: this.form.hostname,
+                port: this.form.port,
+                name: this.form.name,
+                path: this.form.path,
+            }
+
+            this.$store.dispatch('gui/remoteprinters/update', { id: this.form.id, values })
+
+            this.form.id = null
+            this.form.hostname = ''
+            this.form.port = 7125
+            this.form.path = '/'
+            this.form.name = ''
+            this.form.bool = false
+        },
+        delPrinter(id: string) {
+            this.$store.dispatch('gui/remoteprinters/delete', id)
+        },
+    },
 })
-export default class SettingsRemotePrintersTab extends Mixins(BaseMixin) {
-    mdiCheckboxMarkedCircle = mdiCheckboxMarkedCircle
-    mdiCancel = mdiCancel
-    mdiPencil = mdiPencil
-    mdiDelete = mdiDelete
-    mdiAlertOutline = mdiAlertOutline
-
-    form: printerForm = {
-        bool: false,
-        hostname: '',
-        port: 7125,
-        path: '/',
-        name: '',
-        id: null,
-        namespace: null,
-    }
-
-    get printers() {
-        return this.$store.getters['gui/remoteprinters/getRemoteprinters'] ?? []
-    }
-
-    get canAddPrinters() {
-        return this.$store.state.instancesDB !== 'json'
-    }
-
-    get protocol() {
-        return this.$store.state.socket.protocol ?? 'ws'
-    }
-
-    formatPrinterName(printer: GuiRemoteprintersStatePrinter) {
-        return printer.hostname + (printer.port !== 80 ? ':' + printer.port : '') + (printer.path ?? '')
-    }
-
-    createPrinter() {
-        this.form.hostname = ''
-        this.form.port = 7125
-        this.form.path = '/'
-        this.form.name = ''
-        this.form.id = null
-        this.form.namespace = null
-        this.form.bool = true
-    }
-
-    storePrinter() {
-        const printer = {
-            hostname: this.form.hostname,
-            port: this.form.port,
-            name: this.form.name,
-            path: this.form.path,
-        }
-
-        this.$store.dispatch('gui/remoteprinters/store', { values: printer })
-
-        this.form.hostname = ''
-        this.form.port = 7125
-        this.form.name = ''
-        this.form.id = null
-        this.form.bool = false
-    }
-
-    editPrinter(printer: GuiRemoteprintersStatePrinter) {
-        this.form.id = printer.id ?? null
-        this.form.hostname = printer.hostname
-        this.form.port = printer.port
-        this.form.path = printer.path ?? '/'
-        this.form.name = printer.name ?? ''
-        this.form.bool = true
-    }
-
-    updatePrinter() {
-        const values = {
-            hostname: this.form.hostname,
-            port: this.form.port,
-            name: this.form.name,
-            path: this.form.path,
-        }
-
-        this.$store.dispatch('gui/remoteprinters/update', { id: this.form.id, values })
-
-        this.form.id = null
-        this.form.hostname = ''
-        this.form.port = 7125
-        this.form.path = '/'
-        this.form.name = ''
-        this.form.bool = false
-    }
-
-    delPrinter(id: string) {
-        this.$store.dispatch('gui/remoteprinters/delete', id)
-    }
-}
 </script>

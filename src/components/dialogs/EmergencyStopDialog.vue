@@ -14,39 +14,55 @@
             <v-card-text>{{ $t('EmergencyStopDialog.AreYouSure') }}</v-card-text>
             <v-card-actions>
                 <v-spacer />
-                <v-btn text @click="closePrompt">{{ $t('Buttons.No') }}</v-btn>
-                <v-btn color="error" text @click="emergencyStop">{{ $t('Buttons.Yes') }}</v-btn>
+                <v-btn variant="text" @click="closePrompt">{{ $t('Buttons.No') }}</v-btn>
+                <v-btn color="error" variant="text" @click="emergencyStop">{{ $t('Buttons.Yes') }}</v-btn>
             </v-card-actions>
         </panel>
     </v-dialog>
 </template>
 
 <script lang="ts">
-import { Component, Mixins, VModel } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import Panel from '@/components/ui/Panel.vue'
 
 import { mdiAlertOctagonOutline, mdiCloseThick } from '@mdi/js'
 
-@Component({
+export default defineComponent({
+    name: 'EmergencyStopDialog',
     components: { Panel },
+    mixins: [BaseMixin],
+    props: {
+        modelValue: { type: Boolean },
+    },
+    emits: ['update:modelValue'],
+    data() {
+        return {
+            mdiAlertOctagonOutline: mdiAlertOctagonOutline,
+            mdiCloseThick: mdiCloseThick,
+        }
+    },
+    computed: {
+        showDialog: {
+            get(): boolean {
+                return this.modelValue
+            },
+            set(value: boolean) {
+                this.$emit('update:modelValue', value)
+            },
+        },
+    },
+    methods: {
+        emergencyStop() {
+            this.$socket.emit('printer.emergency_stop', {}, { loading: 'topbarEmergencyStop' })
+
+            this.closePrompt()
+        },
+        closePrompt() {
+            this.showDialog = false
+        },
+    },
 })
-export default class EmergencyStopDialog extends Mixins(BaseMixin) {
-    mdiAlertOctagonOutline = mdiAlertOctagonOutline
-    mdiCloseThick = mdiCloseThick
-
-    @VModel({ type: Boolean }) showDialog!: boolean
-
-    emergencyStop() {
-        this.$socket.emit('printer.emergency_stop', {}, { loading: 'topbarEmergencyStop' })
-
-        this.closePrompt()
-    }
-
-    closePrompt() {
-        this.showDialog = false
-    }
-}
 </script>
 
 <style scoped></style>

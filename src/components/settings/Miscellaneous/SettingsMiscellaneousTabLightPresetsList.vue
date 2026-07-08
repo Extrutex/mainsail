@@ -16,65 +16,69 @@
         </v-card-text>
         <v-card-actions>
             <v-spacer />
-            <v-btn text @click="close">{{ $t('Buttons.Close') }}</v-btn>
-            <v-btn text color="primary" @click="createPreset">{{ $t('Settings.MiscellaneousTab.AddPreset') }}</v-btn>
+            <v-btn variant="text" @click="close">{{ $t('Buttons.Close') }}</v-btn>
+            <v-btn variant="text" color="primary" @click="createPreset">
+                {{ $t('Settings.MiscellaneousTab.AddPreset') }}
+            </v-btn>
         </v-card-actions>
     </div>
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import SettingsRow from '@/components/settings/SettingsRow.vue'
 import { caseInsensitiveSort } from '@/plugins/helpers'
 import { GuiMiscellaneousStateEntryPreset } from '@/store/gui/miscellaneous/types'
 
-@Component({
+export default defineComponent({
+    name: 'SettingsMiscellaneousTabLightPresetsList',
     components: { SettingsRow },
-})
-export default class SettingsMiscellaneousTabLightPresetsList extends Mixins(BaseMixin) {
-    @Prop({ type: String, required: true }) declare type: string
-    @Prop({ type: String, required: true }) declare name: string
+    mixins: [BaseMixin],
+    props: {
+        type: { type: String, required: true },
+        name: { type: String, required: true },
+    },
+    emits: ['close', 'create-preset', 'edit-preset'],
+    computed: {
+        entry() {
+            const entries = this.$store.state.gui.miscellaneous.entries ?? {}
+            const key =
+                Object.keys(entries).find((key) => {
+                    const entry = entries[key]
+                    return entry.type === this.type && entry.name === this.name
+                }) ?? ''
 
-    get entry() {
-        const entries = this.$store.state.gui.miscellaneous.entries ?? {}
-        const key =
-            Object.keys(entries).find((key) => {
-                const entry = entries[key]
-                return entry.type === this.type && entry.name === this.name
-            }) ?? ''
+            return entries[key] ?? {}
+        },
+        presets() {
+            if (!this.entry) return []
 
-        return entries[key] ?? {}
-    }
+            const presets = this.entry.presets ?? {}
 
-    get presets() {
-        if (!this.entry) return []
+            const output: GuiMiscellaneousStateEntryPreset[] = []
+            Object.keys(presets).forEach((key) => {
+                const preset = presets[key]
 
-        const presets = this.entry.presets ?? {}
-
-        const output: GuiMiscellaneousStateEntryPreset[] = []
-        Object.keys(presets).forEach((key) => {
-            const preset = presets[key]
-
-            output.push({
-                ...preset,
-                id: key,
+                output.push({
+                    ...preset,
+                    id: key,
+                })
             })
-        })
 
-        return caseInsensitiveSort(output, 'name')
-    }
-
-    editPreset(presetId: string) {
-        this.$emit('edit-preset', presetId)
-    }
-
-    close() {
-        this.$emit('close')
-    }
-
-    createPreset() {
-        this.$emit('create-preset')
-    }
-}
+            return caseInsensitiveSort(output, 'name')
+        },
+    },
+    methods: {
+        editPreset(presetId: string) {
+            this.$emit('edit-preset', presetId)
+        },
+        close() {
+            this.$emit('close')
+        },
+        createPreset() {
+            this.$emit('create-preset')
+        },
+    },
+})
 </script>

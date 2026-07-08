@@ -12,7 +12,7 @@
             </template>
             <v-card-text class="py-0 px-0">
                 <overlay-scrollbars :style="overlayScrollbarsStyle" :options="{ overflowBehavior: { x: 'hidden' } }">
-                    <v-timeline :class="timelineClassName" align-top dense style="min-height: 100%">
+                    <v-timeline :class="timelineClassName" align-top density="compact" style="min-height: 100%">
                         <git-commits-list-day
                             v-for="group of groupedCommits"
                             :key="group.date.getTime()"
@@ -20,11 +20,11 @@
                             :grouped-commits="group" />
                         <v-timeline-item
                             v-if="displayFullHistoryWaring"
-                            small
+                            size="small"
                             class="git-commit-list-day git-commit-list-warning">
                             <v-row class="pt-0">
                                 <v-col class="pr-12">
-                                    <v-alert dense text type="info">
+                                    <v-alert density="compact" text type="info">
                                         <p>{{ $t('Machine.UpdatePanel.MoreCommitsInfo') }}</p>
                                         <div class="text-center mb-3">
                                             <v-btn :href="linkToGithub" target="_blank">
@@ -43,7 +43,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop, VModel } from 'vue-property-decorator'
+import { defineComponent, PropType } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import {
     ServerUpdateManagerStateGitRepo,
@@ -54,80 +54,90 @@ import { mdiUpdate, mdiCloseThick } from '@mdi/js'
 import Panel from '@/components/ui/Panel.vue'
 import GitCommitsListDay from '@/components/panels/Machine/UpdatePanel/GitCommitsListDay.vue'
 
-@Component({
+export default defineComponent({
+    name: 'GitCommitsList',
     components: { GitCommitsListDay, Panel },
-})
-export default class GitCommitsList extends Mixins(BaseMixin) {
-    mdiUpdate = mdiUpdate
-    mdiCloseThick = mdiCloseThick
-
-    @VModel({ type: Boolean }) showDialog!: boolean
-    @Prop({ required: true }) readonly repo!: ServerUpdateManagerStateGitRepo | null
-
-    get commitsBehind(): ServerUpdateManagerStateGitRepoCommit[] {
-        return this.repo?.commits_behind ?? []
-    }
-
-    get groupedCommits() {
-        const output: ServerUpdateManagerStateGitRepoGroupedCommits[] = []
-        let lastCommit: ServerUpdateManagerStateGitRepoCommit | null = null
-
-        this.commitsBehind.forEach((commit: ServerUpdateManagerStateGitRepoCommit) => {
-            const lastCommitDate = new Date((lastCommit?.date ?? 0) * 1000)
-            const commitDate = new Date(commit.date * 1000)
-
-            if (
-                commitDate.getFullYear() !== lastCommitDate.getFullYear() ||
-                commitDate.getMonth() !== lastCommitDate.getMonth() ||
-                commitDate.getDate() !== lastCommitDate.getDate()
-            ) {
-                output.push({
-                    date: commitDate,
-                    commits: [],
-                })
-            }
-
-            output[output.length - 1].commits.push(commit)
-            lastCommit = commit
-        })
-
-        return output
-    }
-
-    get displayFullHistoryWaring() {
-        return this.commitsBehind.length >= 30
-    }
-
-    get lastCommit() {
-        return this.commitsBehind.slice(-1)[0]
-    }
-
-    get linkToGithub() {
-        return `https://github.com/${this.repo?.owner}/${this.repo?.repo_name}/commits/${this.repo?.branch}/?after=${this.lastCommit?.sha}+0`
-    }
-
-    get overlayScrollbarsStyle() {
-        if (this.isMobile) {
-            return {
-                height: 'calc(100vh - 48px)',
-            }
-        }
-
+    mixins: [BaseMixin],
+    props: {
+        modelValue: { type: Boolean },
+        repo: { type: null as unknown as PropType<ServerUpdateManagerStateGitRepo | null>, required: true },
+    },
+    emits: ['update:modelValue'],
+    data() {
         return {
-            height: '400px',
+            mdiUpdate: mdiUpdate,
+            mdiCloseThick: mdiCloseThick,
         }
-    }
+    },
+    computed: {
+        showDialog: {
+            get(): boolean {
+                return this.modelValue
+            },
+            set(value: boolean) {
+                this.$emit('update:modelValue', value)
+            },
+        },
+        commitsBehind(): ServerUpdateManagerStateGitRepoCommit[] {
+            return this.repo?.commits_behind ?? []
+        },
+        groupedCommits() {
+            const output: ServerUpdateManagerStateGitRepoGroupedCommits[] = []
+            let lastCommit: ServerUpdateManagerStateGitRepoCommit | null = null
 
-    get timelineClassName() {
-        if (this.isMobile) return ['groupedCommits', 'mobile']
+            this.commitsBehind.forEach((commit: ServerUpdateManagerStateGitRepoCommit) => {
+                const lastCommitDate = new Date((lastCommit?.date ?? 0) * 1000)
+                const commitDate = new Date(commit.date * 1000)
 
-        return ['groupedCommits']
-    }
+                if (
+                    commitDate.getFullYear() !== lastCommitDate.getFullYear() ||
+                    commitDate.getMonth() !== lastCommitDate.getMonth() ||
+                    commitDate.getDate() !== lastCommitDate.getDate()
+                ) {
+                    output.push({
+                        date: commitDate,
+                        commits: [],
+                    })
+                }
 
-    closeDialog() {
-        this.showDialog = false
-    }
-}
+                output[output.length - 1].commits.push(commit)
+                lastCommit = commit
+            })
+
+            return output
+        },
+        displayFullHistoryWaring() {
+            return this.commitsBehind.length >= 30
+        },
+        lastCommit() {
+            return this.commitsBehind.slice(-1)[0]
+        },
+        linkToGithub() {
+            return `https://github.com/${this.repo?.owner}/${this.repo?.repo_name}/commits/${this.repo?.branch}/?after=${this.lastCommit?.sha}+0`
+        },
+        overlayScrollbarsStyle() {
+            if (this.isMobile) {
+                return {
+                    height: 'calc(100vh - 48px)',
+                }
+            }
+
+            return {
+                height: '400px',
+            }
+        },
+        timelineClassName() {
+            if (this.isMobile) return ['groupedCommits', 'mobile']
+
+            return ['groupedCommits']
+        },
+    },
+    methods: {
+        closeDialog() {
+            this.showDialog = false
+        },
+    },
+})
 </script>
 
 <style scoped>
@@ -176,7 +186,7 @@ export default class GitCommitsList extends Mixins(BaseMixin) {
     }
 }
 
-::v-deep .groupedCommits.mobile {
+:deep(.groupedCommits.mobile) {
     &:before {
         left: 20px;
     }

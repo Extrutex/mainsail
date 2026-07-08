@@ -14,7 +14,7 @@
             </template>
             <template v-else-if="smallThumbnail && bigThumbnail">
                 <v-tooltip top>
-                    <template #activator="{ on, attrs }">
+                    <template #activator="{ props }">
                         <vue-load-image>
                             <img
                                 slot="image"
@@ -22,8 +22,7 @@
                                 :src="smallThumbnail"
                                 width="32"
                                 height="32"
-                                v-bind="attrs"
-                                v-on="on" />
+                                v-bind="props" />
                             <div slot="preloader">
                                 <v-progress-circular indeterminate color="primary" />
                             </div>
@@ -54,8 +53,8 @@
         <td class="text-right text-no-wrap">
             <template v-if="'note' in item && item.note">
                 <v-tooltip top>
-                    <template #activator="{ on, attrs }">
-                        <v-icon small class="mr-2" v-bind="attrs" v-on="on">
+                    <template #activator="{ props }">
+                        <v-icon size="small" class="mr-2" v-bind="props">
                             {{ mdiNoteTextOutline }}
                         </v-icon>
                     </template>
@@ -63,9 +62,9 @@
                 </v-tooltip>
             </template>
             <v-tooltip top>
-                <template #activator="{ on, attrs }">
-                    <span v-bind="attrs" v-on="on">
-                        <v-icon small :color="statusColor" :disabled="!item.exists">
+                <template #activator="{ props }">
+                    <span v-bind="props">
+                        <v-icon size="small" :color="statusColor" :disabled="!item.exists">
                             {{ statusIcon }}
                         </v-icon>
                     </span>
@@ -75,7 +74,12 @@
         </td>
         <td v-for="col in tableFields" :key="col.value" class="text-no-wrap" v-html="outputValue(col, item)" />
         <!-- Context menu -->
-        <v-menu v-model="contextMenuBool" :position-x="contextMenuX" :position-y="contextMenuY" absolute offset-y>
+        <v-menu
+            v-model="contextMenuBool"
+            :position-x="contextMenuX"
+            :position-y="contextMenuY"
+            absolute
+            location="bottom">
             <v-list>
                 <v-list-item @click="detailsDialogBool = true">
                     <v-icon class="mr-1">{{ mdiTextBoxSearch }}</v-icon>
@@ -121,7 +125,7 @@
     </tr>
 </template>
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import type { LongpressEvent } from '@/directives/longpress'
 import HistoryListPanelDetailsDialog from '@/components/dialogs/HistoryListPanelDetailsDialog.vue'
 import Panel from '@/components/ui/Panel.vue'
@@ -154,7 +158,8 @@ import { HistoryListPanelCol } from '@/store/server/history/types'
 import HistoryListPanelNoteDialog from '@/components/dialogs/HistoryListPanelNoteDialog.vue'
 import AddBatchToQueueDialog from '@/components/dialogs/AddBatchToQueueDialog.vue'
 
-@Component({
+export default defineComponent({
+    name: 'HistoryListPanel',
     components: {
         AddBatchToQueueDialog,
         HistoryListPanelNoteDialog,
@@ -162,197 +167,183 @@ import AddBatchToQueueDialog from '@/components/dialogs/AddBatchToQueueDialog.vu
         Panel,
         StartPrintDialog,
     },
-})
-export default class HistoryListPanel extends Mixins(BaseMixin) {
-    mdiCloseThick = mdiCloseThick
-    mdiDelete = mdiDelete
-    mdiFile = mdiFile
-    mdiFileCancel = mdiFileCancel
-    mdiNoteEditOutline = mdiNoteEditOutline
-    mdiNotePlusOutline = mdiNotePlusOutline
-    mdiNoteTextOutline = mdiNoteTextOutline
-    mdiPrinter = mdiPrinter
-    mdiTextBoxSearch = mdiTextBoxSearch
-    mdiPlaylistPlus = mdiPlaylistPlus
-
-    detailsDialogBool = false
-
-    contextMenuBool = false
-    contextMenuX = 0
-    contextMenuY = 0
-
-    noteDialogBool = false
-    noteDialogType: 'create' | 'edit' = 'create'
-
-    addBatchToQueueDialogBool = false
-    startPrintDialogBool = false
-
-    @Prop({ type: Object, required: true }) readonly item!: ServerHistoryStateJob
-    @Prop({ type: Array, required: true }) readonly tableFields!: HistoryListPanelCol[]
-    @Prop({ type: Boolean, required: true }) readonly isSelected!: boolean
-
-    get file(): FileStateGcodefile | undefined {
-        return this.$store.getters['files/getFile']('gcodes/' + this.item.filename) ?? undefined
-    }
-
-    get currentPath(): string {
-        const lastSlash = this.item.filename.lastIndexOf('/')
-        return lastSlash > 0 ? '/' + this.item.filename.slice(0, lastSlash) : ''
-    }
-
-    get smallThumbnail() {
-        if ((this.item.metadata?.thumbnails?.length ?? 0) < 1) return false
-
-        const thumbnail = this.item.metadata?.thumbnails?.find(
-            (thumb) =>
-                thumb.width >= thumbnailSmallMin &&
-                thumb.width <= thumbnailSmallMax &&
-                thumb.height >= thumbnailSmallMin &&
-                thumb.height <= thumbnailSmallMax
-        )
-
-        return thumbnail ? this.createThumbnailUrl(thumbnail) : false
-    }
-
-    get bigThumbnail() {
-        if ((this.item.metadata?.thumbnails?.length ?? 0) < 1) return false
-
-        const thumbnail = this.item.metadata?.thumbnails?.find((thumb) => thumb.width >= thumbnailBigMin)
-
-        return thumbnail ? this.createThumbnailUrl(thumbnail) : false
-    }
-
-    get statusIcon() {
-        return convertPrintStatusIcon(this.item.status)
-    }
-
-    get statusColor() {
-        return convertPrintStatusIconColor(this.item.status)
-    }
-
-    get statusName() {
-        // check if translation exists
-        if (!this.$t(`History.StatusValues.${this.item.status}`, 'en')) return this.item.status.replace(/_/g, ' ')
-
-        return this.$t(`History.StatusValues.${this.item.status}`)
-    }
-
-    get cssClasses() {
-        const output = ['file-list-cursor', 'user-select-none']
-
-        if (!this.item.exists) output.push('text--disabled')
-
-        return output
-    }
-
-    get isJobQueueAvailable() {
-        return this.moonrakerComponents.includes('job_queue')
-    }
-
-    select(newVal: boolean) {
-        this.$emit('select', newVal)
-    }
-
-    showContextMenu(e: MouseEvent | LongpressEvent) {
-        e?.preventDefault()
-        EventBus.$emit(CLOSE_CONTEXT_MENU)
-
-        this.contextMenuX = e?.clientX || e?.pageX || window.screenX / 2
-        this.contextMenuY = e?.clientY || e?.pageY || window.screenY / 2
-
-        this.contextMenuBool = true
-    }
-
-    closeContextMenu() {
-        this.contextMenuBool = false
-    }
-
-    createNote() {
-        this.noteDialogType = 'create'
-        this.noteDialogBool = true
-    }
-
-    editNote() {
-        this.noteDialogType = 'edit'
-        this.noteDialogBool = true
-    }
-
-    addToQueue() {
-        this.$store.dispatch('server/jobQueue/addToQueue', [this.item.filename])
-        this.$toast.info(this.$t('History.AddToQueueSuccessful', { filename: this.item.filename }).toString())
-    }
-
-    deleteJob() {
-        this.$socket.emit(
-            'server.history.delete_job',
-            { uid: this.item.job_id },
-            { action: 'server/history/getDeletedJobs' }
-        )
-    }
-
-    outputValue(col: HistoryListPanelCol, item: ServerHistoryStateJob) {
-        const key = col.value
-        let value: string | number | null = null
-        if (key in item) {
-            const raw = item[key as keyof ServerHistoryStateJob]
-            if (typeof raw === 'string' || typeof raw === 'number') value = raw
-        } else if (key in item.metadata) {
-            const raw = item.metadata[key]
-            if (typeof raw === 'string' || typeof raw === 'number') value = raw
+    mixins: [BaseMixin],
+    props: {
+        item: { type: Object, required: true },
+        tableFields: { type: Array, required: true },
+        isSelected: { type: Boolean, required: true },
+    },
+    emits: ['select'],
+    data() {
+        return {
+            mdiCloseThick: mdiCloseThick,
+            mdiDelete: mdiDelete,
+            mdiFile: mdiFile,
+            mdiFileCancel: mdiFileCancel,
+            mdiNoteEditOutline: mdiNoteEditOutline,
+            mdiNotePlusOutline: mdiNotePlusOutline,
+            mdiNoteTextOutline: mdiNoteTextOutline,
+            mdiPrinter: mdiPrinter,
+            mdiTextBoxSearch: mdiTextBoxSearch,
+            mdiPlaylistPlus: mdiPlaylistPlus,
+            detailsDialogBool: false,
+            contextMenuBool: false,
+            contextMenuX: 0,
+            contextMenuY: 0,
+            noteDialogBool: false,
+            noteDialogType: 'create' as 'create' | 'edit',
+            addBatchToQueueDialogBool: false,
+            startPrintDialogBool: false,
         }
+    },
+    computed: {
+        file(): FileStateGcodefile | undefined {
+            return this.$store.getters['files/getFile']('gcodes/' + this.item.filename) ?? undefined
+        },
+        currentPath(): string {
+            const lastSlash = this.item.filename.lastIndexOf('/')
+            return lastSlash > 0 ? '/' + this.item.filename.slice(0, lastSlash) : ''
+        },
+        smallThumbnail() {
+            if ((this.item.metadata?.thumbnails?.length ?? 0) < 1) return false
 
-        if (key.startsWith('history_field_')) {
-            const fieldName = key.replace('history_field_', '')
-            const field = item.auxiliary_data?.find((field) => field.name === fieldName)
-            if (field && !Array.isArray(field.value)) return `${Math.round(field.value * 1000) / 1000} ${field.units}`
-        }
+            const thumbnail = this.item.metadata?.thumbnails?.find(
+                (thumb) =>
+                    thumb.width >= thumbnailSmallMin &&
+                    thumb.width <= thumbnailSmallMax &&
+                    thumb.height >= thumbnailSmallMin &&
+                    thumb.height <= thumbnailSmallMax
+            )
 
-        if (value === null) return '--'
+            return thumbnail ? this.createThumbnailUrl(thumbnail) : false
+        },
+        bigThumbnail() {
+            if ((this.item.metadata?.thumbnails?.length ?? 0) < 1) return false
 
-        if (key === 'slicer') return `${value}<br />${item.metadata.slicer_version}`
+            const thumbnail = this.item.metadata?.thumbnails?.find((thumb) => thumb.width >= thumbnailBigMin)
 
-        if (typeof value !== 'number') return value
+            return thumbnail ? this.createThumbnailUrl(thumbnail) : false
+        },
+        statusIcon() {
+            return convertPrintStatusIcon(this.item.status)
+        },
+        statusColor() {
+            return convertPrintStatusIconColor(this.item.status)
+        },
+        statusName() {
+            // check if translation exists
+            if (!this.$t(`History.StatusValues.${this.item.status}`, 'en')) return this.item.status.replace(/_/g, ' ')
 
-        switch (col.outputType) {
-            case 'filesize':
-                return formatFilesize(value)
+            return this.$t(`History.StatusValues.${this.item.status}`)
+        },
+        cssClasses() {
+            const output = ['file-list-cursor', 'user-select-none']
 
-            case 'date':
-                return this.formatDateTime(value * 1000)
+            if (!this.item.exists) output.push('text--disabled')
 
-            case 'time':
-                return formatPrintTime(value, false)
-
-            case 'temp':
-                return value.toFixed() + ' °C'
-
-            case 'length':
-                if (value > 1000) return (value / 1000).toFixed(2) + ' m'
-
-                return value.toFixed(2) + ' mm'
-
-            default:
-                return value
-        }
-    }
-
-    createThumbnailUrl(thumbnail: FileStateFileThumbnail) {
-        let relative_url = ''
-        if (this.item.filename.lastIndexOf('/') !== -1) {
-            relative_url = this.item.filename.substring(0, this.item.filename.lastIndexOf('/') + 1)
-        }
-
-        return `${this.apiUrl}/server/files/gcodes/${escapePath(relative_url + thumbnail.relative_path)}?timestamp=${
-            this.item.metadata.modified
-        }`
-    }
-
+            return output
+        },
+        isJobQueueAvailable() {
+            return this.moonrakerComponents.includes('job_queue')
+        },
+    },
     mounted() {
         EventBus.$on(CLOSE_CONTEXT_MENU, this.closeContextMenu)
-    }
-
-    beforeDestroy() {
+    },
+    beforeUnmount() {
         EventBus.$off(CLOSE_CONTEXT_MENU, this.closeContextMenu)
-    }
-}
+    },
+    methods: {
+        select(newVal: boolean) {
+            this.$emit('select', newVal)
+        },
+        showContextMenu(e: MouseEvent | LongpressEvent) {
+            e?.preventDefault()
+            EventBus.$emit(CLOSE_CONTEXT_MENU)
+
+            this.contextMenuX = e?.clientX || e?.pageX || window.screenX / 2
+            this.contextMenuY = e?.clientY || e?.pageY || window.screenY / 2
+
+            this.contextMenuBool = true
+        },
+        closeContextMenu() {
+            this.contextMenuBool = false
+        },
+        createNote() {
+            this.noteDialogType = 'create'
+            this.noteDialogBool = true
+        },
+        editNote() {
+            this.noteDialogType = 'edit'
+            this.noteDialogBool = true
+        },
+        addToQueue() {
+            this.$store.dispatch('server/jobQueue/addToQueue', [this.item.filename])
+            this.$toast.info(this.$t('History.AddToQueueSuccessful', { filename: this.item.filename }).toString())
+        },
+        deleteJob() {
+            this.$socket.emit(
+                'server.history.delete_job',
+                { uid: this.item.job_id },
+                { action: 'server/history/getDeletedJobs' }
+            )
+        },
+        outputValue(col: HistoryListPanelCol, item: ServerHistoryStateJob) {
+            const key = col.value
+            let value: string | number | null = null
+            if (key in item) {
+                const raw = item[key as keyof ServerHistoryStateJob]
+                if (typeof raw === 'string' || typeof raw === 'number') value = raw
+            } else if (key in item.metadata) {
+                const raw = item.metadata[key]
+                if (typeof raw === 'string' || typeof raw === 'number') value = raw
+            }
+
+            if (key.startsWith('history_field_')) {
+                const fieldName = key.replace('history_field_', '')
+                const field = item.auxiliary_data?.find((field) => field.name === fieldName)
+                if (field && !Array.isArray(field.value))
+                    return `${Math.round(field.value * 1000) / 1000} ${field.units}`
+            }
+
+            if (value === null) return '--'
+
+            if (key === 'slicer') return `${value}<br />${item.metadata.slicer_version}`
+
+            if (typeof value !== 'number') return value
+
+            switch (col.outputType) {
+                case 'filesize':
+                    return formatFilesize(value)
+
+                case 'date':
+                    return this.formatDateTime(value * 1000)
+
+                case 'time':
+                    return formatPrintTime(value, false)
+
+                case 'temp':
+                    return value.toFixed() + ' °C'
+
+                case 'length':
+                    if (value > 1000) return (value / 1000).toFixed(2) + ' m'
+
+                    return value.toFixed(2) + ' mm'
+
+                default:
+                    return value
+            }
+        },
+        createThumbnailUrl(thumbnail: FileStateFileThumbnail) {
+            let relative_url = ''
+            if (this.item.filename.lastIndexOf('/') !== -1) {
+                relative_url = this.item.filename.substring(0, this.item.filename.lastIndexOf('/') + 1)
+            }
+
+            return `${this.apiUrl}/server/files/gcodes/${escapePath(relative_url + thumbnail.relative_path)}?timestamp=${
+                this.item.metadata.modified
+            }`
+        },
+    },
+})
 </script>

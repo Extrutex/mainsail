@@ -36,13 +36,13 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { GuiWebcamStateWebcam } from '@/store/gui/webcams/types'
 import { DynamicCamLoader } from '@/components/webcams/streamers/DynamicCamLoader'
 
-@Component({
+export default defineComponent({
+    name: 'WebcamWrapperItem',
     components: {
         HlsstreamerAsync: DynamicCamLoader('Hlsstreamer'),
         HtmlVideoAsync: DynamicCamLoader('HtmlVideo'),
@@ -56,21 +56,23 @@ import { DynamicCamLoader } from '@/components/webcams/streamers/DynamicCamLoade
         WebrtcMediaMTXAsync: DynamicCamLoader('WebrtcMediaMTX'),
         WebrtcGo2rtcAsync: DynamicCamLoader('WebrtcGo2rtc'),
     },
+    mixins: [BaseMixin],
+    props: {
+        webcam: { type: Object, required: true },
+        showFps: { type: Boolean, default: true },
+        printerUrl: { type: String, default: null },
+        page: { type: String, default: null },
+    },
+    computed: {
+        service() {
+            return this.webcam?.service ?? 'unknown'
+        },
+    },
 })
-export default class WebcamWrapperItem extends Mixins(BaseMixin) {
-    @Prop({ type: Object, required: true }) webcam!: GuiWebcamStateWebcam
-    @Prop({ type: Boolean, default: true }) showFps!: boolean
-    @Prop({ default: null }) printerUrl!: string | null
-    @Prop({ type: String, default: null }) page!: string | null
-
-    get service() {
-        return this.webcam?.service ?? 'unknown'
-    }
-}
 </script>
 
 <style scoped>
-::v-deep .webcamBackground {
+:deep(.webcamBackground) {
     display: flex;
     justify-content: center;
     overflow: hidden;
@@ -80,13 +82,13 @@ export default class WebcamWrapperItem extends Mixins(BaseMixin) {
     max-height: calc(100vh - 155px);
 }
 
-::v-deep .webcamImage {
+:deep(.webcamImage) {
     width: 100%;
     transform-origin: center center;
     object-fit: contain;
 }
 
-html.theme--light ::v-deep .webcamBackground {
+html.theme--light :deep(.webcamBackground) {
     background: rgba(255, 255, 255, 0.7);
 }
 </style>

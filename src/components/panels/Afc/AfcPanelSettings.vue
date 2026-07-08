@@ -1,8 +1,8 @@
 <template>
     <v-menu :offset-y="true" :close-on-content-click="false" :title="$t('Panels.AfcPanel.Settings')" left>
-        <template #activator="{ on, attrs }">
-            <v-btn icon tile v-bind="attrs" v-on="on">
-                <v-icon small>{{ mdiCog }}</v-icon>
+        <template #activator="{ props }">
+            <v-btn icon tile v-bind="props">
+                <v-icon size="small">{{ mdiCog }}</v-icon>
             </v-btn>
         </template>
         <v-list>
@@ -41,45 +41,52 @@
     </v-menu>
 </template>
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import AfcMixin from '@/components/mixins/afc'
 import { mdiCog } from '@mdi/js'
 
-@Component
-export default class AfcPanelSettings extends Mixins(BaseMixin, AfcMixin) {
-    mdiCog = mdiCog
-
-    get showFilamentName(): boolean {
-        return this.$store.state.gui.view.afc?.showFilamentName ?? true
-    }
-
-    set showFilamentName(value: boolean) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.afc.showFilamentName', value })
-    }
-
-    get showLaneInfinite(): boolean {
-        return this.$store.state.gui.view.afc?.showLaneInfinite ?? true
-    }
-
-    set showLaneInfinite(value: boolean) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.afc.showLaneInfinite', value })
-    }
-
-    get showUnitIcons(): boolean {
-        return this.$store.state.gui.view.afc?.showUnitIcons ?? true
-    }
-
-    set showUnitIcons(value: boolean) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.afc.showUnitIcons', value })
-    }
-
-    get showTd1Color(): boolean {
-        return this.$store.state.gui.view.afc?.showTd1Color ?? true
-    }
-
-    set showTd1Color(value: boolean) {
-        this.$store.dispatch('gui/saveSetting', { name: 'view.afc.showTd1Color', value })
-    }
-}
+export default defineComponent({
+    name: 'AfcPanelSettings',
+    mixins: [BaseMixin, AfcMixin],
+    data() {
+        return {
+            mdiCog: mdiCog,
+        }
+    },
+    computed: {
+        showFilamentName: {
+            get(): boolean {
+                return this.$store.state.gui.view.afc?.showFilamentName ?? true
+            },
+            setshowFilamentName(value: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.afc.showFilamentName', value })
+            },
+        },
+        showLaneInfinite: {
+            get(): boolean {
+                return this.$store.state.gui.view.afc?.showLaneInfinite ?? true
+            },
+            setshowLaneInfinite(value: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.afc.showLaneInfinite', value })
+            },
+        },
+        showUnitIcons: {
+            get(): boolean {
+                return this.$store.state.gui.view.afc?.showUnitIcons ?? true
+            },
+            setshowUnitIcons(value: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.afc.showUnitIcons', value })
+            },
+        },
+        showTd1Color: {
+            get(): boolean {
+                return this.$store.state.gui.view.afc?.showTd1Color ?? true
+            },
+            setshowTd1Color(value: boolean) {
+                this.$store.dispatch('gui/saveSetting', { name: 'view.afc.showTd1Color', value })
+            },
+        },
+    },
+})
 </script>

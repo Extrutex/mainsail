@@ -16,8 +16,8 @@
                         v-model="consoleDirection"
                         :items="availableDirections"
                         hide-details
-                        outlined
-                        dense
+                        variant="outlined"
+                        density="compact"
                         attach></v-select>
                 </settings-row>
                 <v-divider class="my-2"></v-divider>
@@ -26,8 +26,8 @@
                         v-model="entryStyle"
                         :items="availableEntryStyles"
                         hide-details
-                        outlined
-                        dense
+                        variant="outlined"
+                        density="compact"
                         attach></v-select>
                 </settings-row>
                 <v-divider class="my-2"></v-divider>
@@ -64,30 +64,32 @@
                     <v-divider v-if="index" class="my-2"></v-divider>
                     <settings-row :title="filter.name">
                         <v-btn
-                            small
-                            outlined
+                            size="small"
+                            variant="outlined"
                             class="minwidth-0 px-2"
                             :color="filter.bool ? 'white' : 'grey'"
                             @click="toggleFilter(filter)">
-                            <v-icon small>{{ filter.bool ? mdiFilter : mdiFilterOff }}</v-icon>
+                            <v-icon size="small">{{ filter.bool ? mdiFilter : mdiFilterOff }}</v-icon>
                         </v-btn>
-                        <v-btn small outlined class="ml-3" @click="editFilter(filter)">
-                            <v-icon left small>{{ mdiPencil }}</v-icon>
+                        <v-btn size="small" variant="outlined" class="ml-3" @click="editFilter(filter)">
+                            <v-icon start size="small">{{ mdiPencil }}</v-icon>
                             {{ $t('Settings.Edit') }}
                         </v-btn>
                         <v-btn
-                            small
-                            outlined
+                            size="small"
+                            variant="outlined"
                             class="ml-3 minwidth-0 px-2"
                             color="error"
                             @click="deleteFilter(filter.id)">
-                            <v-icon small>{{ mdiDelete }}</v-icon>
+                            <v-icon size="small">{{ mdiDelete }}</v-icon>
                         </v-btn>
                     </settings-row>
                 </div>
             </v-card-text>
             <v-card-actions class="d-flex justify-end">
-                <v-btn text color="primary" @click="createFilter">{{ $t('Settings.ConsoleTab.AddFilter') }}</v-btn>
+                <v-btn variant="text" color="primary" @click="createFilter">
+                    {{ $t('Settings.ConsoleTab.AddFilter') }}
+                </v-btn>
             </v-card-actions>
         </v-card>
         <v-card v-else flat>
@@ -105,19 +107,19 @@
                             v-model="form.name"
                             hide-details="auto"
                             :rules="[rules.required, rules.unique]"
-                            dense
-                            outlined></v-text-field>
+                            density="compact"
+                            variant="outlined"></v-text-field>
                     </settings-row>
                     <v-divider class="my-2"></v-divider>
                     <settings-row :title="$t('Settings.ConsoleTab.Regex').toString()">
-                        <v-textarea v-model="form.regex" outlined hide-details="auto"></v-textarea>
+                        <v-textarea v-model="form.regex" variant="outlined" hide-details="auto"></v-textarea>
                     </settings-row>
                 </v-card-text>
                 <v-card-actions class="d-flex justify-end">
-                    <v-btn text @click="form.bool = false">
+                    <v-btn variant="text" @click="form.bool = false">
                         {{ $t('Buttons.Cancel') }}
                     </v-btn>
-                    <v-btn color="primary" text type="submit">
+                    <v-btn color="primary" variant="text" type="submit">
                         {{
                             form.id === null
                                 ? $t('Settings.ConsoleTab.StoreButton')
@@ -131,7 +133,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
+import { debounce } from '@/plugins/helpers'
 import BaseMixin from '../mixins/base'
 import SettingsRow from '@/components/settings/SettingsRow.vue'
 import { Debounce } from 'vue-debounce-decorator'
@@ -148,166 +151,159 @@ interface consoleForm {
 
 type ConsoleFilter = Omit<GuiConsoleStateFilter, 'id'> & { id: string }
 
-@Component({
+export default defineComponent({
+    name: 'SettingsConsoleTab',
     components: { SettingsRow },
-})
-export default class SettingsConsoleTab extends Mixins(BaseMixin) {
-    mdiFilter = mdiFilter
-    mdiFilterOff = mdiFilterOff
-    mdiPencil = mdiPencil
-    mdiDelete = mdiDelete
-    mdiConsoleLine = mdiConsoleLine
-
-    private form: consoleForm = {
-        bool: false,
-        valid: false,
-        name: '',
-        regex: '',
-        id: null,
-    }
-
-    private rules = {
-        required: (value: string) => value !== '' || 'required',
-        unique: (value: string) => !this.existsPresetName(value) || 'Name already exists',
-    }
-
-    private consoleHeightTmp = 300
-
+    mixins: [BaseMixin],
+    data() {
+        return {
+            mdiFilter: mdiFilter,
+            mdiFilterOff: mdiFilterOff,
+            mdiPencil: mdiPencil,
+            mdiDelete: mdiDelete,
+            mdiConsoleLine: mdiConsoleLine,
+            form: {
+                bool: false,
+                valid: false,
+                name: '',
+                regex: '',
+                id: null,
+            } as consoleForm,
+            rules: {
+                required: (value: string) => value !== '' || 'required',
+                unique: (value: string) => !this.existsPresetName(value) || 'Name already exists',
+            },
+            consoleHeightTmp: 300,
+        }
+    },
+    computed: {
+        consoleFilters() {
+            return (this.$store.getters['gui/console/getConsolefilters'] ?? []) as ConsoleFilter[]
+        },
+        availableDirections() {
+            return [
+                {
+                    text: this.$t('Settings.ConsoleTab.DirectionTable'),
+                    value: 'table',
+                },
+                {
+                    text: this.$t('Settings.ConsoleTab.DirectionShell'),
+                    value: 'shell',
+                },
+            ]
+        },
+        consoleDirection: {
+            get() {
+                return this.$store.state.gui.console.direction ?? 'table'
+            },
+            setconsoleDirection(newVal) {
+                this.$store.dispatch('gui/console/saveSetting', { name: 'direction', value: newVal })
+            },
+        },
+        availableEntryStyles() {
+            return [
+                {
+                    text: this.$t('Settings.ConsoleTab.EntryStyleDefault'),
+                    value: 'default',
+                },
+                {
+                    text: this.$t('Settings.ConsoleTab.EntryStyleCompact'),
+                    value: 'compact',
+                },
+            ]
+        },
+        entryStyle: {
+            get() {
+                return this.$store.state.gui.console.entryStyle ?? 'default'
+            },
+            setentryStyle(newVal) {
+                this.$store.dispatch('gui/console/saveSetting', { name: 'entryStyle', value: newVal })
+            },
+        },
+        consoleHeight: {
+            get() {
+                return this.$store.state.gui.console.height ?? 300
+            },
+            setconsoleHeight(newVal) {
+                this.$store.dispatch('gui/console/saveSetting', { name: 'height', value: newVal })
+            },
+        },
+        hideWaitTemperatures: {
+            get() {
+                return this.$store.state.gui.console.hideWaitTemperatures
+            },
+            sethideWaitTemperatures(newVal) {
+                this.$store.dispatch('gui/console/saveSetting', { name: 'hideWaitTemperatures', value: newVal })
+            },
+        },
+        hideTimelapse: {
+            get() {
+                return this.$store.state.gui.console.hideTlCommands
+            },
+            sethideTimelapse(newVal) {
+                this.$store.dispatch('gui/console/saveSetting', { name: 'hideTlCommands', value: newVal })
+            },
+        },
+    },
+    watch: {
+        consoleHeight(newVal: number) {
+            this.consoleHeightTmp = newVal
+        },
+    },
     mounted() {
         this.consoleHeightTmp = this.consoleHeight
-    }
-
-    get consoleFilters() {
-        return (this.$store.getters['gui/console/getConsolefilters'] ?? []) as ConsoleFilter[]
-    }
-
-    get availableDirections() {
-        return [
-            {
-                text: this.$t('Settings.ConsoleTab.DirectionTable'),
-                value: 'table',
-            },
-            {
-                text: this.$t('Settings.ConsoleTab.DirectionShell'),
-                value: 'shell',
-            },
-        ]
-    }
-
-    get consoleDirection() {
-        return this.$store.state.gui.console.direction ?? 'table'
-    }
-
-    set consoleDirection(newVal) {
-        this.$store.dispatch('gui/console/saveSetting', { name: 'direction', value: newVal })
-    }
-
-    get availableEntryStyles() {
-        return [
-            {
-                text: this.$t('Settings.ConsoleTab.EntryStyleDefault'),
-                value: 'default',
-            },
-            {
-                text: this.$t('Settings.ConsoleTab.EntryStyleCompact'),
-                value: 'compact',
-            },
-        ]
-    }
-
-    get entryStyle() {
-        return this.$store.state.gui.console.entryStyle ?? 'default'
-    }
-
-    set entryStyle(newVal) {
-        this.$store.dispatch('gui/console/saveSetting', { name: 'entryStyle', value: newVal })
-    }
-
-    get consoleHeight() {
-        return this.$store.state.gui.console.height ?? 300
-    }
-
-    set consoleHeight(newVal) {
-        this.$store.dispatch('gui/console/saveSetting', { name: 'height', value: newVal })
-    }
-
-    @Watch('consoleHeight')
-    consoleHeightChanged(newVal: number) {
-        this.consoleHeightTmp = newVal
-    }
-
-    @Debounce(500)
-    updateConsoleHeight(newVal: number) {
-        this.consoleHeight = newVal
-    }
-
-    get hideWaitTemperatures() {
-        return this.$store.state.gui.console.hideWaitTemperatures
-    }
-
-    set hideWaitTemperatures(newVal) {
-        this.$store.dispatch('gui/console/saveSetting', { name: 'hideWaitTemperatures', value: newVal })
-    }
-
-    get hideTimelapse() {
-        return this.$store.state.gui.console.hideTlCommands
-    }
-
-    set hideTimelapse(newVal) {
-        this.$store.dispatch('gui/console/saveSetting', { name: 'hideTlCommands', value: newVal })
-    }
-
-    existsPresetName(name: string) {
-        return this.consoleFilters.some((filter) => filter.name === name && filter.id !== this.form.id)
-    }
-
-    clearForm() {
-        this.form.bool = false
-        this.form.id = null
-        this.form.name = ''
-        this.form.regex = ''
-    }
-
-    toggleFilter(filter: ConsoleFilter) {
-        const values = {
-            name: filter.name,
-            bool: !filter.bool,
-            regex: filter.regex,
-        }
-
-        this.$store.dispatch('gui/console/filterUpdate', { id: filter.id, values })
-    }
-
-    createFilter() {
-        this.clearForm()
-        this.form.bool = true
-    }
-
-    editFilter(filter: ConsoleFilter) {
-        this.form.name = filter.name
-        this.form.id = filter.id
-        this.form.regex = filter.regex
-
-        this.form.bool = true
-    }
-
-    saveFilter() {
-        if (this.form.valid) {
-            const filter = {
-                name: this.form.name,
-                bool: this.form.bool,
-                regex: this.form.regex,
+    },
+    methods: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        updateConsoleHeight: debounce(function (this: any, newVal: number) {
+            this.consoleHeight = newVal
+        }, 500),
+        existsPresetName(name: string) {
+            return this.consoleFilters.some((filter) => filter.name === name && filter.id !== this.form.id)
+        },
+        clearForm() {
+            this.form.bool = false
+            this.form.id = null
+            this.form.name = ''
+            this.form.regex = ''
+        },
+        toggleFilter(filter: ConsoleFilter) {
+            const values = {
+                name: filter.name,
+                bool: !filter.bool,
+                regex: filter.regex,
             }
 
-            if (this.form.id) this.$store.dispatch('gui/console/filterUpdate', { id: this.form.id, values: filter })
-            else this.$store.dispatch('gui/console/filterStore', { values: filter })
-
+            this.$store.dispatch('gui/console/filterUpdate', { id: filter.id, values })
+        },
+        createFilter() {
             this.clearForm()
-        }
-    }
+            this.form.bool = true
+        },
+        editFilter(filter: ConsoleFilter) {
+            this.form.name = filter.name
+            this.form.id = filter.id
+            this.form.regex = filter.regex
 
-    deleteFilter(id: string) {
-        this.$store.dispatch('gui/console/filterDelete', id)
-    }
-}
+            this.form.bool = true
+        },
+        saveFilter() {
+            if (this.form.valid) {
+                const filter = {
+                    name: this.form.name,
+                    bool: this.form.bool,
+                    regex: this.form.regex,
+                }
+
+                if (this.form.id) this.$store.dispatch('gui/console/filterUpdate', { id: this.form.id, values: filter })
+                else this.$store.dispatch('gui/console/filterStore', { values: filter })
+
+                this.clearForm()
+            }
+        },
+        deleteFilter(id: string) {
+            this.$store.dispatch('gui/console/filterDelete', id)
+        },
+    },
+})
 </script>

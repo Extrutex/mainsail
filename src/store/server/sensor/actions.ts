@@ -1,4 +1,3 @@
-
 import { ActionTree } from 'vuex'
 import { ServerSensorState } from '@/store/server/sensor/types'
 import { RootState } from '@/store/types'

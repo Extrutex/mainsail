@@ -1,4 +1,3 @@
-
 import { ActionTree } from 'vuex'
 import { GuiMaintenanceState, MaintenanceJson } from '@/store/gui/maintenance/types'
 import { RootState } from '@/store/types'

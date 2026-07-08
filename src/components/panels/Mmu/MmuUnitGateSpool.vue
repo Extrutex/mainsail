@@ -1,14 +1,14 @@
 <template>
     <v-tooltip :disabled="!showDetails" :open-delay="500" top>
-        <template #activator="{ on, attrs }">
+        <template #activator="{ props }">
             <svg
                 ref="mmuSpoolSvg"
                 viewBox="0 0 248 500"
                 preserveAspectRatio="xMidYMid meet"
                 :width="spoolWidth"
-                v-bind="attrs"
+                v-bind="props"
                 :class="svgClasses"
-                v-on="on"
+                v-bind="props"
                 @click="selectGate">
                 <defs>
                     <path
@@ -107,175 +107,166 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import MmuMixin, { GATE_EMPTY, GATE_UNKNOWN, NO_FILAMENT_COLOR } from '@/components/mixins/mmu'
 import { filamentTextColor } from '@/plugins/helpers'
 import { ServerSpoolmanStateSpool } from '@/store/server/spoolman/types'
 
-@Component
-export default class MmuUnitGateSpool extends Mixins(BaseMixin, MmuMixin) {
-    GATE_EMPTY = GATE_EMPTY
-
-    @Prop({ default: '#AD8762' }) readonly spoolWheelColor!: string
-    @Prop({ required: true }) readonly gateIndex!: number
-    @Prop({ default: false }) readonly showDetails!: boolean
-    @Prop({ default: false }) readonly isSelected!: boolean
-    @Prop({ default: '' }) readonly svgClass!: string
-    @Prop({ default: false }) readonly unhighlightSpools!: boolean
-
-    get showUnavailableSpoolColor(): boolean {
-        return this.$store.state.gui.view.mmu.showUnavailableSpoolColor ?? false
-    }
-
-    get status() {
-        return this.mmu?.gate_status?.[this.gateIndex] ?? GATE_UNKNOWN
-    }
-
-    get isNotEmpty() {
-        return this.filamentAmount !== 0 || this.status !== GATE_EMPTY
-    }
-
-    get filamentAmount() {
-        if (this.status === GATE_EMPTY && !(this.showUnavailableSpoolColor && this.filamentColor !== NO_FILAMENT_COLOR))
-            return 0
-
-        if (!this.spool || this.mmuSpoolmanSupport === 'off') return -1
-
-        // Pull live from spoolman and calculate percentage
-        const remaining = this.spool.remaining_weight ?? null
-        const total = this.spool.initial_weight ?? this.spool.filament?.weight ?? null
-        if (remaining === null || total === null) return -1
-
-        return Math.ceil(Math.max(0, Math.min(100, (remaining / total) * 100)))
-    }
-
-    get spoolId() {
-        return this.mmu?.gate_spool_id?.[this.gateIndex] ?? -1
-    }
-
-    get spool() {
-        const spools = this.$store.state.server.spoolman?.spools ?? []
-        return spools.find((spool: ServerSpoolmanStateSpool) => spool.id === this.spoolId) ?? null
-    }
-
-    get spoolName() {
-        const mmuSpoolName = this.mmu?.gate_filament_name?.[this.gateIndex]
-
-        return this.spool?.name || mmuSpoolName || this.$t('Panels.MmuPanel.Unknown').toString()
-    }
-
-    get filamentColor() {
-        return this.formColorString(this.mmu?.gate_color?.[this.gateIndex] ?? null)
-    }
-
-    get filamentMaterial() {
-        return this.mmu?.gate_material?.[this.gateIndex] || this.$t('Panels.MmuPanel.Unknown').toString()
-    }
-
-    get filamentTemperature() {
-        return this.mmu?.gate_temperature?.[this.gateIndex] ?? -1
-    }
-
-    get filamentTransformScale1() {
-        const start = 0.28
-        const end = 0.4
-
-        if (this.filamentAmount < 0) return end
-
-        return start + (end - start) * (this.filamentAmount / 100)
-    }
-
-    get filamentTransformScale2() {
-        const start = 1.65
-        const end = 3.5
-
-        if (this.filamentAmount < 0) return end
-
-        return start + (end - start) * (this.filamentAmount / 100)
-    }
-
-    get filamentTransform() {
-        return `matrix(${this.filamentTransformScale1},0,0,${this.filamentTransformScale2},197,250)`
-    }
-
-    get contrastColor() {
-        return filamentTextColor(this.filamentColor)
-    }
-
-    get isEspoolerRewind() {
-        if (this.mmuEspoolers) return this.mmuEspoolers[this.gateIndex] === 'rewind'
-
-        // Legacy Happy Hare (selected gate only)
-        return this.gateIndex === this.mmu?.gate && this.mmu?.espooler_active === 'rewind'
-    }
-
-    get isEspoolerAssist() {
-        if (this.mmuEspoolers) return this.mmuEspoolers[this.gateIndex] === 'assist'
-
-        // Legacy Happy Hare (selected gate only)
-        return this.gateIndex === this.mmu?.gate && this.mmu?.espooler_active === 'assist'
-    }
-
-    get spoolWidth() {
-        if (this.mmuNumGates <= 8) return 56
-        if (this.mmuNumGates <= 16) return 48
-
-        return 40
-    }
-
-    get tooltipTitle() {
-        if (this.status === GATE_EMPTY) return null
-
-        return this.spoolName
-    }
-
-    get tooltipText() {
-        if (this.status === GATE_EMPTY) {
-            return this.$t('Panels.MmuPanel.ToolTip.Empty')
+export default defineComponent({
+    name: 'MmuUnitGateSpool',
+    mixins: [BaseMixin, MmuMixin],
+    props: {
+        spoolWheelColor: { type: String, default: '#AD8762' },
+        gateIndex: { type: Number, required: true },
+        showDetails: { type: Boolean, default: false },
+        isSelected: { type: Boolean, default: false },
+        svgClass: { type: String, default: '' },
+        unhighlightSpools: { type: Boolean, default: false },
+    },
+    emits: ['select-gate'],
+    data() {
+        return {
+            GATE_EMPTY: GATE_EMPTY,
         }
+    },
+    computed: {
+        showUnavailableSpoolColor(): boolean {
+            return this.$store.state.gui.view.mmu.showUnavailableSpoolColor ?? false
+        },
+        status() {
+            return this.mmu?.gate_status?.[this.gateIndex] ?? GATE_UNKNOWN
+        },
+        isNotEmpty() {
+            return this.filamentAmount !== 0 || this.status !== GATE_EMPTY
+        },
+        filamentAmount() {
+            if (
+                this.status === GATE_EMPTY &&
+                !(this.showUnavailableSpoolColor && this.filamentColor !== NO_FILAMENT_COLOR)
+            )
+                return 0
 
-        const output = []
+            if (!this.spool || this.mmuSpoolmanSupport === 'off') return -1
 
-        let temperature = ''
-        if (this.filamentTemperature > 0) {
-            temperature = ` | ${this.filamentTemperature}°C`
-        }
-        output.push(this.filamentMaterial + temperature)
+            // Pull live from spoolman and calculate percentage
+            const remaining = this.spool.remaining_weight ?? null
+            const total = this.spool.initial_weight ?? this.spool.filament?.weight ?? null
+            if (remaining === null || total === null) return -1
 
-        if (this.filamentColor !== NO_FILAMENT_COLOR) {
-            let color = this.filamentColor.substring(0, 7)
-            const alpha = this.filamentColor.length > 7 ? this.filamentColor.substring(7, 9) : 'FF'
-            if (alpha.toUpperCase() !== 'FF') color += alpha
+            return Math.ceil(Math.max(0, Math.min(100, (remaining / total) * 100)))
+        },
+        spoolId() {
+            return this.mmu?.gate_spool_id?.[this.gateIndex] ?? -1
+        },
+        spool() {
+            const spools = this.$store.state.server.spoolman?.spools ?? []
+            return spools.find((spool: ServerSpoolmanStateSpool) => spool.id === this.spoolId) ?? null
+        },
+        spoolName() {
+            const mmuSpoolName = this.mmu?.gate_filament_name?.[this.gateIndex]
 
-            output.push(`${this.$t('Panels.MmuPanel.ToolTip.Color')}: ${color}`)
-        }
+            return this.spool?.name || mmuSpoolName || this.$t('Panels.MmuPanel.Unknown').toString()
+        },
+        filamentColor() {
+            return this.formColorString(this.mmu?.gate_color?.[this.gateIndex] ?? null)
+        },
+        filamentMaterial() {
+            return this.mmu?.gate_material?.[this.gateIndex] || this.$t('Panels.MmuPanel.Unknown').toString()
+        },
+        filamentTemperature() {
+            return this.mmu?.gate_temperature?.[this.gateIndex] ?? -1
+        },
+        filamentTransformScale1() {
+            const start = 0.28
+            const end = 0.4
 
-        if (this.spoolId) {
-            output.push(`${this.$t('Panels.MmuPanel.ToolTip.SpoolId')}: ${this.spoolId}`)
-        }
+            if (this.filamentAmount < 0) return end
 
-        return output.join('\n')
-    }
+            return start + (end - start) * (this.filamentAmount / 100)
+        },
+        filamentTransformScale2() {
+            const start = 1.65
+            const end = 3.5
 
-    get svgClasses() {
-        const classes = [this.svgClass]
-        if (this.hasSelectGateListener) classes.push('hasSelectGate')
-        if (this.isSelected) classes.push('isSelected')
-        if (!this.isSelected && this.unhighlightSpools) classes.push('unhighlighted')
+            if (this.filamentAmount < 0) return end
 
-        return classes
-    }
+            return start + (end - start) * (this.filamentAmount / 100)
+        },
+        filamentTransform() {
+            return `matrix(${this.filamentTransformScale1},0,0,${this.filamentTransformScale2},197,250)`
+        },
+        contrastColor() {
+            return filamentTextColor(this.filamentColor)
+        },
+        isEspoolerRewind() {
+            if (this.mmuEspoolers) return this.mmuEspoolers[this.gateIndex] === 'rewind'
 
-    get hasSelectGateListener() {
-        return !!this.$listeners['select-gate']
-    }
+            // Legacy Happy Hare (selected gate only)
+            return this.gateIndex === this.mmu?.gate && this.mmu?.espooler_active === 'rewind'
+        },
+        isEspoolerAssist() {
+            if (this.mmuEspoolers) return this.mmuEspoolers[this.gateIndex] === 'assist'
 
-    selectGate() {
-        this.$emit('select-gate')
-    }
-}
+            // Legacy Happy Hare (selected gate only)
+            return this.gateIndex === this.mmu?.gate && this.mmu?.espooler_active === 'assist'
+        },
+        spoolWidth() {
+            if (this.mmuNumGates <= 8) return 56
+            if (this.mmuNumGates <= 16) return 48
+
+            return 40
+        },
+        tooltipTitle() {
+            if (this.status === GATE_EMPTY) return null
+
+            return this.spoolName
+        },
+        tooltipText() {
+            if (this.status === GATE_EMPTY) {
+                return this.$t('Panels.MmuPanel.ToolTip.Empty')
+            }
+
+            const output = []
+
+            let temperature = ''
+            if (this.filamentTemperature > 0) {
+                temperature = ` | ${this.filamentTemperature}°C`
+            }
+            output.push(this.filamentMaterial + temperature)
+
+            if (this.filamentColor !== NO_FILAMENT_COLOR) {
+                let color = this.filamentColor.substring(0, 7)
+                const alpha = this.filamentColor.length > 7 ? this.filamentColor.substring(7, 9) : 'FF'
+                if (alpha.toUpperCase() !== 'FF') color += alpha
+
+                output.push(`${this.$t('Panels.MmuPanel.ToolTip.Color')}: ${color}`)
+            }
+
+            if (this.spoolId) {
+                output.push(`${this.$t('Panels.MmuPanel.ToolTip.SpoolId')}: ${this.spoolId}`)
+            }
+
+            return output.join('\n')
+        },
+        svgClasses() {
+            const classes = [this.svgClass]
+            if (this.hasSelectGateListener) classes.push('hasSelectGate')
+            if (this.isSelected) classes.push('isSelected')
+            if (!this.isSelected && this.unhighlightSpools) classes.push('unhighlighted')
+
+            return classes
+        },
+        hasSelectGateListener() {
+            return !!this.$listeners['select-gate']
+        },
+    },
+    methods: {
+        selectGate() {
+            this.$emit('select-gate')
+        },
+    },
+})
 </script>
 
 <style scoped>

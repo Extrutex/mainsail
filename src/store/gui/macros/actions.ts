@@ -61,7 +61,10 @@ export const actions: ActionTree<GuiMacrosState, RootState> = {
 
     groupDelete({ commit, dispatch, rootState }, id) {
         commit('groupDelete', id)
-        getSocketClient().emit('server.database.delete_item', { namespace: 'mainsail', key: 'macros.macrogroups.' + id })
+        getSocketClient().emit('server.database.delete_item', {
+            namespace: 'mainsail',
+            key: 'macros.macrogroups.' + id,
+        })
 
         const layouts: GuiStateDashboardLayoutKey[] = [
             'mobileLayout',

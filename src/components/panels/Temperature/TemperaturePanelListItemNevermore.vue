@@ -36,85 +36,82 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import { convertName } from '@/plugins/helpers'
 import { mdiFan } from '@mdi/js'
 import { opacityHeaterActive, opacityHeaterInactive } from '@/store/variables'
 
-@Component
-export default class TemperaturePanelListItemNevermore extends Mixins(BaseMixin) {
-    mdiFan = mdiFan
+export default defineComponent({
+    name: 'TemperaturePanelListItemNevermore',
+    mixins: [BaseMixin],
+    props: {
+        objectName: { type: String, required: true },
+        isResponsiveMobile: { type: Boolean, required: true },
+    },
+    data() {
+        return {
+            mdiFan: mdiFan,
+            showEditDialog: false,
+            nevermoreValues: ['temperature', 'pressure', 'humidity'],
+        }
+    },
+    computed: {
+        printerObject() {
+            return this.$store.state.printer[this.objectName] ?? {}
+        },
+        name() {
+            const splits = this.objectName.split(' ')
+            return splits.length === 1 ? splits[0] : splits[1]
+        },
+        formatName() {
+            return convertName(this.name)
+        },
+        color() {
+            return this.$store.state.gui?.view?.tempchart?.datasetSettings?.[this.objectName]?.color ?? '#ffffff'
+        },
+        iconColor() {
+            // set icon color to active, if no target exists (temperature_sensors) or a heater is active
+            if (this.state === null || this.state > 0) return `${this.color}${opacityHeaterActive}`
 
-    @Prop({ type: String, required: true }) readonly objectName!: string
-    @Prop({ type: Boolean, required: true }) readonly isResponsiveMobile!: boolean
+            return `${this.color}${opacityHeaterInactive}`
+        },
+        iconClass() {
+            const classes = ['_no-focus-style', 'cursor-pointer']
 
-    showEditDialog = false
-    nevermoreValues = ['temperature', 'pressure', 'humidity']
+            // add icon animation, when it is a fan and state > 0
+            const disableFanAnimation = this.$store.state.gui?.uiSettings.disableFanAnimation ?? false
 
-    get printerObject() {
-        return this.$store.state.printer[this.objectName] ?? {}
-    }
+            if (!disableFanAnimation && (this.state ?? 0) > 0) classes.push('icon-rotate')
 
-    get name() {
-        const splits = this.objectName.split(' ')
-        return splits.length === 1 ? splits[0] : splits[1]
-    }
+            return classes
+        },
+        state(): number | null {
+            return this.printerObject.speed ?? null
+        },
+        rpm() {
+            const rpm = this.printerObject.rpm ?? null
 
-    get formatName() {
-        return convertName(this.name)
-    }
+            // return null when rpm doesn't exist
+            if (rpm === null) return null
 
-    get color() {
-        return this.$store.state.gui?.view?.tempchart?.datasetSettings?.[this.objectName]?.color ?? '#ffffff'
-    }
+            return parseInt(this.printerObject.rpm)
+        },
+        rpmClass() {
+            if (this.rpm === 0 && (this.printerObject.speed ?? 0) > 0) return 'red--text'
 
-    get iconColor() {
-        // set icon color to active, if no target exists (temperature_sensors) or a heater is active
-        if (this.state === null || this.state > 0) return `${this.color}${opacityHeaterActive}`
-
-        return `${this.color}${opacityHeaterInactive}`
-    }
-
-    get iconClass() {
-        const classes = ['_no-focus-style', 'cursor-pointer']
-
-        // add icon animation, when it is a fan and state > 0
-        const disableFanAnimation = this.$store.state.gui?.uiSettings.disableFanAnimation ?? false
-
-        if (!disableFanAnimation && (this.state ?? 0) > 0) classes.push('icon-rotate')
-
-        return classes
-    }
-
-    get state(): number | null {
-        return this.printerObject.speed ?? null
-    }
-
-    get rpm() {
-        const rpm = this.printerObject.rpm ?? null
-
-        // return null when rpm doesn't exist
-        if (rpm === null) return null
-
-        return parseInt(this.printerObject.rpm)
-    }
-
-    get rpmClass() {
-        if (this.rpm === 0 && (this.printerObject.speed ?? 0) > 0) return 'red--text'
-
-        return ''
-    }
-}
+            return ''
+        },
+    },
+})
 </script>
 
 <style scoped>
-::v-deep .v-icon._no-focus-style:focus::after {
+:deep(.v-icon._no-focus-style:focus::after) {
     opacity: 0 !important;
 }
 
-::v-deep .cursor-pointer {
+:deep(.cursor-pointer) {
     cursor: pointer;
 }
 </style>

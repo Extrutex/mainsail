@@ -16,67 +16,71 @@
         </v-card-text>
         <v-card-actions>
             <v-spacer />
-            <v-btn text @click="close">{{ $t('Buttons.Close') }}</v-btn>
-            <v-btn text color="primary" @click="createGroup">{{ $t('Settings.MiscellaneousTab.AddGroup') }}</v-btn>
+            <v-btn variant="text" @click="close">{{ $t('Buttons.Close') }}</v-btn>
+            <v-btn variant="text" color="primary" @click="createGroup">
+                {{ $t('Settings.MiscellaneousTab.AddGroup') }}
+            </v-btn>
         </v-card-actions>
     </div>
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '../../mixins/base'
 import SettingsRow from '@/components/settings/SettingsRow.vue'
 import { caseInsensitiveSort } from '@/plugins/helpers'
 import { GuiMiscellaneousStateEntryLightgroup } from '@/store/gui/miscellaneous/types'
 
-@Component({
+export default defineComponent({
+    name: 'SettingsMiscellaneousTabLightGroupsList',
     components: {
         SettingsRow,
     },
-})
-export default class SettingsMiscellaneousTabLightGroupsList extends Mixins(BaseMixin) {
-    @Prop({ type: String, required: true }) declare type: string
-    @Prop({ type: String, required: true }) declare name: string
+    mixins: [BaseMixin],
+    props: {
+        type: { type: String, required: true },
+        name: { type: String, required: true },
+    },
+    emits: ['close', 'create-group', 'edit-group'],
+    computed: {
+        entry() {
+            const entries = this.$store.state.gui.miscellaneous.entries ?? {}
+            const key =
+                Object.keys(entries).find((key) => {
+                    const entry = entries[key]
+                    return entry.type === this.type && entry.name === this.name
+                }) ?? ''
 
-    get entry() {
-        const entries = this.$store.state.gui.miscellaneous.entries ?? {}
-        const key =
-            Object.keys(entries).find((key) => {
-                const entry = entries[key]
-                return entry.type === this.type && entry.name === this.name
-            }) ?? ''
+            return entries[key] ?? {}
+        },
+        groups() {
+            if (!this.entry) return []
 
-        return entries[key] ?? {}
-    }
+            const lightgroups = this.entry.lightgroups ?? {}
 
-    get groups() {
-        if (!this.entry) return []
-
-        const lightgroups = this.entry.lightgroups ?? {}
-
-        const groups: GuiMiscellaneousStateEntryLightgroup[] = []
-        Object.keys(lightgroups).forEach((key) => {
-            groups.push({
-                name: lightgroups[key].name,
-                start: lightgroups[key].start,
-                end: lightgroups[key].end,
-                id: key,
+            const groups: GuiMiscellaneousStateEntryLightgroup[] = []
+            Object.keys(lightgroups).forEach((key) => {
+                groups.push({
+                    name: lightgroups[key].name,
+                    start: lightgroups[key].start,
+                    end: lightgroups[key].end,
+                    id: key,
+                })
             })
-        })
 
-        return caseInsensitiveSort(groups, 'name')
-    }
-
-    editGroup(groupId: string) {
-        this.$emit('edit-group', groupId)
-    }
-
-    close() {
-        this.$emit('close')
-    }
-
-    createGroup() {
-        this.$emit('create-group')
-    }
-}
+            return caseInsensitiveSort(groups, 'name')
+        },
+    },
+    methods: {
+        editGroup(groupId: string) {
+            this.$emit('edit-group', groupId)
+        },
+        close() {
+            this.$emit('close')
+        },
+        createGroup() {
+            this.$emit('create-group')
+        },
+    },
+})
 </script>

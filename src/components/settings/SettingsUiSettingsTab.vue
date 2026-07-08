@@ -5,27 +5,44 @@
                 <settings-row
                     :title="$t('Settings.UiSettingsTab.Mode')"
                     :sub-title="$t('Settings.UiSettingsTab.ModeDescription')">
-                    <v-select v-model="mode" :items="modes" class="mt-0" hide-details outlined dense />
+                    <v-select
+                        v-model="mode"
+                        :items="modes"
+                        class="mt-0"
+                        hide-details
+                        variant="outlined"
+                        density="compact" />
                 </settings-row>
                 <v-divider class="my-2" />
                 <settings-row
                     :title="$t('Settings.UiSettingsTab.Theme')"
                     :sub-title="$t('Settings.UiSettingsTab.ThemeDescription')">
-                    <v-select v-model="themeName" :items="themes" class="mt-0" hide-details outlined dense />
+                    <v-select
+                        v-model="themeName"
+                        :items="themes"
+                        class="mt-0"
+                        hide-details
+                        variant="outlined"
+                        density="compact" />
                 </settings-row>
                 <v-divider class="my-2" />
                 <settings-row :title="$t('Settings.UiSettingsTab.Logo')">
                     <v-btn
                         v-if="logoColor.toLowerCase() !== defaultLogoColor.toLowerCase()"
-                        small
-                        text
+                        size="small"
+                        variant="text"
                         class="minwidth-0"
                         @click="logoColor = defaultLogoColor">
-                        <v-icon small>{{ mdiRestart }}</v-icon>
+                        <v-icon size="small">{{ mdiRestart }}</v-icon>
                     </v-btn>
-                    <v-menu bottom left offset-y :close-on-content-click="false">
-                        <template #activator="{ on, attrs }">
-                            <v-btn v-bind="attrs" :color="logoColor" class="minwidth-0 px-5" small v-on="on" />
+                    <v-menu bottom left location="bottom" :close-on-content-click="false">
+                        <template #activator="{ props }">
+                            <v-btn
+                                v-bind="props"
+                                :color="logoColor"
+                                class="minwidth-0 px-5"
+                                size="small"
+                                v-bind="props" />
                         </template>
                         <v-color-picker
                             :value="logoColor"
@@ -38,15 +55,20 @@
                 <settings-row :title="$t('Settings.UiSettingsTab.Primary')">
                     <v-btn
                         v-if="primaryColor.toLowerCase() !== defaultPrimaryColor.toLowerCase()"
-                        small
-                        text
+                        size="small"
+                        variant="text"
                         class="minwidth-0"
                         @click="primaryColor = defaultPrimaryColor">
-                        <v-icon small>{{ mdiRestart }}</v-icon>
+                        <v-icon size="small">{{ mdiRestart }}</v-icon>
                     </v-btn>
-                    <v-menu bottom left offset-y :close-on-content-click="false">
-                        <template #activator="{ on, attrs }">
-                            <v-btn v-bind="attrs" :color="primaryColor" class="minwidth-0 px-5" small v-on="on" />
+                    <v-menu bottom left location="bottom" :close-on-content-click="false">
+                        <template #activator="{ props }">
+                            <v-btn
+                                v-bind="props"
+                                :color="primaryColor"
+                                class="minwidth-0 px-5"
+                                size="small"
+                                v-bind="props" />
                         </template>
                         <v-color-picker
                             :value="primaryColor"
@@ -61,8 +83,8 @@
                     :sub-title="$t('Settings.UiSettingsTab.GcodeThumbnailsDescription')"
                     :dynamic-slot-width="true">
                     <v-btn
-                        outlined
-                        small
+                        variant="outlined"
+                        size="small"
                         color="primary"
                         href="https://docs.mainsail.xyz/overview/features/thumbnails"
                         target="_blank">
@@ -88,20 +110,20 @@
                     <settings-row :title="$t('Settings.UiSettingsTab.BigThumbnailBackground')">
                         <v-btn
                             v-if="bigThumbnailBackground.toLowerCase() !== defaultBigThumbnailBackground.toLowerCase()"
-                            small
-                            text
+                            size="small"
+                            variant="text"
                             class="minwidth-0"
                             @click="bigThumbnailBackground = defaultBigThumbnailBackground">
-                            <v-icon small>{{ mdiRestart }}</v-icon>
+                            <v-icon size="small">{{ mdiRestart }}</v-icon>
                         </v-btn>
-                        <v-menu bottom left offset-y :close-on-content-click="false">
-                            <template #activator="{ on, attrs }">
+                        <v-menu bottom left location="bottom" :close-on-content-click="false">
+                            <template #activator="{ props }">
                                 <v-btn
-                                    v-bind="attrs"
+                                    v-bind="props"
                                     :color="bigThumbnailBackground"
                                     class="minwidth-0 px-5"
-                                    small
-                                    v-on="on" />
+                                    size="small"
+                                    v-bind="props" />
                             </template>
                             <v-color-picker
                                 :value="bigThumbnailBackground"
@@ -151,8 +173,8 @@
                             step="0.5"
                             suffix="s"
                             hide-details
-                            outlined
-                            dense
+                            variant="outlined"
+                            density="compact"
                             hide-spin-buttons />
                     </settings-row>
                 </v-expand-transition>
@@ -193,8 +215,8 @@
                         :items="navigationStyles"
                         class="mt-0"
                         hide-details
-                        outlined
-                        dense />
+                        variant="outlined"
+                        density="compact" />
                 </settings-row>
                 <v-divider class="my-2" />
                 <settings-row
@@ -205,8 +227,8 @@
                         :items="defaultNavigationStateSettings"
                         class="mt-0"
                         hide-details
-                        outlined
-                        dense />
+                        variant="outlined"
+                        density="compact" />
                 </settings-row>
                 <v-divider class="my-2" />
                 <settings-row
@@ -225,8 +247,8 @@
                         :items="powerDeviceOptions"
                         class="mt-0"
                         hide-details
-                        outlined
-                        dense />
+                        variant="outlined"
+                        density="compact" />
                 </settings-row>
                 <v-divider class="my-2" />
                 <settings-row
@@ -305,8 +327,8 @@
                         :items="dashboardFilesFilters"
                         multiple
                         hide-details
-                        dense
-                        outlined />
+                        density="compact"
+                        variant="outlined" />
                 </settings-row>
                 <v-divider class="my-2" />
                 <settings-row
@@ -335,8 +357,7 @@
 </template>
 
 <script lang="ts">
-import Component from 'vue-class-component'
-import { Mixins, Watch } from 'vue-property-decorator'
+import { defineComponent } from 'vue'
 import BaseMixin from '@/components/mixins/base'
 import SettingsRow from '@/components/settings/SettingsRow.vue'
 import { defaultLogoColor, defaultPrimaryColor, defaultBigThumbnailBackground, themes } from '@/store/variables'
@@ -344,399 +365,404 @@ import { Debounce } from 'vue-debounce-decorator'
 import { mdiRestart, mdiTimerOutline } from '@mdi/js'
 import { ServerPowerStateDevice } from '@/store/server/power/types'
 import ThemeMixin from '@/components/mixins/theme'
-import { clearColorObject, ColorPickerValue } from '@/plugins/helpers'
+import { debounce, clearColorObject, ColorPickerValue } from '@/plugins/helpers'
 
-@Component({
+export default defineComponent({
+    name: 'SettingsUiSettingsTab',
     components: { SettingsRow },
-})
-export default class SettingsUiSettingsTab extends Mixins(BaseMixin, ThemeMixin) {
-    mdiRestart = mdiRestart
-    mdiTimerOutline = mdiTimerOutline
-
-    defaultBigThumbnailBackground = defaultBigThumbnailBackground
-
-    get mode() {
-        return this.$store.state.gui.uiSettings.mode
-    }
-
-    set mode(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.mode', value: newVal })
-    }
-
-    get themeName() {
-        return this.$store.getters['gui/theme']
-    }
-
-    set themeName(newVal: string) {
-        const newTheme = themes.find((theme) => theme.name === newVal)
-        if (this.logoColor === this.defaultLogoColor) {
-            this.logoColor = newTheme?.colorLogo ?? defaultLogoColor
+    mixins: [BaseMixin, ThemeMixin],
+    data() {
+        return {
+            mdiRestart: mdiRestart,
+            mdiTimerOutline: mdiTimerOutline,
+            defaultBigThumbnailBackground: defaultBigThumbnailBackground,
         }
-        if (this.primaryColor === this.defaultPrimaryColor) {
-            this.primaryColor = newTheme?.colorPrimary ?? defaultPrimaryColor
-        }
-
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.theme', value: newVal })
-    }
-
-    get modes() {
-        return [
-            {
-                text: this.$t('Settings.UiSettingsTab.ThemeDark'),
-                value: 'dark',
+    },
+    computed: {
+        mode: {
+            get() {
+                return this.$store.state.gui.uiSettings.mode
             },
-            {
-                text: this.$t('Settings.UiSettingsTab.ThemeLight'),
-                value: 'light',
+            setmode(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.mode', value: newVal })
             },
-        ]
-    }
-
-    get themes() {
-        return themes.map((theme) => {
-            return {
-                text: theme.displayName,
-                value: theme.name,
-            }
-        })
-    }
-
-    get logoColor() {
-        return this.$store.state.gui.uiSettings.logo
-    }
-
-    set logoColor(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.logo', value: newVal })
-    }
-
-    get defaultLogoColor() {
-        return this.theme?.colorLogo ?? defaultLogoColor
-    }
-
-    get defaultPrimaryColor() {
-        return this.theme?.colorPrimary ?? defaultPrimaryColor
-    }
-
-    get primaryColor() {
-        return this.$store.state.gui.uiSettings.primary
-    }
-
-    set primaryColor(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.primary', value: newVal })
-    }
-
-    get boolBigThumbnail() {
-        return this.$store.state.gui.uiSettings.boolBigThumbnail
-    }
-
-    set boolBigThumbnail(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.boolBigThumbnail', value: newVal })
-    }
-
-    get bigThumbnailBackground() {
-        return this.$store.state.gui.uiSettings.bigThumbnailBackground
-    }
-
-    set bigThumbnailBackground(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.bigThumbnailBackground', value: newVal })
-    }
-
-    get displayCancelPrint() {
-        return this.$store.state.gui.uiSettings.displayCancelPrint
-    }
-
-    set displayCancelPrint(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.displayCancelPrint', value: newVal })
-    }
-
-    get progressAsFavicon() {
-        return this.$store.state.gui.uiSettings.progressAsFavicon
-    }
-
-    set progressAsFavicon(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.progressAsFavicon', value: newVal })
-    }
-
-    get confirmOnEmergencyStop() {
-        return this.$store.state.gui.uiSettings.confirmOnEmergencyStop
-    }
-
-    set confirmOnEmergencyStop(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.confirmOnEmergencyStop', value: newVal })
-    }
-
-    get confirmOnCoolDown() {
-        return this.$store.state.gui.uiSettings.confirmOnCoolDown
-    }
-
-    set confirmOnCoolDown(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.confirmOnCoolDown', value: newVal })
-    }
-
-    get confirmOnPowerDeviceChange() {
-        return this.$store.state.gui.uiSettings.confirmOnPowerDeviceChange
-    }
-
-    set confirmOnPowerDeviceChange(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.confirmOnPowerDeviceChange', value: newVal })
-    }
-
-    get confirmOnCancelJob() {
-        return this.$store.state.gui.uiSettings.confirmOnCancelJob
-    }
-
-    set confirmOnCancelJob(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.confirmOnCancelJob', value: newVal })
-    }
-
-    get lockSliders() {
-        return this.$store.state.gui.uiSettings.lockSlidersOnTouchDevices
-    }
-
-    set lockSliders(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.lockSlidersOnTouchDevices', value: newVal })
-    }
-
-    get lockSlidersDelay() {
-        return this.$store.state.gui.uiSettings.lockSlidersDelay
-    }
-
-    set lockSlidersDelay(newVal) {
-        const value = Number(newVal)
-        if (!Number.isFinite(value) || value < 0) return
-
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.lockSlidersDelay', value })
-    }
-
-    get boolWideNavDrawer() {
-        return this.$store.state.gui.uiSettings.boolWideNavDrawer ?? false
-    }
-
-    get navigationStyleSetting() {
-        return this.$store.state.gui.uiSettings.navigationStyle
-    }
-
-    set navigationStyleSetting(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.navigationStyle', value: newVal })
-    }
-
-    get navigationStyles() {
-        return [
-            {
-                text: this.$t('Settings.UiSettingsTab.NavigationStyleIconsOnly'),
-                value: 'iconsOnly',
+        },
+        themeName: {
+            get() {
+                return this.$store.getters['gui/theme']
             },
-            {
-                text: this.$t('Settings.UiSettingsTab.NavigationStyleIconsAndText'),
-                value: 'iconsAndText',
+            setthemeName(newVal: string) {
+                const newTheme = themes.find((theme) => theme.name === newVal)
+                if (this.logoColor === this.defaultLogoColor) {
+                    this.logoColor = newTheme?.colorLogo ?? defaultLogoColor
+                }
+                if (this.primaryColor === this.defaultPrimaryColor) {
+                    this.primaryColor = newTheme?.colorPrimary ?? defaultPrimaryColor
+                }
+
+                this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.theme', value: newVal })
             },
-        ]
-    }
-
-    get defaultNavigationStateSetting() {
-        return this.$store.state.gui.uiSettings.defaultNavigationStateSetting
-    }
-
-    set defaultNavigationStateSetting(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.defaultNavigationStateSetting', value: newVal })
-    }
-
-    get defaultNavigationStateSettings() {
-        return [
-            {
-                text: this.$t('Settings.UiSettingsTab.DefaultNavigationStateAlwaysOpen'),
-                value: 'alwaysOpen',
-            },
-            {
-                text: this.$t('Settings.UiSettingsTab.DefaultNavigationStateAlwaysClosed'),
-                value: 'alwaysClosed',
-            },
-            {
-                text: this.$t('Settings.UiSettingsTab.DefaultNavigationStateLastState'),
-                value: 'lastState',
-            },
-        ]
-    }
-
-    get boolHideUploadAndPrintButton() {
-        return this.$store.state.gui.uiSettings.boolHideUploadAndPrintButton ?? false
-    }
-
-    set boolHideUploadAndPrintButton(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.boolHideUploadAndPrintButton', value: newVal })
-    }
-
-    get powerDevices() {
-        return this.$store.getters['server/power/getDevices'] ?? []
-    }
-
-    get autoPowerDevice() {
-        return (
-            this.powerDevices.find((device: ServerPowerStateDevice) => device.device.toLowerCase() === 'printer')
-                ?.device ?? '--'
-        )
-    }
-
-    get powerDeviceName() {
-        return this.$store.state.gui.uiSettings.powerDeviceName ?? null
-    }
-
-    set powerDeviceName(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.powerDeviceName', value: newVal })
-    }
-
-    get powerDeviceOptions() {
-        const items: { text: string; value: string | null }[] = [
-            { text: `Auto (${this.autoPowerDevice})`, value: null },
-        ]
-
-        this.powerDevices.forEach((device: ServerPowerStateDevice) => {
-            items.push({
-                text: `${device.device} (${device.type})`,
-                value: device.device.toString(),
+        },
+        modes() {
+            return [
+                {
+                    text: this.$t('Settings.UiSettingsTab.ThemeDark'),
+                    value: 'dark',
+                },
+                {
+                    text: this.$t('Settings.UiSettingsTab.ThemeLight'),
+                    value: 'light',
+                },
+            ]
+        },
+        themes() {
+            return themes.map((theme) => {
+                return {
+                    text: theme.displayName,
+                    value: theme.name,
+                }
             })
-        })
-
-        return items
-    }
-
-    get hideSaveConfigForBedMash() {
-        return this.$store.state.gui.uiSettings.hideSaveConfigForBedMash ?? false
-    }
-
-    set hideSaveConfigForBedMash(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.hideSaveConfigForBedMash', value: newVal })
-    }
-
-    get disableFanAnimation() {
-        return this.$store.state.gui.uiSettings.disableFanAnimation ?? false
-    }
-
-    set disableFanAnimation(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.disableFanAnimation', value: newVal })
-    }
-
-    get boolManualProbeDialog() {
-        return this.$store.state.gui.uiSettings.boolManualProbeDialog ?? true
-    }
-
-    set boolManualProbeDialog(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.boolManualProbeDialog', value: newVal })
-    }
-
-    get boolBedScrewsDialog() {
-        return this.$store.state.gui.uiSettings.boolBedScrewsDialog ?? true
-    }
-
-    set boolBedScrewsDialog(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.boolBedScrewsDialog', value: newVal })
-    }
-
-    get boolScrewsTiltAdjustDialog() {
-        return this.$store.state.gui.uiSettings.boolScrewsTiltAdjustDialog ?? true
-    }
-
-    set boolScrewsTiltAdjustDialog(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.boolScrewsTiltAdjustDialog', value: newVal })
-    }
-
-    get printstatusThumbnailZoom() {
-        return this.$store.state.gui.uiSettings.printstatusThumbnailZoom ?? true
-    }
-
-    set printstatusThumbnailZoom(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.printstatusThumbnailZoom', value: newVal })
-    }
-
-    get tempchartHeight() {
-        return this.$store.state.gui.uiSettings.tempchartHeight ?? 250
-    }
-
-    set tempchartHeight(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.tempchartHeight', value: newVal })
-    }
-
-    get hideUpdateWarnings() {
-        return this.$store.state.gui.uiSettings.hideUpdateWarnings ?? false
-    }
-
-    set hideUpdateWarnings(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.hideUpdateWarnings', value: newVal })
-    }
-
-    get dashboardFilesLimit() {
-        return this.$store.state.gui.uiSettings.dashboardFilesLimit ?? 5
-    }
-
-    set dashboardFilesLimit(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.dashboardFilesLimit', value: newVal })
-    }
-
-    get dashboardFilesFilter() {
-        return this.$store.state.gui.uiSettings.dashboardFilesFilter ?? []
-    }
-
-    set dashboardFilesFilter(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.dashboardFilesFilter', value: newVal })
-    }
-
-    get dashboardFilesFilters() {
-        return [
-            {
-                text: this.$t('Settings.UiSettingsTab.DashboardFilesFilterNew'),
-                value: 'new',
+        },
+        logoColor: {
+            get() {
+                return this.$store.state.gui.uiSettings.logo
             },
-            {
-                text: this.$t('Settings.UiSettingsTab.DashboardFilesFilterFailed'),
-                value: 'failed',
+            setlogoColor(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.logo', value: newVal })
             },
-            {
-                text: this.$t('Settings.UiSettingsTab.DashboardFilesFilterCompleted'),
-                value: 'completed',
+        },
+        defaultLogoColor() {
+            return this.theme?.colorLogo ?? defaultLogoColor
+        },
+        defaultPrimaryColor() {
+            return this.theme?.colorPrimary ?? defaultPrimaryColor
+        },
+        primaryColor: {
+            get() {
+                return this.$store.state.gui.uiSettings.primary
             },
-        ]
-    }
+            setprimaryColor(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.primary', value: newVal })
+            },
+        },
+        boolBigThumbnail: {
+            get() {
+                return this.$store.state.gui.uiSettings.boolBigThumbnail
+            },
+            setboolBigThumbnail(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.boolBigThumbnail', value: newVal })
+            },
+        },
+        bigThumbnailBackground: {
+            get() {
+                return this.$store.state.gui.uiSettings.bigThumbnailBackground
+            },
+            setbigThumbnailBackground(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.bigThumbnailBackground', value: newVal })
+            },
+        },
+        displayCancelPrint: {
+            get() {
+                return this.$store.state.gui.uiSettings.displayCancelPrint
+            },
+            setdisplayCancelPrint(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.displayCancelPrint', value: newVal })
+            },
+        },
+        progressAsFavicon: {
+            get() {
+                return this.$store.state.gui.uiSettings.progressAsFavicon
+            },
+            setprogressAsFavicon(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.progressAsFavicon', value: newVal })
+            },
+        },
+        confirmOnEmergencyStop: {
+            get() {
+                return this.$store.state.gui.uiSettings.confirmOnEmergencyStop
+            },
+            setconfirmOnEmergencyStop(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.confirmOnEmergencyStop', value: newVal })
+            },
+        },
+        confirmOnCoolDown: {
+            get() {
+                return this.$store.state.gui.uiSettings.confirmOnCoolDown
+            },
+            setconfirmOnCoolDown(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.confirmOnCoolDown', value: newVal })
+            },
+        },
+        confirmOnPowerDeviceChange: {
+            get() {
+                return this.$store.state.gui.uiSettings.confirmOnPowerDeviceChange
+            },
+            setconfirmOnPowerDeviceChange(newVal) {
+                this.$store.dispatch('gui/saveSetting', {
+                    name: 'uiSettings.confirmOnPowerDeviceChange',
+                    value: newVal,
+                })
+            },
+        },
+        confirmOnCancelJob: {
+            get() {
+                return this.$store.state.gui.uiSettings.confirmOnCancelJob
+            },
+            setconfirmOnCancelJob(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.confirmOnCancelJob', value: newVal })
+            },
+        },
+        lockSliders: {
+            get() {
+                return this.$store.state.gui.uiSettings.lockSlidersOnTouchDevices
+            },
+            setlockSliders(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.lockSlidersOnTouchDevices', value: newVal })
+            },
+        },
+        lockSlidersDelay: {
+            get() {
+                return this.$store.state.gui.uiSettings.lockSlidersDelay
+            },
+            setlockSlidersDelay(newVal) {
+                const value = Number(newVal)
+                if (!Number.isFinite(value) || value < 0) return
 
-    get dashboardHistoryLimit() {
-        return this.$store.state.gui.uiSettings.dashboardHistoryLimit ?? 5
-    }
+                this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.lockSlidersDelay', value })
+            },
+        },
+        boolWideNavDrawer() {
+            return this.$store.state.gui.uiSettings.boolWideNavDrawer ?? false
+        },
+        navigationStyleSetting: {
+            get() {
+                return this.$store.state.gui.uiSettings.navigationStyle
+            },
+            setnavigationStyleSetting(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.navigationStyle', value: newVal })
+            },
+        },
+        navigationStyles() {
+            return [
+                {
+                    text: this.$t('Settings.UiSettingsTab.NavigationStyleIconsOnly'),
+                    value: 'iconsOnly',
+                },
+                {
+                    text: this.$t('Settings.UiSettingsTab.NavigationStyleIconsAndText'),
+                    value: 'iconsAndText',
+                },
+            ]
+        },
+        defaultNavigationStateSetting: {
+            get() {
+                return this.$store.state.gui.uiSettings.defaultNavigationStateSetting
+            },
+            setdefaultNavigationStateSetting(newVal) {
+                this.$store.dispatch('gui/saveSetting', {
+                    name: 'uiSettings.defaultNavigationStateSetting',
+                    value: newVal,
+                })
+            },
+        },
+        defaultNavigationStateSettings() {
+            return [
+                {
+                    text: this.$t('Settings.UiSettingsTab.DefaultNavigationStateAlwaysOpen'),
+                    value: 'alwaysOpen',
+                },
+                {
+                    text: this.$t('Settings.UiSettingsTab.DefaultNavigationStateAlwaysClosed'),
+                    value: 'alwaysClosed',
+                },
+                {
+                    text: this.$t('Settings.UiSettingsTab.DefaultNavigationStateLastState'),
+                    value: 'lastState',
+                },
+            ]
+        },
+        boolHideUploadAndPrintButton: {
+            get() {
+                return this.$store.state.gui.uiSettings.boolHideUploadAndPrintButton ?? false
+            },
+            setboolHideUploadAndPrintButton(newVal) {
+                this.$store.dispatch('gui/saveSetting', {
+                    name: 'uiSettings.boolHideUploadAndPrintButton',
+                    value: newVal,
+                })
+            },
+        },
+        powerDevices() {
+            return this.$store.getters['server/power/getDevices'] ?? []
+        },
+        autoPowerDevice() {
+            return (
+                this.powerDevices.find((device: ServerPowerStateDevice) => device.device.toLowerCase() === 'printer')
+                    ?.device ?? '--'
+            )
+        },
+        powerDeviceName: {
+            get() {
+                return this.$store.state.gui.uiSettings.powerDeviceName ?? null
+            },
+            setpowerDeviceName(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.powerDeviceName', value: newVal })
+            },
+        },
+        powerDeviceOptions() {
+            const items: { text: string; value: string | null }[] = [
+                { text: `Auto (${this.autoPowerDevice})`, value: null },
+            ]
 
-    set dashboardHistoryLimit(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.dashboardHistoryLimit', value: newVal })
-    }
+            this.powerDevices.forEach((device: ServerPowerStateDevice) => {
+                items.push({
+                    text: `${device.device} (${device.type})`,
+                    value: device.device.toString(),
+                })
+            })
 
-    get hideOtherInstances() {
-        return this.$store.state.gui.uiSettings.hideOtherInstances ?? false
-    }
+            return items
+        },
+        hideSaveConfigForBedMash: {
+            get() {
+                return this.$store.state.gui.uiSettings.hideSaveConfigForBedMash ?? false
+            },
+            sethideSaveConfigForBedMash(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.hideSaveConfigForBedMash', value: newVal })
+            },
+        },
+        disableFanAnimation: {
+            get() {
+                return this.$store.state.gui.uiSettings.disableFanAnimation ?? false
+            },
+            setdisableFanAnimation(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.disableFanAnimation', value: newVal })
+            },
+        },
+        boolManualProbeDialog: {
+            get() {
+                return this.$store.state.gui.uiSettings.boolManualProbeDialog ?? true
+            },
+            setboolManualProbeDialog(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.boolManualProbeDialog', value: newVal })
+            },
+        },
+        boolBedScrewsDialog: {
+            get() {
+                return this.$store.state.gui.uiSettings.boolBedScrewsDialog ?? true
+            },
+            setboolBedScrewsDialog(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.boolBedScrewsDialog', value: newVal })
+            },
+        },
+        boolScrewsTiltAdjustDialog: {
+            get() {
+                return this.$store.state.gui.uiSettings.boolScrewsTiltAdjustDialog ?? true
+            },
+            setboolScrewsTiltAdjustDialog(newVal) {
+                this.$store.dispatch('gui/saveSetting', {
+                    name: 'uiSettings.boolScrewsTiltAdjustDialog',
+                    value: newVal,
+                })
+            },
+        },
+        printstatusThumbnailZoom: {
+            get() {
+                return this.$store.state.gui.uiSettings.printstatusThumbnailZoom ?? true
+            },
+            setprintstatusThumbnailZoom(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.printstatusThumbnailZoom', value: newVal })
+            },
+        },
+        tempchartHeight: {
+            get() {
+                return this.$store.state.gui.uiSettings.tempchartHeight ?? 250
+            },
+            settempchartHeight(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.tempchartHeight', value: newVal })
+            },
+        },
+        hideUpdateWarnings: {
+            get() {
+                return this.$store.state.gui.uiSettings.hideUpdateWarnings ?? false
+            },
+            sethideUpdateWarnings(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.hideUpdateWarnings', value: newVal })
+            },
+        },
+        dashboardFilesLimit: {
+            get() {
+                return this.$store.state.gui.uiSettings.dashboardFilesLimit ?? 5
+            },
+            setdashboardFilesLimit(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.dashboardFilesLimit', value: newVal })
+            },
+        },
+        dashboardFilesFilter: {
+            get() {
+                return this.$store.state.gui.uiSettings.dashboardFilesFilter ?? []
+            },
+            setdashboardFilesFilter(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.dashboardFilesFilter', value: newVal })
+            },
+        },
+        dashboardFilesFilters() {
+            return [
+                {
+                    text: this.$t('Settings.UiSettingsTab.DashboardFilesFilterNew'),
+                    value: 'new',
+                },
+                {
+                    text: this.$t('Settings.UiSettingsTab.DashboardFilesFilterFailed'),
+                    value: 'failed',
+                },
+                {
+                    text: this.$t('Settings.UiSettingsTab.DashboardFilesFilterCompleted'),
+                    value: 'completed',
+                },
+            ]
+        },
+        dashboardHistoryLimit: {
+            get() {
+                return this.$store.state.gui.uiSettings.dashboardHistoryLimit ?? 5
+            },
+            setdashboardHistoryLimit(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.dashboardHistoryLimit', value: newVal })
+            },
+        },
+        hideOtherInstances: {
+            get() {
+                return this.$store.state.gui.uiSettings.hideOtherInstances ?? false
+            },
+            sethideOtherInstances(newVal) {
+                this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.hideOtherInstances', value: newVal })
+            },
+        },
+    },
+    watch: {
+        theme(newVal: string) {
+            const theme = themes.find((theme) => theme.name === newVal)
 
-    set hideOtherInstances(newVal) {
-        this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.hideOtherInstances', value: newVal })
-    }
+            // stop here when no theme was found with this name
+            if (!theme) return
 
-    @Debounce(500)
-    updateLogoColor(newVal: ColorPickerValue) {
-        this.logoColor = clearColorObject(newVal)
-    }
-
-    @Debounce(500)
-    updatePrimaryColor(newVal: ColorPickerValue) {
-        this.primaryColor = clearColorObject(newVal)
-    }
-
-    @Debounce(500)
-    updateBigThumbnailBackground(newVal: ColorPickerValue) {
-        this.bigThumbnailBackground = clearColorObject(newVal)
-    }
-
-    @Watch('theme')
-    onThemeChanged(newVal: string) {
-        const theme = themes.find((theme) => theme.name === newVal)
-
-        // stop here when no theme was found with this name
-        if (!theme) return
-
-        // update logo color to theme logo color if the theme has a colorLogo
-        if (theme.colorLogo) this.logoColor = theme.colorLogo
-    }
-}
+            // update logo color to theme logo color if the theme has a colorLogo
+            if (theme.colorLogo) this.logoColor = theme.colorLogo
+        },
+    },
+    methods: {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        updateLogoColor: debounce(function (this: any, newVal: ColorPickerValue) {
+            this.logoColor = clearColorObject(newVal)
+        }, 500),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        updatePrimaryColor: debounce(function (this: any, newVal: ColorPickerValue) {
+            this.primaryColor = clearColorObject(newVal)
+        }, 500),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        updateBigThumbnailBackground: debounce(function (this: any, newVal: ColorPickerValue) {
+            this.bigThumbnailBackground = clearColorObject(newVal)
+        }, 500),
+    },
+})
 </script>
