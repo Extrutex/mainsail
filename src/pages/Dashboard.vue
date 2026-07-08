@@ -3,10 +3,9 @@
         <v-row v-if="isMobile">
             <v-col>
                 <status-panel />
-                <template v-for="component in mobileLayout">
+                <template v-for="component in mobileLayout" :key="'dashboard-mobileLayout-' + component.name">
                     <component
                         :is="extractPanelName(component.name)"
-                        :key="'dashboard-mobileLayout-' + component.name"
                         :panel-id="extractPanelId(component.name)"></component>
                 </template>
             </v-col>
@@ -14,18 +13,16 @@
         <v-row v-else-if="isTablet">
             <v-col cols="6">
                 <status-panel />
-                <template v-for="component in tabletLayout1">
+                <template v-for="component in tabletLayout1" :key="'dashboard-tabletLayout1-' + component.name">
                     <component
                         :is="extractPanelName(component.name)"
-                        :key="'dashboard-tabletLayout1-' + component.name"
                         :panel-id="extractPanelId(component.name)"></component>
                 </template>
             </v-col>
             <v-col cols="6">
-                <template v-for="component in tabletLayout2">
+                <template v-for="component in tabletLayout2" :key="'dashboard-tabletLayout2-' + component.name">
                     <component
                         :is="extractPanelName(component.name)"
-                        :key="'dashboard-tabletLayout2-' + component.name"
                         :panel-id="extractPanelId(component.name)"></component>
                 </template>
             </v-col>
@@ -33,18 +30,16 @@
         <v-row v-else-if="isDesktop">
             <v-col cols="5">
                 <status-panel />
-                <template v-for="component in desktopLayout1">
+                <template v-for="component in desktopLayout1" :key="'dashboard-desktopLayout1-' + component.name">
                     <component
                         :is="extractPanelName(component.name)"
-                        :key="'dashboard-desktopLayout1-' + component.name"
                         :panel-id="extractPanelId(component.name)"></component>
                 </template>
             </v-col>
             <v-col cols="7">
-                <template v-for="component in desktopLayout2">
+                <template v-for="component in desktopLayout2" :key="'dashboard-desktopLayout2-' + component.name">
                     <component
                         :is="extractPanelName(component.name)"
-                        :key="'dashboard-desktopLayout2-' + component.name"
                         :panel-id="extractPanelId(component.name)"></component>
                 </template>
             </v-col>
@@ -52,26 +47,23 @@
         <v-row v-else-if="isWidescreen">
             <v-col cols="3">
                 <status-panel />
-                <template v-for="component in widescreenLayout1">
+                <template v-for="component in widescreenLayout1" :key="'dashboard-desktopLayout1-' + component.name">
                     <component
                         :is="extractPanelName(component.name)"
-                        :key="'dashboard-desktopLayout1-' + component.name"
                         :panel-id="extractPanelId(component.name)"></component>
                 </template>
             </v-col>
             <v-col cols="5">
-                <template v-for="component in widescreenLayout2">
+                <template v-for="component in widescreenLayout2" :key="'dashboard-desktopLayout2-' + component.name">
                     <component
                         :is="extractPanelName(component.name)"
-                        :key="'dashboard-desktopLayout2-' + component.name"
                         :panel-id="extractPanelId(component.name)"></component>
                 </template>
             </v-col>
             <v-col cols="4">
-                <template v-for="component in widescreenLayout3">
+                <template v-for="component in widescreenLayout3" :key="'dashboard-desktopLayout3-' + component.name">
                     <component
                         :is="extractPanelName(component.name)"
-                        :key="'dashboard-desktopLayout3-' + component.name"
                         :panel-id="extractPanelId(component.name)"></component>
                 </template>
             </v-col>

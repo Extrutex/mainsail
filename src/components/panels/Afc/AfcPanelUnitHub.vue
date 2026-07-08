@@ -1,12 +1,8 @@
 <template>
     <div class="ml-3">
         <v-tooltip top>
-            <template #activator="{ on, attr }">
-                <span
-                    v-bind="attr"
-                    class="sensor-status rounded-circle d-inline-block mr-2"
-                    :class="sensorClass"
-                    v-bind="props" />
+            <template #activator="{ props }">
+                <span v-bind="props" class="sensor-status rounded-circle d-inline-block mr-2" :class="sensorClass" />
             </template>
             <span>{{ sensorOutput }}</span>
         </v-tooltip>

@@ -8,8 +8,7 @@
                     color="primary"
                     v-bind="props"
                     :disabled="['printing', 'paused'].includes(printer_state)"
-                    class="pa-1"
-                    v-bind="props">
+                    class="pa-1">
                     <span class="d-none ml-1 d-md-block">{{ $t('Panels.TemperaturePanel.Presets') }}</span>
                     <v-icon class="d-md-none">{{ mdiFire }}</v-icon>
                     <v-icon>{{ mdiMenuDown }}</v-icon>

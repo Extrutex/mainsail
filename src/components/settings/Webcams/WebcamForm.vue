@@ -14,8 +14,7 @@
                                             color="transparent"
                                             v-bind="props"
                                             elevation="0"
-                                            :ripple="false"
-                                            v-bind="props">
+                                            :ripple="false">
                                             <v-icon>{{ convertWebcamIcon(webcam.icon) }}</v-icon>
                                             <v-icon :class="classIconButtonArrow" class="pl-1 mr-n2">
                                                 {{ mdiMenuDown }}
@@ -173,8 +172,7 @@
                                             v-bind="props"
                                             :color="nozzleCrosshairColor"
                                             class="minwidth-0 px-5"
-                                            size="small"
-                                            v-bind="props" />
+                                            size="small" />
                                     </template>
                                     <v-color-picker
                                         :value="nozzleCrosshairColor"

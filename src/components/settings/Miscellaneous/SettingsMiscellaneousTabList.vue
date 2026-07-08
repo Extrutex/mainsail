@@ -2,13 +2,9 @@
     <v-card-text>
         <h3 class="text-h5 mb-3">{{ $t('Settings.MiscellaneousTab.Miscellaneous') }}</h3>
         <template v-if="filteredLights.length">
-            <template v-for="(light, index) in filteredLights">
-                <v-divider v-if="index" :key="'divider_' + index" class="my-2" />
-                <settings-miscellaneous-tab-list-light
-                    :key="index"
-                    :type="light.type"
-                    :name="light.name"
-                    @open-page="openPage" />
+            <template v-for="(light, index) in filteredLights" :key="'divider_' + index">
+                <v-divider v-if="index" class="my-2" />
+                <settings-miscellaneous-tab-list-light :type="light.type" :name="light.name" @open-page="openPage" />
             </template>
         </template>
         <p v-else class="mb-0 text-center font-italic">{{ $t('Settings.MiscellaneousTab.NoDevicesFound') }}</p>

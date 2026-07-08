@@ -73,8 +73,7 @@
                                     v-bind="props"
                                     :color="editGroup.colorCustom"
                                     class="minwidth-0 px-5"
-                                    size="small"
-                                    v-bind="props" />
+                                    size="small" />
                             </template>
                             <v-color-picker
                                 :value="editGroup.colorCustom"
@@ -94,7 +93,6 @@
                                 v-bind="props"
                                 class="ml-3 minwidth-0 px-2"
                                 :color="editGroup?.showInStandby ? '' : 'secondary'"
-                                v-bind="props"
                                 @click="updateGroupOptionShowInStandby(!editGroup?.showInStandby)">
                                 <v-icon size="small">{{ mdiSleep }}</v-icon>
                             </v-btn>
@@ -109,7 +107,6 @@
                                 v-bind="props"
                                 class="ml-3 minwidth-0 px-2"
                                 :color="editGroup?.showInPause ? '' : 'secondary'"
-                                v-bind="props"
                                 @click="updateGroupOptionShowInPause(!editGroup?.showInPause)">
                                 <v-icon size="small">{{ mdiPause }}</v-icon>
                             </v-btn>
@@ -124,7 +121,6 @@
                                 v-bind="props"
                                 class="ml-3 minwidth-0 px-2"
                                 :color="editGroup?.showInPrinting ? '' : 'secondary'"
-                                v-bind="props"
                                 @click="updateGroupOptionShowInPrinting(!editGroup?.showInPrinting)">
                                 <v-icon size="small">{{ mdiPrinter3dNozzle }}</v-icon>
                             </v-btn>
@@ -165,7 +161,6 @@
                                                     v-bind="props"
                                                     class="ml-3 minwidth-0 px-2"
                                                     :color="macro.color"
-                                                    v-bind="props"
                                                     @click="changeColorMacroFromGroup(macro)">
                                                     <v-icon size="small" start>{{ mdiPalette }}</v-icon>
                                                     {{ macro.color }}
@@ -181,7 +176,6 @@
                                                     v-bind="props"
                                                     class="ml-3 minwidth-0 px-2"
                                                     :color="macro.showInStandby ? '' : 'secondary'"
-                                                    v-bind="props"
                                                     @click="
                                                         updateMacroFromGroup(
                                                             macro,
@@ -202,7 +196,6 @@
                                                     v-bind="props"
                                                     class="ml-3 minwidth-0 px-2"
                                                     :color="macro.showInPause ? '' : 'secondary'"
-                                                    v-bind="props"
                                                     @click="
                                                         updateMacroFromGroup(macro, 'showInPause', !macro.showInPause)
                                                     ">
@@ -219,7 +212,6 @@
                                                     v-bind="props"
                                                     class="ml-3 minwidth-0 px-2"
                                                     :color="macro.showInPrinting ? '' : 'secondary'"
-                                                    v-bind="props"
                                                     @click="
                                                         updateMacroFromGroup(
                                                             macro,
@@ -241,7 +233,6 @@
                                                 v-bind="props"
                                                 class="ml-3 minwidth-0 px-2"
                                                 color="error"
-                                                v-bind="props"
                                                 @click="removeMacroFromGroup(macro)">
                                                 <v-icon size="small">{{ mdiDelete }}</v-icon>
                                             </v-btn>
@@ -277,13 +268,9 @@
                     </v-col>
                 </v-row>
                 <template v-if="availableMacros.length">
-                    <template v-for="(macro, index) in availableMacros">
-                        <v-divider v-if="index" :key="'availableMacro_deliver_' + index" class="my-2"></v-divider>
-                        <settings-row
-                            :key="'availableMacro_macro_' + index"
-                            :title="macro.name"
-                            :sub-title="macro.description"
-                            :dynamic-slot-width="true">
+                    <template v-for="(macro, index) in availableMacros" :key="'availableMacro_deliver_' + index">
+                        <v-divider v-if="index" class="my-2"></v-divider>
+                        <settings-row :title="macro.name" :sub-title="macro.description" :dynamic-slot-width="true">
                             <v-btn size="small" variant="outlined" class="ml-3" @click="addMacroToGroup(macro)">
                                 <v-icon start size="small">{{ mdiPlus }}</v-icon>
                                 {{ $t('Settings.MacrosTab.Add') }}

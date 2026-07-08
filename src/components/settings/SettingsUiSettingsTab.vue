@@ -37,12 +37,7 @@
                     </v-btn>
                     <v-menu bottom left location="bottom" :close-on-content-click="false">
                         <template #activator="{ props }">
-                            <v-btn
-                                v-bind="props"
-                                :color="logoColor"
-                                class="minwidth-0 px-5"
-                                size="small"
-                                v-bind="props" />
+                            <v-btn v-bind="props" :color="logoColor" class="minwidth-0 px-5" size="small" />
                         </template>
                         <v-color-picker
                             :value="logoColor"
@@ -63,12 +58,7 @@
                     </v-btn>
                     <v-menu bottom left location="bottom" :close-on-content-click="false">
                         <template #activator="{ props }">
-                            <v-btn
-                                v-bind="props"
-                                :color="primaryColor"
-                                class="minwidth-0 px-5"
-                                size="small"
-                                v-bind="props" />
+                            <v-btn v-bind="props" :color="primaryColor" class="minwidth-0 px-5" size="small" />
                         </template>
                         <v-color-picker
                             :value="primaryColor"
@@ -122,8 +112,7 @@
                                     v-bind="props"
                                     :color="bigThumbnailBackground"
                                     class="minwidth-0 px-5"
-                                    size="small"
-                                    v-bind="props" />
+                                    size="small" />
                             </template>
                             <v-color-picker
                                 :value="bigThumbnailBackground"

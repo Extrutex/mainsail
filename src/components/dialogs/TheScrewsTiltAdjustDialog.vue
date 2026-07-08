@@ -22,12 +22,9 @@
                 </v-row>
             </v-card-text>
             <v-card-text v-if="Object.keys(results).length">
-                <template v-for="(result, name, index) of results">
-                    <v-divider v-if="index" :key="`result-divider-${name}`" class="my-1" />
-                    <the-screws-tilt-adjust-dialog-entry
-                        :key="`result-${name}-${name}`"
-                        :name="name.toString()"
-                        :result="result" />
+                <template v-for="(result, name, index) of results" :key="`result-divider-${name}`">
+                    <v-divider v-if="index" class="my-1" />
+                    <the-screws-tilt-adjust-dialog-entry :name="name.toString()" :result="result" />
                 </template>
             </v-card-text>
             <v-card-actions>

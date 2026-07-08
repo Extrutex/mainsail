@@ -27,21 +27,14 @@
                 <span>{{ item.last_status.replace(/_/g, ' ') }}</span>
             </v-tooltip>
         </td>
-        <template v-for="col in tableColumns">
-            <gcodefiles-panel-table-row-file-metadata-slicer
-                v-if="col.value === 'slicer'"
-                :key="col.value"
-                :item="item" />
-            <gcodefiles-panel-table-row-file-metadata-filaments
-                v-else-if="col.value === 'filaments'"
-                :key="col.value"
-                :item="item" />
+        <template v-for="col in tableColumns" :key="col.value">
+            <gcodefiles-panel-table-row-file-metadata-slicer v-if="col.value === 'slicer'" :item="item" />
+            <gcodefiles-panel-table-row-file-metadata-filaments v-else-if="col.value === 'filaments'" :item="item" />
             <gcodefiles-panel-table-row-file-metadata-filament-strings
                 v-else-if="['filament_name', 'filament_type'].includes(col.value)"
-                :key="col.value"
                 :item="item"
                 :column="col.value" />
-            <gcodefiles-panel-table-row-file-metadata v-else :key="col.value" :col="col" :item="item" />
+            <gcodefiles-panel-table-row-file-metadata v-else :col="col" :item="item" />
         </template>
         <v-menu
             v-model="showContextMenu"

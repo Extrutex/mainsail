@@ -1,7 +1,7 @@
 import { GetterTree } from 'vuex'
 import { GuiNotificationState, GuiNotificationStateDismissEntry, GuiNotificationStateEntry } from './types'
 import { ServerAnnouncementsStateEntry } from '@/store/server/announcements/types'
-import i18n from '@/plugins/i18n.js'
+import i18n from '@/plugins/i18n'
 import { RootState, RootStateDependency } from '@/store/types'
 import { sha256 } from 'js-sha256'
 import { PrinterStateKlipperConfigWarning } from '@/store/printer/types'
@@ -141,7 +141,7 @@ export const getters: GetterTree<GuiNotificationState, RootState> = {
                     title: i18n.global
                         .t('App.Notifications.DependencyName', { name: dependency.serviceName })
                         .toString(),
-                    description: i18n
+                    description: i18n.global
                         .t('App.Notifications.DependencyDescription', {
                             name: dependency.serviceName,
                             installedVersion: dependency.installedVersion,
@@ -230,7 +230,7 @@ export const getters: GetterTree<GuiNotificationState, RootState> = {
                     title: i18n.global
                         .t('App.Notifications.MoonrakerWarnings.MoonrakerComponent', { component })
                         .toString(),
-                    description: i18n
+                    description: i18n.global
                         .t('App.Notifications.MoonrakerWarnings.MoonrakerFailedComponentDescription', { component })
                         .toString(),
                     date,
@@ -265,10 +265,10 @@ export const getters: GetterTree<GuiNotificationState, RootState> = {
                 notifications.push({
                     id: `moonrakerFailedInitComponent/${component}`,
                     priority: 'high',
-                    title: i18n
+                    title: i18n.global
                         .t('App.Notifications.MoonrakerWarnings.MoonrakerInitComponent', { component })
                         .toString(),
-                    description: i18n
+                    description: i18n.global
                         .t('App.Notifications.MoonrakerWarnings.MoonrakerFailedInitComponentDescription', { component })
                         .toString(),
                     date,
@@ -304,11 +304,13 @@ export const getters: GetterTree<GuiNotificationState, RootState> = {
                 // add possible translations
                 if (warning.type === 'deprecated_value') {
                     title = i18n.global.t('App.Notifications.KlipperWarnings.DeprecatedValueHeadline').toString()
-                    description = i18n.global.t('App.Notifications.KlipperWarnings.DeprecatedValue', warning).toString()
+                    description = i18n.global
+                        .t('App.Notifications.KlipperWarnings.DeprecatedValue', { ...warning })
+                        .toString()
                 } else if (warning.type === 'deprecated_option') {
                     title = i18n.global.t('App.Notifications.KlipperWarnings.DeprecatedOptionHeadline').toString()
                     description = i18n.global
-                        .t('App.Notifications.KlipperWarnings.DeprecatedOption', warning)
+                        .t('App.Notifications.KlipperWarnings.DeprecatedOption', { ...warning })
                         .toString()
                 } else if (warning.type === 'runtime_warning') {
                     title = i18n.global.t('App.Notifications.KlipperWarnings.KlipperRuntimeWarning').toString()
@@ -365,7 +367,7 @@ export const getters: GetterTree<GuiNotificationState, RootState> = {
                 id: `browserWarning/${minBrowserVersion.name}/${minBrowserVersion.version}`,
                 priority: 'critical',
                 title: i18n.global.t('App.Notifications.BrowserWarnings.Headline').toString(),
-                description: i18n
+                description: i18n.global
                     .t('App.Notifications.BrowserWarnings.Description', {
                         name: minBrowserVersion.name,
                         version: browser.version,

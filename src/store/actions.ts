@@ -4,7 +4,7 @@ import { ConfigJson, RootState } from './types'
 
 export const actions: ActionTree<RootState, RootState> = {
     switchToDashboard() {
-        if (router.currentRoute.fullPath !== '/') router.push('/')
+        if (router.currentRoute.value.fullPath !== '/') router.push('/')
     },
 
     changePrinter({ dispatch, getters }, payload) {

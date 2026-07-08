@@ -8,7 +8,6 @@
                 :width="spoolWidth"
                 v-bind="props"
                 :class="svgClasses"
-                v-bind="props"
                 @click="selectGate">
                 <defs>
                     <path

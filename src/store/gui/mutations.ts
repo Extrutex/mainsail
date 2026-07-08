@@ -39,7 +39,7 @@ export const mutations: MutationTree<GuiState> = {
     },
 
     setCurrentWebcam(state, payload) {
-        state.view.webcam.currentCam[payload.page] = payload.value
+        state.view.webcam.currentCam[payload.page as 'dashboard' | 'page'] = payload.value
     },
 
     setHistoryColumns(state, data) {
@@ -79,7 +79,7 @@ export const mutations: MutationTree<GuiState> = {
             ...(state.dashboard[payload.layoutname as keyof GuiStateDashboard] as GuiStateLayoutoption[]),
         ]
         layoutArray.splice(payload.index, 1)
-        state.dashboard[payload.layoutname] = layoutArray
+        ;(state.dashboard as unknown as Record<string, GuiStateLayoutoption[]>)[payload.layoutname] = layoutArray
     },
 
     setChartDatasetStatus(state, payload: { objectName: string; dataset: string; value: boolean }) {

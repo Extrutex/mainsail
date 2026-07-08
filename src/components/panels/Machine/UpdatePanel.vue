@@ -17,8 +17,7 @@
                             :loading="loadings.includes('loadingBtnSyncUpdateManager')"
                             :disabled="['printing', 'paused'].includes(printer_state)"
                             v-bind="props"
-                            @click="btnSync"
-                            v-bind="props">
+                            @click="btnSync">
                             <v-icon>{{ mdiRefresh }}</v-icon>
                         </v-btn>
                     </template>
@@ -27,9 +26,9 @@
             </template>
             <v-card-text class="px-0 py-0 update-manager-list">
                 <template v-if="checkInitState">
-                    <template v-for="(module, index) in modules">
-                        <v-divider v-if="index" :key="'divider_' + module.name" class="my-0" />
-                        <update-panel-entry :key="module.name" :repo="module.data" />
+                    <template v-for="(module, index) in modules" :key="'divider_' + module.name">
+                        <v-divider v-if="index" class="my-0" />
+                        <update-panel-entry :repo="module.data" />
                     </template>
                     <template v-if="existsSystemModul">
                         <v-divider v-if="modules.length" class="my-0" />

@@ -1,5 +1,5 @@
 <template>
-    <v-row :dense="density="compact"">
+    <v-row :density="dense ? 'compact' : 'default'">
         <v-col :class="firstColClasses">
             <v-row class="d-flex flex-row">
                 <v-col v-if="loading" cols="auto" class="d-flex justify-center align-center pr-0">

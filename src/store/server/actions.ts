@@ -289,7 +289,7 @@ export const actions: ActionTree<ServerState, RootState> = {
 
             if (
                 ['error', 'response'].includes(type) &&
-                !['/', '/console'].includes(router.currentRoute.path) &&
+                !['/', '/console'].includes(router.currentRoute.value.path) &&
                 message.startsWith('!! ')
             ) {
                 useToast().error(formatMessage)

@@ -55,7 +55,7 @@ export default defineComponent({
             aspectRatio: null as null | number,
             timerFPS: null as number | null,
             timerRestart: null as number | null,
-            reader: undefined as undefined | ReadableStreamDefaultReader<Uint8Array> | null,
+            reader: null as ReadableStreamDefaultReader<Uint8Array> | null | undefined,
         }
     },
     computed: {
@@ -126,10 +126,6 @@ export default defineComponent({
         this.stopStream()
     },
     methods: {
-        constructor() {
-            super()
-            this.reader = null
-        },
         log(msg: string, obj?: unknown) {
             if (obj) {
                 window.console.log(`[MJPEG streamer] ${msg}`, obj)

@@ -21,7 +21,7 @@ export const mutations: MutationTree<FarmPrinterState> = {
         }
 
         Object.entries(payload).forEach(([key, value]) => {
-            state.socket[key] = value
+            ;(state.socket as unknown as Record<string, unknown>)[key] = value
         })
     },
 

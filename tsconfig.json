@@ -5,16 +5,17 @@
         "strict": true,
         "jsx": "preserve",
         "importHelpers": true,
-        "moduleResolution": "node",
+        "moduleResolution": "bundler",
         "resolveJsonModule": true,
         "esModuleInterop": true,
         "allowSyntheticDefaultImports": true,
         "sourceMap": true,
         "skipLibCheck": true,
         "baseUrl": ".",
-        "types": ["cypress", "vite/client"],
+        "types": ["vite/client"],
         "paths": {
-            "@/*": ["src/*"]
+            "@/*": ["src/*"],
+            "vuex": ["./node_modules/vuex/types"]
         },
         "lib": ["esnext", "dom", "dom.iterable", "scripthost"],
         "typeRoots": ["./node_modules/@types", "./node_modules/cypress/types"]
@@ -26,7 +27,6 @@
         "src/*/*.ts",
         "src/**/*.tsx",
         "src/**/*.vue",
-        "cypress/**/*.ts",
         "tests/**/*.ts",
         "tests/**/*.tsx",
         "node_modules/vite-plugin-pwa/client.d.ts"

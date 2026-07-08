@@ -57,7 +57,7 @@
                     <v-menu :offset-y="true" :close-on-content-click="false">
                         <template #activator="{ props }">
                             <v-tooltip top>
-                                <template #activator="{ on: onToolTip }">
+                                <template #activator="{ props }">
                                     <v-btn class="px-2 minwidth-0 ml-3" v-bind="props" v-on="{ ...on, ...onToolTip }">
                                         <v-icon>{{ mdiCog }}</v-icon>
                                     </v-btn>

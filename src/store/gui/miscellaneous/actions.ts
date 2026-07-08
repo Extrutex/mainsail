@@ -2,8 +2,8 @@ import { ActionTree } from 'vuex'
 import { RootState } from '@/store/types'
 import { v4 as uuidv4 } from 'uuid'
 
-import {
 import { getSocketClient } from '@/plugins/webSocketClient'
+import {
     GuiMiscellaneousState,
     GuiMiscellaneousStateEntryLightgroup,
     GuiMiscellaneousStateEntryPreset,

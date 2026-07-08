@@ -3,23 +3,21 @@
         <v-row>
             <v-col class="pl-6 py-4 text-no-wrap">
                 <v-tooltip top>
-                    <template #activator="{ on, attr }">
+                    <template #activator="{ props }">
                         <span
-                            v-bind="attr"
+                            v-bind="props"
                             class="sensor-status rounded-circle d-inline-block mr-2"
-                            :class="preSensorClasses"
-                            v-bind="props" />
+                            :class="preSensorClasses" />
                     </template>
                     <span>{{ preSensorOutput }}</span>
                 </v-tooltip>
                 <span>{{ name }}</span>
                 <v-tooltip v-if="hasPostSensor" top>
-                    <template #activator="{ on, attr }">
+                    <template #activator="{ props }">
                         <span
-                            v-bind="attr"
+                            v-bind="props"
                             class="sensor-status rounded-circle d-inline-block ml-2"
-                            :class="postSensorClasses"
-                            v-bind="props" />
+                            :class="postSensorClasses" />
                     </template>
                     <span>{{ postSensorOutput }}</span>
                 </v-tooltip>

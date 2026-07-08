@@ -62,14 +62,14 @@ export const mutations: MutationTree<ServerState> = {
     },
 
     setConnectionId(state, payload) {
-        state['connection_id'] = payload
+        ;(state as unknown as Record<string, unknown>)['connection_id'] = payload
     },
 
     setData(state, payload) {
         if ('requestParams' in payload) delete payload.requestParams
 
         Object.entries(payload).forEach(([key, value]) => {
-            state[key] = value
+            ;(state as unknown as Record<string, unknown>)[key] = value
         })
     },
 

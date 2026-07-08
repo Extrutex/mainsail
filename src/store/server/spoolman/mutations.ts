@@ -28,6 +28,6 @@ export const mutations: MutationTree<ServerSpoolmanState> = {
     },
 
     setSpools(state, payload) {
-        state['spools'] = payload
+        ;(state as unknown as Record<string, unknown>)['spools'] = payload
     },
 }

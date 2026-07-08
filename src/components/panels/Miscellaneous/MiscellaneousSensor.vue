@@ -21,20 +21,6 @@ import {} from '@mdi/js'
 
 export default defineComponent({
     name: 'MiscellaneousSensor',
-    convertName = convertName
-    unitToSymbol = unitToSymbol
-
-    @Prop({ type: String, required: true }) declare readonly name: string
-    @Prop({ type: Number, required: true }) declare readonly value: number
-    @Prop({ type: String, required: false }) declare readonly unit: string
-
-    get output() {
-        const value = isNaN(this.value) ? '--' : this.value
-
-        if (this.unit === null) return this.value
-
-        return `${value} ${this.unit}`
-    },
     mixins: [BaseMixin],
     props: {
         name: { type: String, required: true },

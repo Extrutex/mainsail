@@ -17,13 +17,9 @@
             </v-col>
         </v-row>
         <template v-if="macros.length">
-            <template v-for="(macro, index) in macros">
-                <v-divider v-if="index" :key="index + '_divider'" class="my-2" />
-                <settings-row
-                    :key="index"
-                    :title="macro.name"
-                    :sub-title="macro.description"
-                    :dynamic-slot-width="true">
+            <template v-for="(macro, index) in macros" :key="index + '_divider'">
+                <v-divider v-if="index" class="my-2" />
+                <settings-row :title="macro.name" :sub-title="macro.description" :dynamic-slot-width="true">
                     <v-switch
                         :model-value="getMacroStatus(macro.name)"
                         hide-details

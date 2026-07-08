@@ -3,8 +3,8 @@
         <v-row class="my-3">
             <v-col class="pl-6 pr-0 pt-0 pb-0 d-flex flex-column">
                 <v-tooltip top>
-                    <template #activator="{ on, attr }">
-                        <span class="d-flex align-center justify-center" v-bind="attr" v-bind="props">
+                    <template #activator="{ props }">
+                        <span class="d-flex align-center justify-center" v-bind="props">
                             <afc-filament-reel
                                 :percent="spoolPercent"
                                 :color="spoolColor"
@@ -30,8 +30,8 @@
                 <span class="font-weight-bold">{{ spoolMaterial }}</span>
                 <span class="text--disabled">{{ spoolRemainingWeightOutput }}</span>
                 <v-tooltip v-if="hasTd" top>
-                    <template #activator="{ on, attr }">
-                        <span class="d-flex align-center justify-center text--disabled" v-bind="attr" v-bind="props">
+                    <template #activator="{ props }">
+                        <span class="d-flex align-center justify-center text--disabled" v-bind="props">
                             TD: {{ tdValue }}
                         </span>
                     </template>

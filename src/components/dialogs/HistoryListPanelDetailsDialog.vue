@@ -12,9 +12,9 @@
             </template>
             <v-card-text class="pa-0">
                 <overlay-scrollbars style="height: 350px" class="px-6">
-                    <template v-for="(entry, index) in entries">
-                        <v-divider v-if="index > 0" :key="'history_detail_entry_divider_' + index" class="my-3" />
-                        <v-row :key="'history_detail_entry_' + index">
+                    <template v-for="(entry, index) in entries" :key="'history_detail_entry_divider_' + index">
+                        <v-divider v-if="index > 0" class="my-3" />
+                        <v-row>
                             <v-col>{{ entry.name }}</v-col>
                             <v-col class="text-right">{{ entry.value }}</v-col>
                         </v-row>

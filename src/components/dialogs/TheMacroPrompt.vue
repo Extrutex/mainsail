@@ -13,16 +13,14 @@
                 </v-btn>
             </template>
             <v-card-text>
-                <template v-for="(event, index) in activePromptContent">
-                    <macro-prompt-text v-if="event.type === 'text'" :key="'prompt_' + index" :event="event" />
+                <template v-for="(event, index) in activePromptContent" :key="'prompt_' + index">
+                    <macro-prompt-text v-if="event.type === 'text'" :event="event" />
                     <macro-prompt-button-group
                         v-if="event.type === 'button_group'"
-                        :key="'prompt_' + index"
                         :group-index="index"
                         :children="event.children ?? []" />
                     <macro-prompt-button-group
                         v-if="event.type === 'button'"
-                        :key="'prompt_' + index"
                         :group-index="index"
                         :children="[event]" />
                 </template>

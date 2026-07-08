@@ -24,19 +24,19 @@ export default defineComponent({
     data() {
         return {
             showDialog: false,
-            updateSW: > Promise<void>) | null = null as ((reloadPage?: boolean | undefined),
+            updateSW: null as ((reloadPage?: boolean | undefined) => Promise<void>) | null,
         }
     },
     async mounted() {
-    const { registerSW } = await import('virtual:pwa-register')
-    this.updateSW = registerSW({
-        immediate: true,
-        onOfflineReady: this.onOfflineReady,
-        onNeedRefresh: this.onNeedRefresh,
-        onRegistered: this.onRegistered,
-        onRegisterError: this.onRegisterError,
-    })
-},
+        const { registerSW } = await import('virtual:pwa-register')
+        this.updateSW = registerSW({
+            immediate: true,
+            onOfflineReady: this.onOfflineReady,
+            onNeedRefresh: this.onNeedRefresh,
+            onRegistered: this.onRegistered,
+            onRegisterError: this.onRegisterError,
+        })
+    },
     methods: {
         onOfflineReady() {
             window.console.info('PWA is offline ready')
