@@ -80,7 +80,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.editor.escToClose
             },
-            setescToClose(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'editor.escToClose', value: newVal })
             },
         },
@@ -88,7 +88,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.editor.confirmUnsavedChanges
             },
-            setconfirmUnsavedChanges(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'editor.confirmUnsavedChanges', value: newVal })
             },
         },
@@ -96,7 +96,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.editor.tabSize || 2
             },
-            settabSize(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'editor.tabSize', value: newVal })
             },
         },
@@ -104,7 +104,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.editor.klipperRestartMethod
             },
-            setklipperRestartMethod(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'editor.klipperRestartMethod', value: newVal })
             },
         },

@@ -56,7 +56,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.view.tempchart.boolTempchart ?? false
             },
-            setboolTempchart(newVal: boolean) {
+            set(newVal: boolean) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.tempchart.boolTempchart', value: newVal })
             },
         },
@@ -64,7 +64,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.view.tempchart.autoscale ?? false
             },
-            setautoscaleTempchart(newVal: boolean) {
+            set(newVal: boolean) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.tempchart.autoscale', value: newVal })
             },
         },
@@ -72,7 +72,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.view.tempchart.hideMcuHostSensors ?? false
             },
-            sethideMcuHostSensors(newVal: boolean) {
+            set(newVal: boolean) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.tempchart.hideMcuHostSensors', value: newVal })
             },
         },
@@ -80,7 +80,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.view.tempchart.hideMonitors ?? false
             },
-            sethideMonitors(newVal: boolean) {
+            set(newVal: boolean) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.tempchart.hideMonitors', value: newVal })
             },
         },

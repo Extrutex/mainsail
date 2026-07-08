@@ -259,7 +259,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.editor.sourcecode ?? ''
             },
-            setsourcecode(newVal) {
+            set(newVal) {
                 this.$store.dispatch('editor/updateSourcecode', newVal)
             },
         },
@@ -347,7 +347,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.editor.fileStructureSidebar
             },
-            setfileStructureSidebar(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'editor.fileStructureSidebar', value: newVal })
             },
         },

@@ -117,7 +117,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.general.printername
             },
-            setprinterName(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'general.printername', value: newVal })
             },
         },
@@ -125,7 +125,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.general.language
             },
-            setcurrentLanguage(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'general.language', value: newVal })
             },
         },
@@ -133,7 +133,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.general.dateFormat
             },
-            setdateFormat(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'general.dateFormat', value: newVal })
             },
         },
@@ -175,7 +175,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.general.timeFormat
             },
-            settimeFormat(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'general.timeFormat', value: newVal })
             },
         },
@@ -220,7 +220,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.general.calcPrintProgress ?? 'file-relative'
             },
-            setcalcPrintProgress(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'general.calcPrintProgress', value: newVal })
             },
         },
@@ -234,7 +234,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.general.calcEstimateTime
             },
-            setcalcEstimateTime(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'general.calcEstimateTime', value: newVal })
             },
         },
@@ -249,7 +249,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.general.calcEtaTime
             },
-            setcalcEtaTime(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'general.calcEtaTime', value: newVal })
             },
         },

@@ -37,7 +37,7 @@ export default defineComponent({
             get() {
                 return this.naviPoints.filter((naviPoint) => naviPoint.position > 0)
             },
-            setsortableNaviPoints(newVal: NaviPoint[]) {
+            set(newVal: NaviPoint[]) {
                 // update store with new positions
                 newVal.forEach((naviPoint, index) => {
                     this.$store.dispatch('gui/navigation/updatePos', {

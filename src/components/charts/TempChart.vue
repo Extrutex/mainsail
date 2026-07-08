@@ -358,7 +358,7 @@ export default defineComponent({
 
             if (!outputRows) return ''
 
-            const theme = this.$vuetify.theme.dark ? 'theme-dark' : ''
+            const theme = this.$vuetify.theme.current.dark ? 'theme-dark' : ''
 
             const header =
                 '<div class="row">' +

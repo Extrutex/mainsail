@@ -196,7 +196,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.console.direction ?? 'table'
             },
-            setconsoleDirection(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/console/saveSetting', { name: 'direction', value: newVal })
             },
         },
@@ -216,7 +216,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.console.entryStyle ?? 'default'
             },
-            setentryStyle(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/console/saveSetting', { name: 'entryStyle', value: newVal })
             },
         },
@@ -224,7 +224,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.console.height ?? 300
             },
-            setconsoleHeight(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/console/saveSetting', { name: 'height', value: newVal })
             },
         },
@@ -232,7 +232,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.console.hideWaitTemperatures
             },
-            sethideWaitTemperatures(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/console/saveSetting', { name: 'hideWaitTemperatures', value: newVal })
             },
         },
@@ -240,7 +240,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.console.hideTlCommands
             },
-            sethideTimelapse(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/console/saveSetting', { name: 'hideTlCommands', value: newVal })
             },
         },

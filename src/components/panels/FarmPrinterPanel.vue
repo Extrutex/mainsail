@@ -167,7 +167,7 @@ export default defineComponent({
             get() {
                 return this.$store.getters['farm/' + this.printer._namespace + '/getSetting']('currentCamName', 'off')
             },
-            setcurrentCamName(newVal) {
+            set(newVal) {
                 this.$store.dispatch('farm/' + this.printer._namespace + '/setSettings', { currentCamName: newVal })
             },
         },

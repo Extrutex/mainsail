@@ -31,7 +31,7 @@ export default defineComponent({
             get() {
                 return this.status === 'success'
             },
-            setboolShowDialogSuccess(newVal) {
+            set(newVal) {
                 if (!newVal) this.$store.dispatch('server/timelapse/resetSnackbar')
             },
         },

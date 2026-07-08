@@ -71,7 +71,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.view.gcodefiles.sortBy ?? 'modified'
             },
-            setsortBy(newVal) {
+            set(newVal) {
                 if (newVal === undefined) newVal = 'modified'
 
                 this.$store.dispatch('gui/saveSetting', { name: 'view.gcodefiles.sortBy', value: newVal })
@@ -81,7 +81,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.view.gcodefiles.sortDesc ?? true
             },
-            setsortDesc(newVal) {
+            set(newVal) {
                 if (newVal === undefined) newVal = false
 
                 this.$store.dispatch('gui/saveSetting', { name: 'view.gcodefiles.sortDesc', value: newVal })
@@ -91,7 +91,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.view.gcodefiles.countPerPage ?? 10
             },
-            setcountPerPage(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.gcodefiles.countPerPage', value: newVal })
             },
         },

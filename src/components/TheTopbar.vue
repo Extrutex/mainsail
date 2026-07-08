@@ -19,8 +19,8 @@
             <v-btn
                 v-if="showSaveConfigButton"
                 tile
-                :icon="$vuetify.breakpoint.smAndDown"
-                :text="$vuetify.breakpoint.mdAndUp"
+                :icon="$vuetify.display.smAndDown"
+                :variant="$vuetify.display.mdAndUp ? 'text' : undefined"
                 color="primary"
                 class="button-min-width-auto px-3 d-none d-sm-flex save-config-button"
                 :disabled="printerIsPrinting"
@@ -32,8 +32,8 @@
             <v-btn
                 v-if="boolShowUploadAndPrint"
                 tile
-                :icon="$vuetify.breakpoint.smAndDown"
-                :text="$vuetify.breakpoint.mdAndUp"
+                :icon="$vuetify.display.smAndDown"
+                :variant="$vuetify.display.mdAndUp ? 'text' : undefined"
                 color="primary"
                 class="button-min-width-auto px-3 d-none d-sm-flex upload-and-start-button"
                 :loading="loadings.includes('btnUploadAndStart')"
@@ -44,8 +44,8 @@
             <v-btn
                 v-if="klippyIsConnected"
                 tile
-                :icon="$vuetify.breakpoint.smAndDown"
-                :text="$vuetify.breakpoint.mdAndUp"
+                :icon="$vuetify.display.smAndDown"
+                :variant="$vuetify.display.mdAndUp ? 'text' : undefined"
                 color="error"
                 class="button-min-width-auto px-3 emergency-button"
                 :loading="loadings.includes('topbarEmergencyStop')"
@@ -146,7 +146,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.naviDrawer
             },
-            setnaviDrawer(newVal) {
+            set(newVal) {
                 this.$store.dispatch('setNaviDrawer', newVal)
             },
         },
@@ -201,7 +201,7 @@ export default defineComponent({
         },
     },
     mounted() {
-        //this.naviDrawer = this.$vuetify.breakpoint.lgAndUp
+        //this.naviDrawer = this.$vuetify.display.lgAndUp
         switch (this.defaultNavigationStateSetting) {
             case 'alwaysClosed':
                 this.naviDrawer = false
@@ -212,7 +212,7 @@ export default defineComponent({
                 break
 
             default:
-                this.naviDrawer = this.$vuetify.breakpoint.lgAndUp
+                this.naviDrawer = this.$vuetify.display.lgAndUp
         }
     },
     methods: {

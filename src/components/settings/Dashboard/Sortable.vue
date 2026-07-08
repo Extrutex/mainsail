@@ -72,7 +72,7 @@ export default defineComponent({
             get(): GuiStateLayoutoption[] {
                 return this.$store.getters['gui/getPanels'](this.viewportName, this.column) as GuiStateLayoutoption[]
             },
-            setlayout(newVal: Array<GuiStateLayoutoption | undefined>) {
+            set(newVal: Array<GuiStateLayoutoption | undefined>) {
                 const filteredLayout = newVal.filter((element) => element !== undefined)
 
                 this.$store.dispatch('gui/saveSetting', { name: `dashboard.${this.layoutname}`, value: filteredLayout })

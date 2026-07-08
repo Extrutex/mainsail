@@ -321,7 +321,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.control.style ?? 'bar'
             },
-            setcontrolStyle(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'control.style', value: newVal })
             },
         },
@@ -329,7 +329,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.control.hideDuringPrint ?? false
             },
-            sethideDuringPrint(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'control.hideDuringPrint', value: newVal })
             },
         },
@@ -364,7 +364,7 @@ export default defineComponent({
             get(): string {
                 return this.$store.state.gui.control.actionButton ?? this.defaultActionButton
             },
-            setactionButton(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'control.actionButton', value: newVal })
             },
         },
@@ -375,7 +375,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.control.enableXYHoming ?? false
             },
-            setenableXYHoming(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'control.enableXYHoming', value: newVal })
             },
         },
@@ -383,7 +383,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.control.reverseX
             },
-            setreverseX(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'control.reverseX', value: newVal })
             },
         },
@@ -391,7 +391,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.control.reverseY
             },
-            setreverseY(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'control.reverseY', value: newVal })
             },
         },
@@ -399,7 +399,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.control.reverseZ
             },
-            setreverseZ(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'control.reverseZ', value: newVal })
             },
         },
@@ -407,7 +407,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.control.feedrateXY
             },
-            setfeedrateXY(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'control.feedrateXY', value: newVal })
             },
         },
@@ -415,7 +415,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.control.feedrateZ
             },
-            setfeedrateZ(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'control.feedrateZ', value: newVal })
             },
         },
@@ -426,7 +426,7 @@ export default defineComponent({
                     return a - b
                 })
             },
-            setoffsetsZ(steps) {
+            set(steps) {
                 // Use a set to prevent adding duplicate entries.
                 const absSteps = new Set()
                 for (const value of steps) absSteps.add(Math.abs(value))
@@ -440,7 +440,7 @@ export default defineComponent({
                     return b - a
                 })
             },
-            setstepsAll(newVal) {
+            set(newVal) {
                 const absSteps = []
                 for (const value of newVal) absSteps.push(Math.abs(value))
                 const steps = absSteps.filter(this.onlyUnique)
@@ -455,7 +455,7 @@ export default defineComponent({
                     return b - a
                 })
             },
-            setstepsXY(newVal) {
+            set(newVal) {
                 const absSteps = []
                 for (const value of newVal) absSteps.push(Math.abs(value))
                 const steps = absSteps.filter(this.onlyUnique)
@@ -470,7 +470,7 @@ export default defineComponent({
                     return b - a
                 })
             },
-            setstepsZ(newVal) {
+            set(newVal) {
                 const absSteps = []
                 for (const value of newVal) absSteps.push(Math.abs(value))
                 const steps = absSteps.filter(this.onlyUnique)
@@ -485,7 +485,7 @@ export default defineComponent({
                     return b - a
                 })
             },
-            setstepsCircleXY(newVal) {
+            set(newVal) {
                 const absSteps = []
                 for (const value of newVal) absSteps.push(Math.abs(value))
                 const steps = absSteps.filter(this.onlyUnique)
@@ -500,7 +500,7 @@ export default defineComponent({
                     return b - a
                 })
             },
-            setstepsCircleZ(newVal) {
+            set(newVal) {
                 const absSteps = []
                 for (const value of newVal) absSteps.push(Math.abs(value))
                 const steps = absSteps.filter(this.onlyUnique)
@@ -515,7 +515,7 @@ export default defineComponent({
                     return b - a
                 })
             },
-            setfeedamountsE(newVal) {
+            set(newVal) {
                 const absAmounts = []
                 for (const value of newVal) absAmounts.push(Math.abs(value))
                 const amounts = absAmounts.filter(this.onlyUnique)
@@ -530,7 +530,7 @@ export default defineComponent({
                     return b - a
                 })
             },
-            setfeedratesE(newVal) {
+            set(newVal) {
                 const absRates = []
                 for (const value of newVal) absRates.push(Math.abs(value))
                 const rates = absRates.filter(this.onlyUnique)
@@ -542,7 +542,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.control.extruder.showEstimatedExtrusionInfo
             },
-            setshowEstimatedExtrusionInfo(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', {
                     name: 'control.extruder.showEstimatedExtrusionInfo',
                     value: newVal,
@@ -553,7 +553,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.control.offsetZSaveOption ?? null
             },
-            setoffsetZSaveOption(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'control.offsetZSaveOption', value: newVal })
             },
         },

@@ -172,7 +172,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.view.history.toggleChartCol3
             },
-            settoggleChart(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.history.toggleChartCol3', value: newVal })
             },
         },
@@ -180,7 +180,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.view.history.toggleChartCol2
             },
-            settogglePrintStatus(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.history.toggleChartCol2', value: newVal })
             },
         },

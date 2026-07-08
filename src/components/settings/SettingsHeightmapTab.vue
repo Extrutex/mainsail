@@ -77,7 +77,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.heightmap.defaultOrientation
             },
-            setdefaultOrientation(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/heightmap/saveSetting', { name: 'defaultOrientation', value: newVal })
             },
         },
@@ -112,7 +112,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.heightmap.activecolorscheme
             },
-            setcolorScheme(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/heightmap/saveSetting', { name: 'activecolorscheme', value: newVal })
             },
         },

@@ -34,8 +34,8 @@
         </v-menu>
         <v-btn
             v-else
-            :icon="$vuetify.breakpoint.smAndDown"
-            :text="$vuetify.breakpoint.mdAndUp"
+            :icon="$vuetify.display.smAndDown"
+            :variant="$vuetify.display.mdAndUp ? 'text' : undefined"
             tile
             color="primary"
             @click="btnCoolDown">

@@ -155,7 +155,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.view.heightmap.probed ?? true
             },
-            setshowProbed(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.heightmap.probed', value: newVal })
             },
         },
@@ -163,7 +163,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.view.heightmap.mesh ?? true
             },
-            setshowMesh(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.heightmap.mesh', value: newVal })
             },
         },
@@ -171,7 +171,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.view.heightmap.flat ?? true
             },
-            setshowFlat(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.heightmap.flat', value: newVal })
             },
         },
@@ -179,7 +179,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.view.heightmap.wireframe ?? true
             },
-            setwireframe(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.heightmap.wireframe', value: newVal })
             },
         },
@@ -187,7 +187,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.view.heightmap.scaleGradient ?? false
             },
-            setscaleGradient(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.heightmap.scaleGradient', value: newVal })
             },
         },
@@ -195,7 +195,7 @@ export default defineComponent({
             get(): number {
                 return this.$store.state.gui.view.heightmap.scaleZMax ?? 0.5
             },
-            setscaleZMax(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.heightmap.scaleZMax', value: newVal })
             },
         },

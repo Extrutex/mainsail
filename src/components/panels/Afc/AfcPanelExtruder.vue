@@ -63,8 +63,8 @@ export default defineComponent({
             return {
                 'border-primary': this.hasActiveLane,
                 'border-error': this.hasActiveLane && this.afcErrorState,
-                'darken-3': this.$vuetify.theme.dark,
-                'lighten-2': !this.$vuetify.theme.dark,
+                'darken-3': this.$vuetify.theme.current.dark,
+                'lighten-2': !this.$vuetify.theme.current.dark,
             }
         },
         rammingState() {

@@ -30,8 +30,8 @@ export default defineComponent({
         },
         laneStatusClass() {
             return {
-                'darken-3': this.$vuetify.theme.dark,
-                'lighten-2': !this.$vuetify.theme.dark,
+                'darken-3': this.$vuetify.theme.current.dark,
+                'lighten-2': !this.$vuetify.theme.current.dark,
                 'border-error': this.laneActive && this.afcErrorState,
                 'border-success': this.laneActive && !this.afcErrorState,
             }

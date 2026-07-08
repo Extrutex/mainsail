@@ -49,7 +49,7 @@ export default defineComponent({
             return settings[name] || {}
         },
 
-        settingsLength() {
+        set() {
             return this.afcSettingsHub.afc_bowden_length || 0
         },
 

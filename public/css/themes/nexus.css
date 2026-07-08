@@ -12,12 +12,12 @@ body {
     background-attachment: fixed !important;
 }
 
-.v-application.theme--dark {
+.v-application:is(.theme--dark, .v-theme--dark) {
     background: transparent !important;
 }
 
 /* ---- panels as glass cards ---- */
-.theme--dark .v-card.panel {
+:is(.theme--dark, .v-theme--dark) .v-card.panel {
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 14px;
     background: rgba(21, 26, 38, 0.72) !important;
@@ -29,37 +29,37 @@ body {
         box-shadow 300ms ease;
 }
 
-.theme--dark .v-card.panel:hover {
+:is(.theme--dark, .v-theme--dark) .v-card.panel:hover {
     border-color: rgba(0, 229, 255, 0.25);
     box-shadow:
         0 8px 32px rgba(0, 0, 0, 0.35),
         0 0 24px rgba(0, 184, 212, 0.08);
 }
 
-.theme--dark .v-card.panel > .v-toolbar {
+:is(.theme--dark, .v-theme--dark) .v-card.panel > .v-toolbar {
     border-radius: 14px 14px 0 0 !important;
     background: linear-gradient(90deg, rgba(0, 184, 212, 0.1), rgba(124, 77, 255, 0.08)) !important;
 }
 
-.theme--dark .v-card.panel.expanded > .v-toolbar {
+:is(.theme--dark, .v-theme--dark) .v-card.panel.expanded > .v-toolbar {
     border-radius: 14px !important;
 }
 
 /* ---- sidebar ---- */
-.theme--dark .v-navigation-drawer {
+:is(.theme--dark, .v-theme--dark) .v-navigation-drawer {
     border-right: 1px solid rgba(255, 255, 255, 0.06);
     background: rgba(13, 17, 27, 0.85) !important;
     -webkit-backdrop-filter: blur(14px);
     backdrop-filter: blur(14px);
 }
 
-.theme--dark .v-navigation-drawer .v-list-item--active {
+:is(.theme--dark, .v-theme--dark) .v-navigation-drawer .v-list-item--active {
     border-radius: 0 10px 10px 0;
     background: linear-gradient(90deg, rgba(0, 184, 212, 0.18), transparent);
 }
 
 /* ---- topbar ---- */
-.theme--dark header.v-app-bar {
+:is(.theme--dark, .v-theme--dark) header.v-app-bar {
     border-bottom: 1px solid rgba(255, 255, 255, 0.06);
     background: rgba(13, 17, 27, 0.8) !important;
     -webkit-backdrop-filter: blur(14px);
@@ -67,8 +67,8 @@ body {
 }
 
 /* ---- dialogs & menus ---- */
-.theme--dark .v-dialog .v-card,
-.theme--dark .v-menu__content {
+:is(.theme--dark, .v-theme--dark) .v-dialog .v-card,
+:is(.theme--dark, .v-theme--dark) .v-menu__content {
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 14px;
     background: rgba(21, 26, 38, 0.92) !important;
@@ -77,23 +77,23 @@ body {
 }
 
 /* ---- buttons ---- */
-.theme--dark .v-btn.primary {
+:is(.theme--dark, .v-theme--dark) .v-btn.primary {
     background: linear-gradient(120deg, #00b8d4, #2979ff) !important;
     box-shadow: 0 2px 12px rgba(0, 184, 212, 0.35);
 }
 
-.theme--dark .v-btn {
+:is(.theme--dark, .v-theme--dark) .v-btn {
     transition:
         box-shadow 250ms ease,
         transform 250ms ease;
 }
 
-.theme--dark .v-btn:not(.v-btn--icon):hover {
+:is(.theme--dark, .v-theme--dark) .v-btn:not(.v-btn--icon):hover {
     transform: translateY(-1px);
 }
 
 /* ---- progress bars ---- */
-.theme--dark .v-progress-linear__determinate {
+:is(.theme--dark, .v-theme--dark) .v-progress-linear__determinate {
     background: linear-gradient(90deg, #00e5ff, #2979ff) !important;
 }
 

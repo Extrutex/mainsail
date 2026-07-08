@@ -135,7 +135,7 @@ export default defineComponent({
         }
     },
     computed: {
-        settingsScroll(): OverlayScrollbarsComponent {
+        set(): OverlayScrollbarsComponent {
             return this.$refs.settingsScroll as OverlayScrollbarsComponent
         },
         tabTitles() {

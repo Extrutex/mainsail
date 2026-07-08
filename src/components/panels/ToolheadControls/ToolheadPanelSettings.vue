@@ -63,7 +63,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.view.toolhead.showPosition ?? true
             },
-            setshowPosition(newVal: boolean) {
+            set(newVal: boolean) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.toolhead.showPosition', value: newVal })
             },
         },
@@ -71,7 +71,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.view.toolhead.showCoordinates ?? true
             },
-            setshowCoordinates(newVal: boolean) {
+            set(newVal: boolean) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.toolhead.showCoordinates', value: newVal })
             },
         },
@@ -79,7 +79,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.view.toolhead.showControl ?? true
             },
-            setshowControl(newVal: boolean) {
+            set(newVal: boolean) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.toolhead.showControl', value: newVal })
             },
         },
@@ -87,7 +87,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.view.toolhead.showZOffset ?? true
             },
-            setshowZOffset(newVal: boolean) {
+            set(newVal: boolean) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.toolhead.showZOffset', value: newVal })
             },
         },
@@ -95,7 +95,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.view.toolhead.showSpeedFactor ?? true
             },
-            setshowSpeedFactor(newVal: boolean) {
+            set(newVal: boolean) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.toolhead.showSpeedFactor', value: newVal })
             },
         },

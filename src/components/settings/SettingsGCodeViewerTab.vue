@@ -148,7 +148,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.gcodeViewer.showAxes
             },
-            setshowAxes(newVal: boolean) {
+            set(newVal: boolean) {
                 this.$store.dispatch('gui/saveSetting', { name: 'gcodeViewer.showAxes', value: newVal })
             },
         },
@@ -159,7 +159,7 @@ export default defineComponent({
             get(): string {
                 return this.$store.state.gui.gcodeViewer.backgroundColor
             },
-            setbackgroundColor(newVal: string) {
+            set(newVal: string) {
                 this.$store.dispatch('gui/saveSetting', { name: 'gcodeViewer.backgroundColor', value: newVal })
             },
         },
@@ -167,7 +167,7 @@ export default defineComponent({
             get(): string {
                 return this.$store.state.gui.gcodeViewer.gridColor
             },
-            setgridColor(newVal: string) {
+            set(newVal: string) {
                 this.$store.dispatch('gui/saveSetting', { name: 'gcodeViewer.gridColor', value: newVal })
             },
         },
@@ -175,7 +175,7 @@ export default defineComponent({
             get(): string {
                 return this.$store.state.gui.gcodeViewer.progressColor
             },
-            setprogressColor(newVal: string) {
+            set(newVal: string) {
                 this.$store.dispatch('gui/saveSetting', { name: 'gcodeViewer.progressColor', value: newVal })
             },
         },
@@ -183,7 +183,7 @@ export default defineComponent({
             get(): number {
                 return this.$store.state.gui.gcodeViewer.minFeed
             },
-            setminFeed(newVal: number) {
+            set(newVal: number) {
                 this.$store.dispatch('gui/saveSetting', { name: 'gcodeViewer.minFeed', value: newVal })
             },
         },
@@ -191,7 +191,7 @@ export default defineComponent({
             get(): number {
                 return this.$store.state.gui.gcodeViewer.maxFeed
             },
-            setmaxFeed(newVal: number) {
+            set(newVal: number) {
                 this.$store.dispatch('gui/saveSetting', { name: 'gcodeViewer.maxFeed', value: newVal })
             },
         },
@@ -199,7 +199,7 @@ export default defineComponent({
             get(): string {
                 return this.$store.state.gui.gcodeViewer.minFeedColor
             },
-            setminFeedColor(newVal: string) {
+            set(newVal: string) {
                 this.$store.dispatch('gui/saveSetting', { name: 'gcodeViewer.minFeedColor', value: newVal })
             },
         },
@@ -207,7 +207,7 @@ export default defineComponent({
             get(): string {
                 return this.$store.state.gui.gcodeViewer.maxFeedColor
             },
-            setmaxFeedColor(newVal: string) {
+            set(newVal: string) {
                 this.$store.dispatch('gui/saveSetting', { name: 'gcodeViewer.maxFeedColor', value: newVal })
             },
         },

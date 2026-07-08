@@ -59,7 +59,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.view.afc?.showFilamentName ?? true
             },
-            setshowFilamentName(value: boolean) {
+            set(value: boolean) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.afc.showFilamentName', value })
             },
         },
@@ -67,7 +67,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.view.afc?.showLaneInfinite ?? true
             },
-            setshowLaneInfinite(value: boolean) {
+            set(value: boolean) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.afc.showLaneInfinite', value })
             },
         },
@@ -75,7 +75,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.view.afc?.showUnitIcons ?? true
             },
-            setshowUnitIcons(value: boolean) {
+            set(value: boolean) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.afc.showUnitIcons', value })
             },
         },
@@ -83,7 +83,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.view.afc?.showTd1Color ?? true
             },
-            setshowTd1Color(value: boolean) {
+            set(value: boolean) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.afc.showTd1Color', value })
             },
         },

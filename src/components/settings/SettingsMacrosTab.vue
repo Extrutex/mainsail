@@ -58,7 +58,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui?.macros?.mode ?? 'simple'
             },
-            setmode(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/macros/saveSetting', { name: 'mode', value: newVal })
             },
         },

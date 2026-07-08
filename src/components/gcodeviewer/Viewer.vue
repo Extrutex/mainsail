@@ -4,8 +4,8 @@
             <template #buttons>
                 <v-btn
                     v-show="reloadRequired"
-                    :icon="$vuetify.breakpoint.xs"
-                    :text="$vuetify.breakpoint.smAndUp"
+                    :icon="$vuetify.display.xs"
+                    :variant="$vuetify.display.smAndUp ? 'text' : undefined"
                     tile
                     color="info"
                     class="ml-3"
@@ -422,7 +422,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.gcodeViewer.showCursor ?? false
             },
-            setshowCursor(newVal: boolean) {
+            set(newVal: boolean) {
                 this.$store.dispatch('gui/saveSetting', { name: 'gcodeViewer.showCursor', value: newVal })
             },
         },
@@ -430,7 +430,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.gcodeViewer.showTravelMoves ?? false
             },
-            setshowTravelMoves(newVal: boolean) {
+            set(newVal: boolean) {
                 this.$store.dispatch('gui/saveSetting', { name: 'gcodeViewer.showTravelMoves', value: newVal })
             },
         },
@@ -438,7 +438,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.gcodeViewer.showGCode ?? false
             },
-            setshowGCode(newVal: boolean) {
+            set(newVal: boolean) {
                 this.$store.dispatch('gui/saveSetting', { name: 'gcodeViewer.showGCode', value: newVal })
                 if (newVal && viewer) {
                     this.fileData = viewer.fileData
@@ -450,7 +450,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.gcodeViewer.showObjectSelection ?? false
             },
-            setshowObjectSelection(newVal: boolean) {
+            set(newVal: boolean) {
                 this.$store.dispatch('gui/saveSetting', { name: 'gcodeViewer.showObjectSelection', value: newVal })
             },
         },
@@ -458,7 +458,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.gcodeViewer.hdRendering
             },
-            sethdRendering(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'gcodeViewer.hdRendering', value: newVal })
             },
         },
@@ -466,7 +466,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.gcodeViewer.forceLineRendering
             },
-            setforceLineRendering(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'gcodeViewer.forceLineRendering', value: newVal })
             },
         },
@@ -474,7 +474,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.gcodeViewer.transparency
             },
-            settransparency(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'gcodeViewer.transparency', value: newVal })
             },
         },
@@ -482,7 +482,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.gcodeViewer.voxelMode
             },
-            setvoxelMode(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'gcodeViewer.voxelMode', value: newVal })
             },
         },
@@ -490,7 +490,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.gcodeViewer.voxelWidth ?? 1
             },
-            setvoxelWidth(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'gcodeViewer.voxelWidth', value: newVal })
             },
         },
@@ -498,7 +498,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.gcodeViewer.voxelHeight ?? 1
             },
-            setvoxelHeight(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'gcodeViewer.voxelHeight', value: newVal })
             },
         },
@@ -506,7 +506,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.gcodeViewer.specularLighting
             },
-            setspecularLighting(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'gcodeViewer.specularLighting', value: newVal })
             },
         },
@@ -514,7 +514,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.gcodeViewer.cncMode
             },
-            setcncMode(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'gcodeViewer.cncMode', value: newVal })
                 if (viewer === null) return
 
@@ -530,7 +530,7 @@ export default defineComponent({
             get(): number {
                 return this.$store.state.gui.gcodeViewer?.colorMode ?? 2
             },
-            setcolorMode(newVal: number) {
+            set(newVal: number) {
                 this.$store.dispatch('gui/saveSetting', { name: 'gcodeViewer.colorMode', value: newVal })
 
                 if (viewer && viewer.gcodeProcessor.colorMode !== newVal) {

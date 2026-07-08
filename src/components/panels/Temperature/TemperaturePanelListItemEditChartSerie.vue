@@ -23,7 +23,7 @@ export default defineComponent({
             get() {
                 return this.$store.getters['gui/getDatasetValue']({ name: this.objectName, type: this.serieName })
             },
-            setvalue(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/setChartDatasetStatus', {
                     objectName: this.objectName,
                     dataset: this.serieName,

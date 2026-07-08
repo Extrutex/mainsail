@@ -387,7 +387,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.control.selectedCrossStep
             },
-            setselectedCrossStep(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'control.selectedCrossStep', value: newVal })
             },
         },

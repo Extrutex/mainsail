@@ -600,7 +600,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.enabled
             },
-            setenabled(newVal) {
+            set(newVal) {
                 this.$store.dispatch('server/timelapse/saveSetting', { enabled: newVal })
             },
         },
@@ -608,7 +608,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.mode
             },
-            setmode(newVal) {
+            set(newVal) {
                 this.$store.dispatch('server/timelapse/saveSetting', { mode: newVal })
             },
         },
@@ -616,7 +616,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.hyperlapse_cycle
             },
-            sethyperlapseCycle(newVal) {
+            set(newVal) {
                 this.$store.dispatch('server/timelapse/saveSetting', { hyperlapse_cycle: newVal })
             },
         },
@@ -624,7 +624,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.autorender
             },
-            setautorender(newVal) {
+            set(newVal) {
                 this.$store.dispatch('server/timelapse/saveSetting', { autorender: newVal })
             },
         },
@@ -632,7 +632,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.saveframes
             },
-            setsaveframes(newVal) {
+            set(newVal) {
                 this.$store.dispatch('server/timelapse/saveSetting', { saveframes: newVal })
             },
         },
@@ -640,7 +640,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.stream_delay_compensation
             },
-            setstream_delay_compensation(newVal: number | string) {
+            set(newVal: number | string) {
                 if (newVal === '') newVal = 0
 
                 this.$store.dispatch('server/timelapse/saveSetting', { stream_delay_compensation: newVal })
@@ -650,7 +650,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.previewimage
             },
-            setpreviewimage(newVal) {
+            set(newVal) {
                 this.$store.dispatch('server/timelapse/saveSetting', { previewimage: newVal })
             },
         },
@@ -658,7 +658,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.gcode_verbose
             },
-            setgcode_verbose(newVal) {
+            set(newVal) {
                 this.$store.dispatch('server/timelapse/saveSetting', { gcode_verbose: newVal })
             },
         },
@@ -666,7 +666,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.parkhead
             },
-            setparkhead(newVal) {
+            set(newVal) {
                 this.$store.dispatch('server/timelapse/saveSetting', { parkhead: newVal })
             },
         },
@@ -674,7 +674,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.parkpos
             },
-            setparkpos(newVal) {
+            set(newVal) {
                 this.$store.dispatch('server/timelapse/saveSetting', { parkpos: newVal })
             },
         },
@@ -682,7 +682,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.park_custom_pos_x
             },
-            setpark_custom_pos_x(newVal: number | string) {
+            set(newVal: number | string) {
                 if (newVal === '' || newVal < this.stepperXmin || newVal > this.stepperXmax) return
 
                 this.$store.dispatch('server/timelapse/saveSetting', { park_custom_pos_x: newVal })
@@ -698,7 +698,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.park_custom_pos_y
             },
-            setpark_custom_pos_y(newVal: number | string) {
+            set(newVal: number | string) {
                 if (newVal === '' || newVal < this.stepperYmin || newVal > this.stepperYmax) return
 
                 this.$store.dispatch('server/timelapse/saveSetting', { park_custom_pos_y: newVal })
@@ -714,7 +714,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.park_custom_pos_dz
             },
-            setpark_custom_pos_dz(newVal: number | string) {
+            set(newVal: number | string) {
                 if (newVal === '' || newVal < 0) return
 
                 this.$store.dispatch('server/timelapse/saveSetting', { park_custom_pos_dz: newVal })
@@ -724,7 +724,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.park_travel_speed
             },
-            setpark_travel_speed(newVal: number | string) {
+            set(newVal: number | string) {
                 if (newVal === '' || newVal < 0) return
 
                 this.$store.dispatch('server/timelapse/saveSetting', { park_travel_speed: newVal })
@@ -734,7 +734,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.park_retract_speed
             },
-            setpark_retract_speed(newVal: number | string) {
+            set(newVal: number | string) {
                 if (newVal === '' || newVal <= 0) return
 
                 this.$store.dispatch('server/timelapse/saveSetting', { park_retract_speed: newVal })
@@ -744,7 +744,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.park_extrude_speed
             },
-            setpark_extrude_speed(newVal: number | string) {
+            set(newVal: number | string) {
                 if (newVal === '' || newVal <= 0) return
 
                 this.$store.dispatch('server/timelapse/saveSetting', { park_extrude_speed: newVal })
@@ -754,7 +754,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.park_retract_distance
             },
-            setpark_retract_distance(newVal: number | string) {
+            set(newVal: number | string) {
                 if (newVal === '' || newVal < 0) return
 
                 this.$store.dispatch('server/timelapse/saveSetting', { park_retract_distance: newVal })
@@ -764,7 +764,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.park_extrude_distance
             },
-            setpark_extrude_distance(newVal: number | string) {
+            set(newVal: number | string) {
                 if (newVal === '' || newVal < 0) return
 
                 this.$store.dispatch('server/timelapse/saveSetting', { park_extrude_distance: newVal })
@@ -774,7 +774,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.park_time
             },
-            setpark_time(newVal: number | string) {
+            set(newVal: number | string) {
                 if (newVal === '' || newVal < 0) return
 
                 this.$store.dispatch('server/timelapse/saveSetting', { park_time: newVal })
@@ -784,7 +784,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.fw_retract
             },
-            setfw_retract(newVal) {
+            set(newVal) {
                 this.$store.dispatch('server/timelapse/saveSetting', { fw_retract: newVal })
             },
         },
@@ -792,7 +792,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.constant_rate_factor
             },
-            setconstant_rate_factor(newVal: number | string) {
+            set(newVal: number | string) {
                 if (newVal === '' || newVal <= 0) return
 
                 this.$store.dispatch('server/timelapse/saveSetting', { constant_rate_factor: newVal })
@@ -802,7 +802,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.output_framerate
             },
-            setoutput_framerate(newVal: number | string) {
+            set(newVal: number | string) {
                 if (newVal === '' || newVal <= 0) return
 
                 this.$store.dispatch('server/timelapse/saveSetting', { output_framerate: newVal })
@@ -812,7 +812,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.pixelformat
             },
-            setpixelformat(newVal) {
+            set(newVal) {
                 this.$store.dispatch('server/timelapse/saveSetting', { pixelformat: newVal })
             },
         },
@@ -820,7 +820,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.extraoutputparams
             },
-            setextraoutputparams(newVal) {
+            set(newVal) {
                 this.$store.dispatch('server/timelapse/saveSetting', { extraoutputparams: newVal })
             },
         },
@@ -828,7 +828,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.variable_fps
             },
-            setvariable_fps(newVal) {
+            set(newVal) {
                 this.$store.dispatch('server/timelapse/saveSetting', { variable_fps: newVal })
             },
         },
@@ -836,7 +836,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.targetlength
             },
-            settargetlength(newVal: number | string) {
+            set(newVal: number | string) {
                 if (newVal === '' || newVal <= 0) return
 
                 this.$store.dispatch('server/timelapse/saveSetting', { targetlength: newVal })
@@ -846,7 +846,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.variable_fps_min
             },
-            setvariable_fps_min(newVal: number | string) {
+            set(newVal: number | string) {
                 if (newVal === '' || newVal <= 0) return
 
                 this.$store.dispatch('server/timelapse/saveSetting', { variable_fps_min: newVal })
@@ -856,7 +856,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.variable_fps_max
             },
-            setvariable_fps_max(newVal: number | string) {
+            set(newVal: number | string) {
                 if (newVal === '' || newVal <= this.variable_fps_min) return
 
                 this.$store.dispatch('server/timelapse/saveSetting', { variable_fps_max: newVal })
@@ -866,7 +866,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.duplicatelastframe
             },
-            setduplicatelastframe(newVal: number | string) {
+            set(newVal: number | string) {
                 if (newVal === '' || newVal < 0) return
 
                 this.$store.dispatch('server/timelapse/saveSetting', { duplicatelastframe: newVal })
@@ -887,7 +887,7 @@ export default defineComponent({
 
                 return this.$store.state.server.timelapse.settings.camera
             },
-            setcamera(newVal) {
+            set(newVal) {
                 this.$store.dispatch('server/timelapse/saveSetting', { camera: newVal })
             },
         },
@@ -895,7 +895,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.server.timelapse.settings.time_format_code
             },
-            settime_format_code(newVal) {
+            set(newVal) {
                 this.$store.dispatch('server/timelapse/saveSetting', { time_format_code: newVal })
             },
         },

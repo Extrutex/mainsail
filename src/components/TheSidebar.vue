@@ -71,7 +71,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.naviDrawer
             },
-            setnaviDrawer(newVal) {
+            set(newVal) {
                 this.$store.dispatch('setNaviDrawer', newVal)
             },
         },
@@ -82,7 +82,7 @@ export default defineComponent({
             return this.$store.getters['files/getCustomSidebarBackground'] ?? this.sidebarBgImage
         },
         boolNaviTemp(): boolean {
-            return !this.isMobile && this.$vuetify.breakpoint.mdAndDown
+            return !this.isMobile && this.$vuetify.display.mdAndDown
         },
         sidebarCssVars(): Record<string, string> {
             if (!this.boolNaviTemp) return {}

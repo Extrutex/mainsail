@@ -438,7 +438,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.view.history.countPerPage ?? 10
             },
-            setcountPerPage(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.history.countPerPage', value: newVal })
             },
         },
@@ -446,7 +446,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.view.history.hideColums ?? []
             },
-            sethideColums(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.history.hideColums', value: newVal })
             },
         },
@@ -454,7 +454,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.view.history.showMaintenanceEntries
             },
-            setshowMaintenanceEntries(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', {
                     name: 'view.history.showMaintenanceEntries',
                     value: newVal,
@@ -465,7 +465,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.view.history.showPrintJobs
             },
-            setshowPrintJobs(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.history.showPrintJobs', value: newVal })
             },
         },
@@ -473,7 +473,7 @@ export default defineComponent({
             get(): HistoryListPanelRow[] {
                 return this.$store.state.gui.view.history.selectedJobs ?? []
             },
-            setselectedJobsTable(newVal: HistoryListPanelRow[]) {
+            set(newVal: HistoryListPanelRow[]) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.history.selectedJobs', value: newVal })
             },
         },

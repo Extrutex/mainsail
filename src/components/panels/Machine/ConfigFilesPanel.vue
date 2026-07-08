@@ -674,7 +674,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.view.blockFileUpload ?? false
             },
-            setblockFileUpload(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.blockFileUpload', value: newVal })
             },
         },
@@ -793,7 +793,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.view.configfiles.selectedFiles ?? []
             },
-            setselectedFiles(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.configfiles.selectedFiles', value: newVal })
             },
         },
@@ -801,7 +801,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.view.configfiles.countPerPage
             },
-            setcountPerPage(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.configfiles.countPerPage', value: newVal })
             },
         },
@@ -809,7 +809,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.view.configfiles.showHiddenFiles
             },
-            setshowHiddenFiles(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.configfiles.showHiddenFiles', value: newVal })
             },
         },
@@ -817,7 +817,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.view.configfiles.hideBackupFiles
             },
-            sethideBackupFiles(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.configfiles.hideBackupFiles', value: newVal })
             },
         },
@@ -825,7 +825,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.view.configfiles.sortBy
             },
-            setsortBy(newVal) {
+            set(newVal) {
                 if (newVal === undefined) newVal = 'filename'
 
                 this.$store.dispatch('gui/saveSetting', { name: 'view.configfiles.sortBy', value: newVal })
@@ -835,7 +835,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.view.configfiles.sortDesc
             },
-            setsortDesc(newVal) {
+            set(newVal) {
                 if (newVal === undefined) newVal = false
 
                 this.$store.dispatch('gui/saveSetting', { name: 'view.configfiles.sortDesc', value: newVal })
@@ -866,7 +866,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.view.configfiles.rootPath
             },
-            setroot(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.configfiles.rootPath', value: newVal })
             },
         },
@@ -874,7 +874,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.view.configfiles.currentPath
             },
-            setcurrentPath(newVal) {
+            set(newVal) {
                 this.selectedFiles = []
 
                 this.$store.dispatch('gui/saveSetting', { name: 'view.configfiles.currentPath', value: newVal })

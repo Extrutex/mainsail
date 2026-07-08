@@ -372,7 +372,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.mode
             },
-            setmode(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.mode', value: newVal })
             },
         },
@@ -380,7 +380,7 @@ export default defineComponent({
             get() {
                 return this.$store.getters['gui/theme']
             },
-            setthemeName(newVal: string) {
+            set(newVal: string) {
                 const newTheme = themes.find((theme) => theme.name === newVal)
                 if (this.logoColor === this.defaultLogoColor) {
                     this.logoColor = newTheme?.colorLogo ?? defaultLogoColor
@@ -416,7 +416,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.logo
             },
-            setlogoColor(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.logo', value: newVal })
             },
         },
@@ -430,7 +430,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.primary
             },
-            setprimaryColor(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.primary', value: newVal })
             },
         },
@@ -438,7 +438,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.boolBigThumbnail
             },
-            setboolBigThumbnail(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.boolBigThumbnail', value: newVal })
             },
         },
@@ -446,7 +446,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.bigThumbnailBackground
             },
-            setbigThumbnailBackground(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.bigThumbnailBackground', value: newVal })
             },
         },
@@ -454,7 +454,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.displayCancelPrint
             },
-            setdisplayCancelPrint(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.displayCancelPrint', value: newVal })
             },
         },
@@ -462,7 +462,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.progressAsFavicon
             },
-            setprogressAsFavicon(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.progressAsFavicon', value: newVal })
             },
         },
@@ -470,7 +470,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.confirmOnEmergencyStop
             },
-            setconfirmOnEmergencyStop(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.confirmOnEmergencyStop', value: newVal })
             },
         },
@@ -478,7 +478,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.confirmOnCoolDown
             },
-            setconfirmOnCoolDown(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.confirmOnCoolDown', value: newVal })
             },
         },
@@ -486,7 +486,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.confirmOnPowerDeviceChange
             },
-            setconfirmOnPowerDeviceChange(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', {
                     name: 'uiSettings.confirmOnPowerDeviceChange',
                     value: newVal,
@@ -497,7 +497,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.confirmOnCancelJob
             },
-            setconfirmOnCancelJob(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.confirmOnCancelJob', value: newVal })
             },
         },
@@ -505,7 +505,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.lockSlidersOnTouchDevices
             },
-            setlockSliders(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.lockSlidersOnTouchDevices', value: newVal })
             },
         },
@@ -513,7 +513,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.lockSlidersDelay
             },
-            setlockSlidersDelay(newVal) {
+            set(newVal) {
                 const value = Number(newVal)
                 if (!Number.isFinite(value) || value < 0) return
 
@@ -527,7 +527,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.navigationStyle
             },
-            setnavigationStyleSetting(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.navigationStyle', value: newVal })
             },
         },
@@ -547,7 +547,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.defaultNavigationStateSetting
             },
-            setdefaultNavigationStateSetting(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', {
                     name: 'uiSettings.defaultNavigationStateSetting',
                     value: newVal,
@@ -574,7 +574,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.boolHideUploadAndPrintButton ?? false
             },
-            setboolHideUploadAndPrintButton(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', {
                     name: 'uiSettings.boolHideUploadAndPrintButton',
                     value: newVal,
@@ -594,7 +594,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.powerDeviceName ?? null
             },
-            setpowerDeviceName(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.powerDeviceName', value: newVal })
             },
         },
@@ -616,7 +616,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.hideSaveConfigForBedMash ?? false
             },
-            sethideSaveConfigForBedMash(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.hideSaveConfigForBedMash', value: newVal })
             },
         },
@@ -624,7 +624,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.disableFanAnimation ?? false
             },
-            setdisableFanAnimation(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.disableFanAnimation', value: newVal })
             },
         },
@@ -632,7 +632,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.boolManualProbeDialog ?? true
             },
-            setboolManualProbeDialog(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.boolManualProbeDialog', value: newVal })
             },
         },
@@ -640,7 +640,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.boolBedScrewsDialog ?? true
             },
-            setboolBedScrewsDialog(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.boolBedScrewsDialog', value: newVal })
             },
         },
@@ -648,7 +648,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.boolScrewsTiltAdjustDialog ?? true
             },
-            setboolScrewsTiltAdjustDialog(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', {
                     name: 'uiSettings.boolScrewsTiltAdjustDialog',
                     value: newVal,
@@ -659,7 +659,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.printstatusThumbnailZoom ?? true
             },
-            setprintstatusThumbnailZoom(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.printstatusThumbnailZoom', value: newVal })
             },
         },
@@ -667,7 +667,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.tempchartHeight ?? 250
             },
-            settempchartHeight(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.tempchartHeight', value: newVal })
             },
         },
@@ -675,7 +675,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.hideUpdateWarnings ?? false
             },
-            sethideUpdateWarnings(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.hideUpdateWarnings', value: newVal })
             },
         },
@@ -683,7 +683,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.dashboardFilesLimit ?? 5
             },
-            setdashboardFilesLimit(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.dashboardFilesLimit', value: newVal })
             },
         },
@@ -691,7 +691,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.dashboardFilesFilter ?? []
             },
-            setdashboardFilesFilter(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.dashboardFilesFilter', value: newVal })
             },
         },
@@ -715,7 +715,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.dashboardHistoryLimit ?? 5
             },
-            setdashboardHistoryLimit(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.dashboardHistoryLimit', value: newVal })
             },
         },
@@ -723,7 +723,7 @@ export default defineComponent({
             get() {
                 return this.$store.state.gui.uiSettings.hideOtherInstances ?? false
             },
-            sethideOtherInstances(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/saveSetting', { name: 'uiSettings.hideOtherInstances', value: newVal })
             },
         },

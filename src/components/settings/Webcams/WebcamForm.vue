@@ -364,7 +364,7 @@ export default defineComponent({
             get() {
                 return this.webcam.extra_data?.hideFps ?? false
             },
-            sethideFps(newVal) {
+            set(newVal) {
                 if (!('extra_data' in this.webcam)) {
                     this.webcam.extra_data = {
                         hideFps: newVal,
@@ -380,7 +380,7 @@ export default defineComponent({
             get() {
                 return this.webcam.extra_data?.enableAudio ?? false
             },
-            setenableAudio(newVal) {
+            set(newVal) {
                 if (!('extra_data' in this.webcam)) {
                     this.webcam.extra_data = {
                         enableAudio: newVal,
@@ -399,7 +399,7 @@ export default defineComponent({
             get() {
                 return this.webcam.extra_data?.nozzleCrosshair ?? false
             },
-            setnozzleCrosshair(newVal) {
+            set(newVal) {
                 const extraData = { ...(this.webcam.extra_data ?? {}) }
                 extraData.nozzleCrosshair = newVal
 
@@ -410,7 +410,7 @@ export default defineComponent({
             get() {
                 return this.webcam.extra_data?.nozzleCrosshairColor ?? '#ff0000'
             },
-            setnozzleCrosshairColor(newVal: string) {
+            set(newVal: string) {
                 const extraData = { ...(this.webcam.extra_data ?? {}) }
                 extraData.nozzleCrosshairColor = newVal
 
@@ -421,7 +421,7 @@ export default defineComponent({
             get() {
                 return this.webcam.extra_data?.nozzleCrosshairSize ?? 0.1
             },
-            setnozzleCrosshairSize(newVal: number) {
+            set(newVal: number) {
                 const extraData = { ...(this.webcam.extra_data ?? {}) }
                 extraData.nozzleCrosshairSize = newVal
 

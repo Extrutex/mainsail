@@ -415,7 +415,7 @@ export default defineComponent({
 
                 return macros
             },
-            seteditGroupMacros(newVal) {},
+            set(newVal) {},
         },
     },
     watch: {

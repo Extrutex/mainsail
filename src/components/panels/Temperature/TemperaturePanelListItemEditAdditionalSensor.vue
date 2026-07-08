@@ -25,7 +25,7 @@ export default defineComponent({
                     type: this.additionalSensor,
                 })
             },
-            setvalue(newVal) {
+            set(newVal) {
                 this.$store.dispatch('gui/setDatasetAdditionalSensorStatus', {
                     objectName: this.objectName,
                     dataset: this.additionalSensor,

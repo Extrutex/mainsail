@@ -64,7 +64,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.view.extruder.showTools ?? true
             },
-            setshowTools(newVal: boolean) {
+            set(newVal: boolean) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.extruder.showTools', value: newVal })
             },
         },
@@ -72,7 +72,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.view.extruder.showExtrusionFactor ?? true
             },
-            setshowExtrusionFactor(newVal: boolean) {
+            set(newVal: boolean) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.extruder.showExtrusionFactor', value: newVal })
             },
         },
@@ -80,7 +80,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.view.extruder.showPressureAdvance ?? true
             },
-            setshowPressureAdvance(newVal: boolean) {
+            set(newVal: boolean) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.extruder.showPressureAdvance', value: newVal })
             },
         },
@@ -88,7 +88,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.view.extruder.showFirmwareRetraction ?? true
             },
-            setshowFirmwareRetraction(newVal: boolean) {
+            set(newVal: boolean) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.extruder.showFirmwareRetraction', value: newVal })
             },
         },
@@ -96,7 +96,7 @@ export default defineComponent({
             get(): boolean {
                 return this.$store.state.gui.view.extruder.showExtruderControl ?? true
             },
-            setshowExtruderControl(newVal: boolean) {
+            set(newVal: boolean) {
                 this.$store.dispatch('gui/saveSetting', { name: 'view.extruder.showExtruderControl', value: newVal })
             },
         },
