@@ -240,24 +240,13 @@
             hide-overlay
             fullscreen
             class="fill-height"
-            @keydown.esc="
-                dialogImage.show = false
-                dialogImage.item.url = null
-                dialogImage.item.svg = null
-            ">
+            @keydown.esc="closeImageDialog">
             <panel
                 :title="dialogImage.item.name ?? ''"
                 card-class="maschine-configfiles-imageviewer-dialog"
                 style="position: relative">
                 <template #buttons>
-                    <v-btn
-                        icon
-                        tile
-                        @click="
-                            dialogImage.show = false
-                            dialogImage.item.url = null
-                            dialogImage.item.svg = null
-                        ">
+                    <v-btn icon tile @click="closeImageDialog">
                         <v-icon>{{ mdiCloseThick }}</v-icon>
                     </v-btn>
                 </template>
@@ -904,6 +893,12 @@ export default defineComponent({
         },
     },
     methods: {
+        closeImageDialog() {
+            this.dialogImage.show = false
+            this.dialogImage.item.url = null
+            this.dialogImage.item.svg = null
+        },
+
         existsFilename(name: string) {
             return this.files.findIndex((file) => file.filename === name) >= 0
         },
